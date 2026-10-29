@@ -84,7 +84,7 @@ export class GiteaProvider implements ForgeProvider {
 		return this.#rateLimit;
 	}
 
-	webUrl(path: string, ref: string): string {
+	webUrl(path: string, ref: string, _isDir = false): string {
 		return `https://${this.ref.host}/${this.ref.owner}/${this.ref.repo}/src/branch/${encodeURIComponent(ref)}/${encodePath(path)}`;
 	}
 

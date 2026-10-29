@@ -79,8 +79,8 @@ export class GitLabProvider implements ForgeProvider {
 		return this.#rateLimit;
 	}
 
-	webUrl(path: string, ref: string): string {
-		return `https://${this.ref.host}/${this.ref.owner}/${this.ref.repo}/-/blob/${encodeURIComponent(ref)}/${path
+	webUrl(path: string, ref: string, isDir = false): string {
+		return `https://${this.ref.host}/${this.ref.owner}/${this.ref.repo}/-/${isDir ? 'tree' : 'blob'}/${encodeURIComponent(ref)}/${path
 			.split('/')
 			.map(encodeURIComponent)
 			.join('/')}`;

@@ -65,5 +65,5 @@ export interface ForgeProvider {
 	/** Most recent rate limit snapshot, if the forge reports one. */
 	rateLimit(): RateLimitInfo | null;
 	/** Human-facing URL for a file, used for "view on forge" links. */
-	webUrl(path: string, ref: string): string;
+	webUrl(path: string, ref: string, isDir?: boolean): string;
 }

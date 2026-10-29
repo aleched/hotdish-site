@@ -14,6 +14,7 @@
 	import ShareButton from '$lib/ui/ShareButton.svelte';
 	import TagFilter from '$lib/ui/TagFilter.svelte';
 	import { findFolder } from '$lib/tree';
+	import { FORGE_LABELS } from '$lib/forge/factory';
 
 	let src = $derived($page.params.src ?? '');
 
@@ -59,6 +60,18 @@
 	);
 	let entry = $derived(fullPath ? repoStore.entryFor(fullPath) : undefined);
 	let folder = $derived(entry ? null : findFolder(repoStore.tree, path));
+
+	let sourceLink = $derived.by(() => {
+		const provider = repoStore.provider;
+		const gitRef = repoStore.resolvedRef;
+		if (!provider || !gitRef) return null;
+		if (!entry && !folder) return null;
+		return {
+			href: provider.webUrl(entry ? entry.path : fullPath, gitRef, !entry),
+			label: FORGE_LABELS[provider.kind],
+			kind: provider.kind
+		};
+	});
 
 	// Collapse the mobile menu after navigating to another recipe.
 	$effect(() => {
@@ -198,7 +211,7 @@
 							{creatingNew ? 'Cancel' : 'New recipe'}
 						</button>
 					{/if}
-					<ShareButton />
+					<ShareButton source={sourceLink} />
 				</div>
 			</div>
 

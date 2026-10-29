@@ -88,9 +88,9 @@ export class GitHubProvider implements ForgeProvider {
 		return this.#rateLimit;
 	}
 
-	webUrl(path: string, ref: string): string {
+	webUrl(path: string, ref: string, isDir = false): string {
 		const base = this.ref.host === 'github.com' ? 'https://github.com' : `https://${this.ref.host}`;
-		return `${base}/${this.ref.owner}/${this.ref.repo}/blob/${encodeURIComponent(ref)}/${encodePath(path)}`;
+		return `${base}/${this.ref.owner}/${this.ref.repo}/${isDir ? 'tree' : 'blob'}/${encodeURIComponent(ref)}/${encodePath(path)}`;
 	}
 
 	async resolveDefaultBranch(): Promise<string> {

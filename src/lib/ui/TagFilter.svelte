@@ -23,6 +23,18 @@
 		/>
 	</label>
 
+	{#if repoStore.folders.length > 1}
+		<label class="folder">
+			<span class="visually-hidden">Filter by folder</span>
+			<select bind:value={repoStore.selectedFolder}>
+				<option value="">All folders</option>
+				{#each repoStore.folders as folder (folder.path)}
+					<option value={folder.path}>{folder.path} ({folder.count})</option>
+				{/each}
+			</select>
+		</label>
+	{/if}
+
 	{#if tags.length > 0}
 		<div class="tags">
 			{#each visible as tag (tag.key)}
@@ -62,6 +74,7 @@
 		margin-bottom: 1rem;
 	}
 
+	.folder select,
 	.search input {
 		width: 100%;
 	}

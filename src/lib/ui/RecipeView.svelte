@@ -2,7 +2,6 @@
 	import type { RecipeDoc } from '$lib/markdown/recipe';
 	import { renderMarkdown } from '$lib/markdown/render';
 	import { repoStore } from '$lib/store/repo.svelte';
-	import { FORGE_LABELS } from '$lib/forge/factory';
 
 	interface Props {
 		doc: RecipeDoc;
@@ -25,13 +24,6 @@
 			([key, value]) => key !== 'title' && key !== 'tags' && value !== null && value !== undefined
 		)
 	);
-
-	let forgeLink = $derived.by(() => {
-		const provider = repoStore.provider;
-		const ref = repoStore.resolvedRef;
-		if (!provider || !ref) return null;
-		return { href: provider.webUrl(doc.path, ref), label: FORGE_LABELS[provider.kind] };
-	});
 
 	/** The heading is rendered from the title, so avoid showing it twice. */
 	function stripLeadingTitle(body: string, title: string): string {
@@ -94,15 +86,6 @@
 		<!-- Sanitized by renderMarkdown; raw HTML in source markdown is dropped. -->
 		{@html html}
 	</div>
-
-	{#if forgeLink}
-		<p class="source no-print">
-			<a href={forgeLink.href} target="_blank" rel="noopener noreferrer">
-				View source on {forgeLink.label}
-			</a>
-			<span class="muted">· {doc.path}</span>
-		</p>
-	{/if}
 </article>
 
 <style>
@@ -147,8 +130,4 @@
 		margin: 0;
 	}
 
-	.source {
-		margin-top: 2rem;
-		font-size: 0.8rem;
-	}
 </style>
