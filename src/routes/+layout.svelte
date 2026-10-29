@@ -2,7 +2,6 @@
 	import '../app.css';
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
-	import RateLimitBadge from '$lib/ui/RateLimitBadge.svelte';
 
 	let { children } = $props();
 
@@ -28,7 +27,6 @@
 			{/if}
 
 			<div class="spacer"></div>
-			<RateLimitBadge />
 			<a class="nav" href="/settings">Settings</a>
 		</div>
 	</header>

@@ -1,7 +1,7 @@
 import { readBlob, writeBlob } from '$lib/cache/blobCache';
 import { createProvider } from '$lib/forge/factory';
 import { describeForgeError } from '$lib/forge/errors';
-import type { BlobEntry, ForgeProvider, RateLimitInfo, RepoRef } from '$lib/forge/types';
+import type { BlobEntry, ForgeProvider, RepoRef } from '$lib/forge/types';
 import { isMarkdownPath, parseRecipe, toSummary } from '$lib/markdown/recipe';
 import type { RecipeDoc, RecipeSummary } from '$lib/markdown/recipe';
 import { TEMPLATE_PATH, parseTemplate, type RecipeTemplate } from '$lib/template/schema';
@@ -38,7 +38,6 @@ class RepoStore {
 	indexTotal = $state(0);
 	skipped = $state<string[]>([]);
 
-	rateLimit = $state<RateLimitInfo | null>(null);
 	template = $state<RecipeTemplate | null>(null);
 	templateError = $state<string | null>(null);
 
@@ -137,7 +136,6 @@ class RepoStore {
 			if (loadToken !== this.#loadToken) return;
 
 			this.truncated = truncated;
-			this.rateLimit = provider.rateLimit();
 
 			const prefix = ref.basePath ? `${ref.basePath.replace(/\/+$/, '')}/` : '';
 			const markdown = entries.filter(
@@ -157,7 +155,6 @@ class RepoStore {
 			if (loadToken !== this.#loadToken) return;
 			this.status = 'error';
 			this.error = describeForgeError(error);
-			this.rateLimit = provider.rateLimit();
 		}
 	}
 
@@ -251,7 +248,6 @@ class RepoStore {
 		this.recipes = summaries;
 		this.skipped = skipped;
 		this.indexing = false;
-		this.rateLimit = this.#provider?.rateLimit() ?? this.rateLimit;
 	}
 
 	async #loadTemplate(allEntries: BlobEntry[], gitRef: string, loadToken: number): Promise<void> {
