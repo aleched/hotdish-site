@@ -7,6 +7,7 @@
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
+	import { historyStore } from '$lib/store/history.svelte';
 	import Breadcrumbs from '$lib/ui/Breadcrumbs.svelte';
 	import FolderTree from '$lib/ui/FolderTree.svelte';
 	import RecipeView from '$lib/ui/RecipeView.svelte';
@@ -100,6 +101,28 @@
 	});
 
 	let rootLabel = $derived(repoStore.ref ? repoStore.ref.repo : 'Repository');
+
+	// At the repository root the cards show view history; filtering or browsing into a folder shows the tree.
+	let showRecent = $derived(path === '' && !repoStore.isFiltering);
+	let recentItems = $derived(
+		historyStore.items.flatMap((item) => {
+			const full = repoStore.basePath
+				? `${repoStore.basePath.replace(/\/+$/, '')}/${item.path}`
+				: item.path;
+			const recipe = repoStore.recipes.find((candidate) => candidate.path === full);
+			return recipe ? [{ path: item.path, title: recipe.title, tags: recipe.tags }] : [];
+		})
+	);
+
+	$effect(() => {
+		const ref = decoded.ref;
+		if (ref) void historyStore.load(ref);
+	});
+
+	$effect(() => {
+		const ref = decoded.ref;
+		if (ref && entry && doc && !editing) void historyStore.record(ref, path, doc.title);
+	});
 	let notFound = $derived(
 		repoStore.status === 'ready' && !repoStore.indexing && !entry && folder === null
 	);
@@ -229,7 +252,30 @@
 					{/await}
 				{/if}
 
-				{#if folder.children.length === 0}
+				{#if showRecent}
+					<h2 class="recent-title">Recently viewed</h2>
+					{#if recentItems.length > 0}
+						<ul class="cards">
+							{#each recentItems as item (item.path)}
+								<li>
+									<a class="card entry" href={`/r/${src}/${encodeURI(item.path)}`}>
+										<span class="kind">📄</span>
+										<span class="label">{item.title}</span>
+										{#if item.tags.length > 0}
+											<span class="sub tags">
+												{#each item.tags.slice(0, 4) as tag (tag)}
+													<span class="tag">{tag}</span>
+												{/each}
+											</span>
+										{/if}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					{:else if repoStore.status === 'ready' && !repoStore.indexing}
+						<p class="muted">No recipe view history</p>
+					{/if}
+				{:else if folder.children.length === 0}
 					<p class="muted">This folder is empty.</p>
 				{:else}
 					<ul class="cards">
@@ -277,11 +323,19 @@
 		top: 72px;
 		max-height: calc(100vh - 88px);
 		overflow-y: auto;
-		padding-right: 0.25rem;
+		/* Room for focus outlines, which overflow-y would otherwise clip. */
+		padding: 4px;
+		margin: -4px;
 	}
 
 	.progress {
 		font-size: 0.8rem;
+	}
+
+	.recent-title {
+		font-size: 1rem;
+		margin: 0 0 0.6rem;
+		color: var(--text-dim);
 	}
 
 	.about-link {

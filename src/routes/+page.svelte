@@ -7,6 +7,7 @@
 	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
+	import { historyStore } from '$lib/store/history.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 
@@ -101,6 +102,7 @@
 
 	async function emptyCache() {
 		await clearBlobCache();
+		historyStore.reset();
 		cacheMessage = 'Cached recipe content cleared.';
 		setTimeout(() => (cacheMessage = null), 3000);
 	}
