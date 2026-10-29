@@ -271,7 +271,6 @@
 	}
 
 	.panel {
-		max-width: 760px;
 		margin-bottom: 2rem;
 	}
 

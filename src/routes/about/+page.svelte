@@ -56,7 +56,6 @@
 
 <style>
 	.hero {
-		max-width: 640px;
 		margin-bottom: 1.5rem;
 	}
 	h1 {
@@ -83,7 +82,6 @@
 		font-size: 0.9rem;
 	}
 	.tokens {
-		max-width: 760px;
 		margin-top: 2rem;
 	}
 	.tokens h2 {
