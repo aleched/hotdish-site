@@ -14,7 +14,7 @@
 	let input = $state('');
 	let name = $state('');
 	let kind = $state<ForgeKind>('github');
-	let host = $state('');
+	let host = $state(DEFAULT_HOSTS.github);
 	let gitRef = $state('');
 	let basePath = $state('');
 	let token = $state('');
@@ -26,7 +26,7 @@
 		input = '';
 		name = '';
 		kind = 'github';
-		host = '';
+		host = DEFAULT_HOSTS.github;
 		gitRef = '';
 		basePath = '';
 		token = '';
@@ -46,14 +46,20 @@
 		document.getElementById('repo-form')?.scrollIntoView({ behavior: 'smooth' });
 	}
 
+	function onKindChange() {
+		host = DEFAULT_HOSTS[kind];
+	}
+
 	/** Parses the form into a repo reference, applying the optional overrides. */
 	function buildRef(): RepoRef | null {
 		error = null;
 		try {
 			const parsed = parseRepoInput(input, { fallbackKind: kind });
+			// A host typed in the URL wins; the Host field only applies to bare owner/repo input.
+			const urlHostIsDefault = parsed.host === DEFAULT_HOSTS[parsed.kind];
 			return {
 				...parsed,
-				host: host.trim() || parsed.host,
+				host: urlHostIsDefault ? host.trim() || parsed.host : parsed.host,
 				ref: gitRef.trim() || parsed.ref,
 				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || parsed.basePath
 			};
@@ -162,7 +168,7 @@
 
 			<div class="field">
 				<label class="label" for="kind">Forge</label>
-				<select id="kind" bind:value={kind}>
+				<select id="kind" bind:value={kind} onchange={onKindChange}>
 					{#each kinds as option (option)}
 						<option value={option}>{FORGE_LABELS[option]}</option>
 					{/each}
