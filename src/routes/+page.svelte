@@ -208,8 +208,8 @@
 				<button class="primary" type="submit" disabled={!input.trim()}>Save changes</button>
 				<button type="button" onclick={reset}>Cancel</button>
 			{:else}
-				<button type="button" onclick={add} disabled={!input.trim()}>Add</button>
-				<button class="primary" type="submit" disabled={!input.trim()}>Open</button>
+				<button class="primary" type="button" onclick={add} disabled={!input.trim()}>Add</button>
+				<button type="submit" disabled={!input.trim()}>Open</button>
 			{/if}
 		</div>
 	</form>
