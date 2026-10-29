@@ -14,6 +14,27 @@
 	import { findFolder } from '$lib/tree';
 
 	let src = $derived($page.params.src ?? '');
+
+	/** Surfaces a stalled dynamic import (blocked chunk, CSP) instead of spinning forever. */
+	function loadWithTimeout<T>(loader: () => Promise<T>, ms = 15000): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			const timer = setTimeout(
+				() => reject(new Error('Timed out loading the editor. Check the browser console.')),
+				ms
+			);
+			loader().then(
+				(value) => {
+					clearTimeout(timer);
+					resolve(value);
+				},
+				(cause) => {
+					clearTimeout(timer);
+					console.error('Editor failed to load', cause);
+					reject(cause);
+				}
+			);
+		});
+	}
 	let path = $derived(($page.params.path ?? '').replace(/^\/+|\/+$/g, ''));
 	let editing = $derived($page.url.searchParams.has('edit'));
 
@@ -164,7 +185,7 @@
 					<p class="muted">Loading recipe…</p>
 				{:else if doc}
 					{#if editing}
-						{#await import('$lib/editor/RecipeEditor.svelte')}
+						{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
 							<p class="muted">Loading editor…</p>
 						{:then module}
 							{@const Editor = module.default}
