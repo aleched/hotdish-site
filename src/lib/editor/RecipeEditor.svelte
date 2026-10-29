@@ -30,7 +30,7 @@
 
 	let mode = $state<Mode>(rawOnly ? 'source' : 'form');
 	// svelte-ignore state_referenced_locally
-	let fields = $state<Record<string, unknown>>(structuredClone(doc.fields));
+	let fields = $state<Record<string, unknown>>($state.snapshot(doc.fields));
 	// svelte-ignore state_referenced_locally
 	let body = $state(doc.body);
 	// svelte-ignore state_referenced_locally
