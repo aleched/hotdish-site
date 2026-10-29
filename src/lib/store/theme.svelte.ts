@@ -1,21 +1,23 @@
 import { browser } from '$app/environment';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
-export type ThemeAccent = 'default' | 'green' | 'blue' | 'purple';
+export type ThemeAccent = 'purple' | 'blue' | 'red' | 'green' | 'yellow' | 'orange';
 
 export const THEME_MODES: ThemeMode[] = ['system', 'light', 'dark'];
 export const THEME_ACCENTS: { id: ThemeAccent; label: string; color: string }[] = [
-	{ id: 'default', label: 'Paprika', color: '#b4451f' },
-	{ id: 'green', label: 'Basil', color: '#2f6f3e' },
+	{ id: 'purple', label: 'Plum', color: '#7b3fa0' },
 	{ id: 'blue', label: 'Blueberry', color: '#2557a7' },
-	{ id: 'purple', label: 'Plum', color: '#7b3fa0' }
+	{ id: 'green', label: 'Olive', color: '#5b7a1f' },
+	{ id: 'yellow', label: 'Banana', color: '#d4a017' },
+	{ id: 'orange', label: 'Apricot', color: '#bf6a14' },
+	{ id: 'red', label: 'Tomato', color: '#c62f1f' }
 ];
 
 const STORAGE_KEY = 'hotdish.theme.v1';
 
 class ThemeStore {
 	mode = $state<ThemeMode>('system');
-	accent = $state<ThemeAccent>('default');
+	accent = $state<ThemeAccent>('purple');
 
 	constructor() {
 		if (!browser) return;
@@ -57,7 +59,7 @@ class ThemeStore {
 		const root = document.documentElement;
 		if (this.mode === 'system') root.removeAttribute('data-theme');
 		else root.setAttribute('data-theme', this.mode);
-		if (this.accent === 'default') root.removeAttribute('data-accent');
+		if (this.accent === 'purple') root.removeAttribute('data-accent');
 		else root.setAttribute('data-accent', this.accent);
 	}
 }

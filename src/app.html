@@ -4,12 +4,12 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
-		<meta name="theme-color" content="#b4451f" />
+		<meta name="theme-color" content="#7b3fa0" />
 		<script>
 			try {
 				var t = JSON.parse(localStorage.getItem('hotdish.theme.v1') || '{}');
 				if (t.mode === 'light' || t.mode === 'dark') document.documentElement.dataset.theme = t.mode;
-				if (t.accent && t.accent !== 'default') document.documentElement.dataset.accent = t.accent;
+				if (t.accent && t.accent !== 'purple') document.documentElement.dataset.accent = t.accent;
 			} catch (e) {}
 		</script>		%sveltekit.head%
 	</head>
