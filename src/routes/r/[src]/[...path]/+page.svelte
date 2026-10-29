@@ -112,7 +112,7 @@
 	</div>
 	<div class="row actions">
 		<button type="button" onclick={() => repoStore.reload()}>Retry</button>
-		<a href="/settings">Add an access token</a>
+		<a href="/">Add an access token</a>
 	</div>
 {:else}
 	<div class="layout">

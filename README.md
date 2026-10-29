@@ -171,5 +171,5 @@ src/lib/store/      repository state and saved profiles (Svelte 5 runes)
 src/lib/cache/      content-addressed blob cache
 src/lib/editor/     lazily loaded Milkdown/Crepe editor
 src/lib/ui/         presentation components
-src/routes/         landing, /r/[src]/[...path] browser, /settings
+src/routes/         home (repos, theme, cache), /about, /r/[src]/[...path] browser
 ```

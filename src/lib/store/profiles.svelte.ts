@@ -40,6 +40,10 @@ export function refMatchesProfile(ref: RepoRef, profile: Profile): boolean {
 	);
 }
 
+function sessionKey(ref: RepoRef): string {
+	return [ref.kind, ref.host, ref.owner.toLowerCase(), ref.repo.toLowerCase()].join('/');
+}
+
 class ProfileStore {
 	profiles = $state<Profile[]>([]);
 	activeId = $state<string | null>(null);
@@ -52,9 +56,22 @@ class ProfileStore {
 		return this.profiles.find((profile) => profile.id === this.activeId);
 	}
 
+	/** Tokens for repos opened without saving; kept in memory only. */
+	#sessionTokens = new Map<string, string>();
+
+	setSessionToken(ref: RepoRef, token: string | undefined): void {
+		const key = sessionKey(ref);
+		if (token) this.#sessionTokens.set(key, token);
+		else this.#sessionTokens.delete(key);
+	}
+
 	/** Finds a stored token for a repository, so private repos work after a reload. */
 	tokenFor(ref: RepoRef): string | undefined {
-		return this.profiles.find((profile) => refMatchesProfile(ref, profile))?.token || undefined;
+		return (
+			this.profiles.find((profile) => refMatchesProfile(ref, profile))?.token ||
+			this.#sessionTokens.get(sessionKey(ref)) ||
+			undefined
+		);
 	}
 
 	profileFor(ref: RepoRef): Profile | undefined {

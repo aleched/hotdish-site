@@ -17,7 +17,7 @@
 	<span class="badge" class:low {title}>
 		{remaining}{info.limit ? `/${info.limit}` : ''} left
 		{#if low && !authenticated}
-			<a href="/settings">add a token</a>
+			<a href="/">add a token</a>
 		{/if}
 	</span>
 {/if}

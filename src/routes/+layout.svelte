@@ -27,19 +27,13 @@
 			{/if}
 
 			<div class="spacer"></div>
-			<a class="nav" href="/settings">Settings</a>
+			<a class="nav" href="/about">About</a>
 		</div>
 	</header>
 
 	<main class="container">
 		{@render children()}
 	</main>
-
-	<footer class="container no-print">
-		<p class="muted">
-			Recipes are read directly from your git repository. Nothing is stored on a server.
-		</p>
-	</footer>
 </div>
 
 <style>
@@ -109,14 +103,5 @@
 		flex: 1;
 		padding: 1.5rem 1rem 2.5rem;
 		width: 100%;
-	}
-
-	footer {
-		padding: 1rem;
-		border-top: 1px solid var(--border);
-	}
-	footer p {
-		margin: 0;
-		font-size: 0.8rem;
 	}
 </style>
