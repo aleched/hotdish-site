@@ -1,0 +1,13 @@
+node_modules/
+.svelte-kit/
+.wrangler/
+build/
+dist/
+.vercel/
+.output/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db

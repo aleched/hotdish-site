@@ -1,0 +1,52 @@
+# Example Hotdish template.
+# Copy to `.hotdish/template.yml` in your recipe repository.
+#
+# Templates are advisory. They shape the editing form and constrain tag values, but they are
+# never a storage format: recipes stay plain markdown, and anything the template does not
+# describe is preserved exactly as written.
+
+version: 1
+name: Recipe
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: false
+    options:
+      - breakfast
+      - dinner
+      - dessert
+      - vegetarian
+      - quick
+      - make-ahead
+
+  - key: servings
+    label: Servings
+    type: number
+
+  - key: time
+    label: Total time
+    type: text
+
+  - key: source
+    label: Source
+    type: text
+
+sections:
+  - id: ingredients
+    heading: Ingredients
+    type: list
+    repeatable: true
+    subheadingLabel: Component
+
+  - id: instructions
+    heading: Instructions
+    type: ordered
+    repeatable: true
+    subheadingLabel: Stage
+
+  - id: notes
+    heading: Notes
+    type: text
+    optional: true

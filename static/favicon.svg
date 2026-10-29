@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hotdish">
+	<rect width="64" height="64" rx="12" fill="#b4451f" />
+	<path d="M12 34h40a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4z" fill="#fdfbf7" />
+	<path d="M14 32c0-9 8-15 18-15s18 6 18 15z" fill="#f5f1e8" />
+	<circle cx="26" cy="25" r="2.5" fill="#b4451f" />
+	<circle cx="34" cy="22" r="2.5" fill="#b4451f" />
+	<circle cx="41" cy="26" r="2.5" fill="#b4451f" />
+	<path d="M8 42h48v4H8z" fill="#fdfbf7" opacity="0.85" />
+</svg>
