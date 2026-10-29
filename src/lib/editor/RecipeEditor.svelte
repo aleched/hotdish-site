@@ -23,11 +23,17 @@
 	 * A frontmatter block that YAML could not parse would be silently dropped by any structured
 	 * edit, so those files are only ever editable as raw text.
 	 */
+	// The editor works on a snapshot taken at mount; the parent re-mounts it (keyed by sha) if
+	// the underlying document changes.
+	// svelte-ignore state_referenced_locally
 	const rawOnly = Boolean(doc.frontmatterError);
 
 	let mode = $state<Mode>(rawOnly ? 'source' : 'form');
+	// svelte-ignore state_referenced_locally
 	let fields = $state<Record<string, unknown>>(structuredClone(doc.fields));
+	// svelte-ignore state_referenced_locally
 	let body = $state(doc.body);
+	// svelte-ignore state_referenced_locally
 	let rawText = $state(doc.raw);
 	let structured = $state<StructuredDoc | null>(null);
 	let richEditor = $state<{ getMarkdown(): string | null } | null>(null);

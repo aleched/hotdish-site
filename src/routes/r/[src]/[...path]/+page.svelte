@@ -168,7 +168,9 @@
 							<p class="muted">Loading editor…</p>
 						{:then module}
 							{@const Editor = module.default}
-							<Editor {doc} onclose={() => goto(`/r/${src}/${encodeURI(path)}`)} />
+							{#key doc.sha}
+								<Editor {doc} onclose={() => goto(`/r/${src}/${encodeURI(path)}`)} />
+							{/key}
 						{:catch error}
 							<p class="banner error">
 								The editor could not be loaded ({error instanceof Error

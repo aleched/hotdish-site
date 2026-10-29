@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TreeFolder } from '$lib/tree';
+	import FolderTree from './FolderTree.svelte';
 
 	interface Props {
 		node: TreeFolder;
@@ -26,7 +27,7 @@
 						<span class="name">{child.name}</span>
 						<span class="count">{child.count}</span>
 					</summary>
-					<svelte:self
+					<FolderTree
 						node={child}
 						{src}
 						{currentPath}
