@@ -220,7 +220,7 @@
 	<div class="card stack">
 		<div class="field">
 			<span class="label">Appearance</span>
-			<div class="row" role="radiogroup" aria-label="Appearance">
+			<div class="row choices" role="radiogroup" aria-label="Appearance">
 				{#each THEME_MODES as mode (mode)}
 					<button
 						type="button"
@@ -237,7 +237,7 @@
 		</div>
 		<div class="field">
 			<span class="label">Accent color</span>
-			<div class="row" role="radiogroup" aria-label="Accent color">
+			<div class="row choices" role="radiogroup" aria-label="Accent color">
 				{#each THEME_ACCENTS as accent (accent.id)}
 					<button
 						type="button"
@@ -336,6 +336,14 @@
 	.hint {
 		font-size: 0.78rem;
 		margin: 0;
+	}
+
+	.profile .actions {
+		flex-basis: 100%;
+		flex-wrap: wrap;
+	}
+	.choices {
+		flex-wrap: wrap;
 	}
 
 	.choice {

@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { navStore } from '$lib/store/nav.svelte';
 
 	let { children } = $props();
 
@@ -27,7 +28,19 @@
 			{/if}
 
 			<div class="spacer"></div>
-			<a class="nav" href="/about">About</a>
+			<a class="nav" class:in-menu={!!activeSrc} href="/about">About</a>
+			{#if activeSrc}
+				<button
+					type="button"
+					class="burger ghost"
+					aria-label="Menu"
+					aria-expanded={navStore.open}
+					aria-controls="recipe-nav"
+					onclick={() => navStore.toggle()}
+				>
+					{navStore.open ? '✕' : '☰'}
+				</button>
+			{/if}
 		</div>
 	</header>
 
@@ -97,6 +110,25 @@
 	}
 	.nav:hover {
 		color: var(--accent);
+	}
+
+	.burger {
+		display: none;
+		font-size: 1.2rem;
+		line-height: 1;
+		padding: 0.4rem 0.6rem;
+	}
+
+	@media (max-width: 860px) {
+		.burger {
+			display: inline-block;
+		}
+		.repo {
+			max-width: 30vw;
+		}
+		.nav.in-menu {
+			display: none;
+		}
 	}
 
 	main {

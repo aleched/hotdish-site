@@ -6,6 +6,7 @@
 	import type { RecipeDoc } from '$lib/markdown/recipe';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { profileStore } from '$lib/store/profiles.svelte';
+	import { navStore } from '$lib/store/nav.svelte';
 	import Breadcrumbs from '$lib/ui/Breadcrumbs.svelte';
 	import FolderTree from '$lib/ui/FolderTree.svelte';
 	import RecipeView from '$lib/ui/RecipeView.svelte';
@@ -57,6 +58,12 @@
 	);
 	let entry = $derived(fullPath ? repoStore.entryFor(fullPath) : undefined);
 	let folder = $derived(entry ? null : findFolder(repoStore.tree, path));
+
+	// Collapse the mobile menu after navigating to another recipe.
+	$effect(() => {
+		void path;
+		navStore.open = false;
+	});
 
 	let doc = $state<RecipeDoc | null>(null);
 	let docError = $state<string | null>(null);
@@ -115,8 +122,9 @@
 		<a href="/">Add an access token</a>
 	</div>
 {:else}
-	<div class="layout">
-		<aside class="no-print">
+	<div class="layout" class:menu-open={navStore.open}>
+		<aside id="recipe-nav" class="no-print" class:open={navStore.open}>
+			<a class="about-link" href="/about">About</a>
 			<TagFilter />
 
 			{#if repoStore.indexing}
@@ -276,6 +284,12 @@
 		font-size: 0.8rem;
 	}
 
+	.about-link {
+		display: none;
+		margin-bottom: 0.75rem;
+		font-weight: 600;
+	}
+
 	.head {
 		display: flex;
 		justify-content: space-between;
@@ -364,6 +378,19 @@
 		aside {
 			position: static;
 			max-height: none;
+			display: none;
+		}
+		aside.open {
+			display: block;
+		}
+		.about-link {
+			display: block;
+		}
+		.menu-open .content {
+			display: none;
+		}
+		.head {
+			flex-wrap: wrap;
 		}
 	}
 </style>
