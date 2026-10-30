@@ -52,6 +52,12 @@ describe('parseRepoInput', () => {
 		});
 	});
 
+	it('preserves a self-hosted host port', () => {
+		expect(parseRepoInput('https://git.example.org:8443/team/recipes')).toMatchObject({
+			host: 'git.example.org:8443'
+		});
+	});
+
 	it('strips a trailing .git', () => {
 		expect(parseRepoInput('https://github.com/alice/recipes.git')).toMatchObject({
 			repo: 'recipes'

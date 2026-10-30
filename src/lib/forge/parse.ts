@@ -14,6 +14,11 @@ export interface ParseOptions {
 	fallbackKind?: ForgeKind;
 }
 
+export function knownForgeKind(host: string): ForgeKind | undefined {
+	const hostname = host.toLowerCase().replace(/:\d+$/, '');
+	return KNOWN_HOSTS[hostname];
+}
+
 /**
  * Accepts a browser URL copied from a forge, or a bare `owner/repo` slug, and extracts the
  * repository identity plus any branch and sub-folder embedded in the URL.
@@ -43,8 +48,8 @@ export function parseRepoInput(input: string, options: ParseOptions = {}): RepoR
 		throw new Error('That does not look like a valid URL.');
 	}
 
-	const host = url.hostname;
-	const kind = KNOWN_HOSTS[host] ?? options.fallbackKind ?? 'gitea';
+	const host = url.host;
+	const kind = knownForgeKind(url.hostname) ?? options.fallbackKind ?? 'gitea';
 	const segments = trimSlashes(url.pathname).split('/').filter(Boolean);
 	if (segments.length < 2) throw new Error('That URL does not include an owner and repository.');
 

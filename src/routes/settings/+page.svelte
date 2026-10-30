@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { DEFAULT_HOSTS, FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
-	import { parseRepoInput } from '$lib/forge/parse';
+	import { onDestroy } from 'svelte';
+	import { FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
+	import { detectForgeKind } from '$lib/forge/detect';
+	import { knownForgeKind, parseRepoInput } from '$lib/forge/parse';
 	import type { ForgeKind } from '$lib/forge/types';
 	import { encodeSrc } from '$lib/share/codec';
 	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
@@ -10,12 +12,17 @@
 	import Icon from '$lib/ui/Icon.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
+	let isMounted = true;
+	onDestroy(() => {
+		isMounted = false;
+	});
 
 	let editingId = $state<string | null>(null);
 	let input = $state('');
 	let name = $state('');
-	let kind = $state<ForgeKind>('github');
-	let host = $state(DEFAULT_HOSTS.github);
+	let kind = $state<ForgeKind | ''>('');
+	let needsForgeChoice = $state(false);
+	let isDetectingForge = $state(false);
 	let gitRef = $state('');
 	let basePath = $state('');
 	let token = $state('');
@@ -29,8 +36,8 @@
 		editingId = null;
 		input = '';
 		name = '';
-		kind = 'github';
-		host = DEFAULT_HOSTS.github;
+		kind = '';
+		needsForgeChoice = false;
 		gitRef = '';
 		basePath = '';
 		token = '';
@@ -42,29 +49,50 @@
 		input = `https://${profile.host}/${profile.owner}/${profile.repo}`;
 		name = profile.name;
 		kind = profile.kind;
-		host = profile.host;
+		needsForgeChoice = false;
 		gitRef = profile.ref ?? '';
 		basePath = profile.basePath ?? '';
 		token = profile.token ?? '';
 		error = null;
 	}
 
-	function onKindChange() {
-		host = DEFAULT_HOSTS[kind];
+	function onInput() {
+		kind = '';
+		needsForgeChoice = false;
+		error = null;
 	}
 
-	function save(event: SubmitEvent) {
+	async function save(event: SubmitEvent) {
 		event.preventDefault();
 		error = null;
 		try {
-			const parsed = parseRepoInput(input, { fallbackKind: kind });
-			// A host typed in the URL wins; the Host field only applies to bare owner/repo input.
-			const urlHostIsDefault = parsed.host === DEFAULT_HOSTS[parsed.kind];
+			if (!/^https?:\/\//i.test(input.trim())) {
+				throw new Error('Enter a full repository URL so its host and forge can be detected.');
+			}
+			const parsed = parseRepoInput(input);
+			let forge: ForgeKind | null | undefined = knownForgeKind(parsed.host) ?? (kind || null);
+			if (!forge) {
+				isDetectingForge = true;
+				try {
+					forge = await detectForgeKind(parsed.host);
+				} finally {
+					if (isMounted) isDetectingForge = false;
+				}
+				if (!isMounted) return;
+			}
+			if (!forge) {
+				needsForgeChoice = true;
+				error =
+					'Could not identify this forge automatically. Select its type; self-hosted APIs may block browser detection.';
+				return;
+			}
+			needsForgeChoice = false;
+			kind = forge;
+			const identified = parseRepoInput(input, { fallbackKind: forge });
 			const ref = {
-				...parsed,
-				host: urlHostIsDefault ? host.trim() || parsed.host : parsed.host,
-				ref: gitRef.trim() || parsed.ref,
-				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || parsed.basePath
+				...identified,
+				ref: gitRef.trim() || identified.ref,
+				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || identified.basePath
 			};
 			profileStore.save({
 				id: editingId ?? undefined,
@@ -172,9 +200,11 @@
 									id="input"
 									type="text"
 									bind:value={input}
-									placeholder="https://github.com/alice/recipes or alice/recipes"
+									placeholder="https://github.com/alice/recipes"
 									autocomplete="off"
 									spellcheck="false"
+									disabled={isDetectingForge}
+									oninput={onInput}
 								/>
 							</div>
 							<div class="grid">
@@ -182,18 +212,17 @@
 									<label class="label" for="name">Name</label>
 									<input id="name" type="text" bind:value={name} placeholder="My recipes" />
 								</div>
-								<div class="field">
-									<label class="label" for="kind">Forge</label>
-									<select id="kind" bind:value={kind} onchange={onKindChange}>
-										{#each kinds as option (option)}
-											<option value={option}>{FORGE_LABELS[option]}</option>
-										{/each}
-									</select>
-								</div>
-								<div class="field">
-									<label class="label" for="host">Host</label>
-									<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
-								</div>
+								{#if needsForgeChoice}
+									<div class="field">
+										<label class="label" for="kind">Forge type</label>
+										<select id="kind" bind:value={kind}>
+											<option value="">Select forge type</option>
+											{#each kinds as option (option)}
+												<option value={option}>{FORGE_LABELS[option]}</option>
+											{/each}
+										</select>
+									</div>
+								{/if}
 							</div>
 							<div class="grid">
 								<div class="field">
@@ -209,11 +238,17 @@
 									<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
 								</div>
 							</div>
-							<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
+							{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
 							{#if error}<p class="banner error" role="alert">{error}</p>{/if}
 							<div class="row">
-								<button class="primary" type="submit" disabled={!input.trim()}>Save changes</button>
-								<button type="button" onclick={reset}>Cancel</button>
+								<button
+									class="primary"
+									type="submit"
+									disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
+								>
+									{isDetectingForge ? 'Detecting forge...' : 'Save changes'}
+								</button>
+								<button type="button" onclick={reset} disabled={isDetectingForge}>Cancel</button>
 							</div>
 						</form>
 					{:else}
@@ -262,6 +297,7 @@
 							class="icon-button danger-hover"
 							title="Delete"
 							aria-label="Delete"
+							disabled={isDetectingForge}
 							onclick={() => {
 								profileStore.remove(profile.id);
 								if (editingId === profile.id) reset();

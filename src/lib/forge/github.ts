@@ -1,6 +1,7 @@
 import { utf8ToBase64 } from '$lib/util/base64';
 import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
+import { knownForgeKind } from './parse';
 import type {
 	BlobEntry,
 	DeleteArgs,
@@ -52,13 +53,13 @@ export class GitHubProvider implements ForgeProvider {
 	}
 
 	get #apiBase(): string {
-		return this.ref.host === 'github.com'
+		return isGitHubDotCom(this.ref.host)
 			? 'https://api.github.com'
 			: `https://${this.ref.host}/api/v3`;
 	}
 
 	get #rawBase(): string {
-		return this.ref.host === 'github.com'
+		return isGitHubDotCom(this.ref.host)
 			? 'https://raw.githubusercontent.com'
 			: `https://${this.ref.host}/raw`;
 	}
@@ -93,7 +94,7 @@ export class GitHubProvider implements ForgeProvider {
 	}
 
 	webUrl(path: string, ref: string, isDir = false): string {
-		const base = this.ref.host === 'github.com' ? 'https://github.com' : `https://${this.ref.host}`;
+		const base = isGitHubDotCom(this.ref.host) ? 'https://github.com' : `https://${this.ref.host}`;
 		return `${base}/${this.ref.owner}/${this.ref.repo}/${isDir ? 'tree' : 'blob'}/${encodeURIComponent(ref)}/${encodePath(path)}`;
 	}
 
@@ -275,6 +276,10 @@ export class GitHubProvider implements ForgeProvider {
 			throw error;
 		}
 	}
+}
+
+function isGitHubDotCom(host: string): boolean {
+	return knownForgeKind(host) === 'github';
 }
 
 /** Encodes each path segment but keeps `/` separators intact. */

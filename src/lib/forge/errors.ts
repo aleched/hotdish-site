@@ -1,3 +1,4 @@
+import { knownForgeKind } from './parse';
 import type { ForgeKind } from './types';
 
 export type ForgeErrorKind =
@@ -29,7 +30,7 @@ export class ForgeError extends Error {
  * for non-hosted instances and worth calling out explicitly.
  */
 export function networkError(kind: ForgeKind, host: string): ForgeError {
-	const selfHosted = !['github.com', 'gitlab.com', 'codeberg.org'].includes(host);
+	const selfHosted = !knownForgeKind(host);
 	const hint = selfHosted
 		? `Could not reach ${host}. If this is a self-hosted instance, its API may not allow browser requests (CORS). A ${kind === 'gitea' ? 'Gitea' : 'server'} admin can enable it — for Gitea, set ALLOW_DOMAIN in the [cors] section of app.ini.`
 		: `Could not reach ${host}. Check your connection and try again.`;

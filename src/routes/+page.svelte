@@ -1,19 +1,26 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { DEFAULT_HOSTS, FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
-	import { parseRepoInput } from '$lib/forge/parse';
+	import { onDestroy } from 'svelte';
+	import { FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
+	import { detectForgeKind } from '$lib/forge/detect';
+	import { knownForgeKind, parseRepoInput } from '$lib/forge/parse';
 	import type { ForgeKind, RepoRef } from '$lib/forge/types';
 	import { encodeSrc } from '$lib/share/codec';
 	import { profileStore, profileToRef } from '$lib/store/profiles.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
+	let isMounted = true;
+	onDestroy(() => {
+		isMounted = false;
+	});
 
 	let isCreating = $state(false);
 	let input = $state('');
 	let name = $state('');
-	let kind = $state<ForgeKind>('github');
-	let host = $state(DEFAULT_HOSTS.github);
+	let kind = $state<ForgeKind | ''>('');
+	let needsForgeChoice = $state(false);
+	let isDetectingForge = $state(false);
 	let gitRef = $state('');
 	let basePath = $state('');
 	let token = $state('');
@@ -23,8 +30,8 @@
 		isCreating = true;
 		input = '';
 		name = '';
-		kind = 'github';
-		host = DEFAULT_HOSTS.github;
+		kind = '';
+		needsForgeChoice = false;
 		gitRef = '';
 		basePath = '';
 		token = '';
@@ -36,22 +43,43 @@
 		error = null;
 	}
 
-	function onKindChange() {
-		host = DEFAULT_HOSTS[kind];
+	function onInput() {
+		kind = '';
+		needsForgeChoice = false;
+		error = null;
 	}
 
 	/** Parses the form into a repo reference, applying the optional overrides. */
-	function buildRef(): RepoRef | null {
+	async function buildRef(): Promise<RepoRef | null> {
 		error = null;
 		try {
-			const parsed = parseRepoInput(input, { fallbackKind: kind });
-			// A host typed in the URL wins; the Host field only applies to bare owner/repo input.
-			const urlHostIsDefault = parsed.host === DEFAULT_HOSTS[parsed.kind];
+			if (!/^https?:\/\//i.test(input.trim())) {
+				throw new Error('Enter a full repository URL so its host and forge can be detected.');
+			}
+			const parsed = parseRepoInput(input);
+			let forge: ForgeKind | null | undefined = knownForgeKind(parsed.host) ?? (kind || null);
+			if (!forge) {
+				isDetectingForge = true;
+				try {
+					forge = await detectForgeKind(parsed.host);
+				} finally {
+					if (isMounted) isDetectingForge = false;
+				}
+				if (!isMounted) return null;
+			}
+			if (!forge) {
+				needsForgeChoice = true;
+				error =
+					'Could not identify this forge automatically. Select its type; self-hosted APIs may block browser detection.';
+				return null;
+			}
+			needsForgeChoice = false;
+			kind = forge;
+			const identified = parseRepoInput(input, { fallbackKind: forge });
 			return {
-				...parsed,
-				host: urlHostIsDefault ? host.trim() || parsed.host : parsed.host,
-				ref: gitRef.trim() || parsed.ref,
-				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || parsed.basePath
+				...identified,
+				ref: gitRef.trim() || identified.ref,
+				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || identified.basePath
 			};
 		} catch (cause) {
 			error = cause instanceof Error ? cause.message : String(cause);
@@ -61,7 +89,7 @@
 
 	async function save(event: SubmitEvent) {
 		event.preventDefault();
-		const ref = buildRef();
+		const ref = await buildRef();
 		if (!ref) return;
 		const profile = profileStore.save({
 			name: name.trim() || `${ref.owner}/${ref.repo}`,
@@ -105,9 +133,11 @@
 							id="input"
 							type="text"
 							bind:value={input}
-							placeholder="https://github.com/alice/recipes or alice/recipes"
+							placeholder="https://github.com/alice/recipes"
 							autocomplete="off"
 							spellcheck="false"
+							disabled={isDetectingForge}
+							oninput={onInput}
 						/>
 					</div>
 
@@ -116,18 +146,17 @@
 							<label class="label" for="name">Name</label>
 							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
 						</div>
-						<div class="field">
-							<label class="label" for="kind">Forge</label>
-							<select id="kind" bind:value={kind} onchange={onKindChange}>
-								{#each kinds as option (option)}
-									<option value={option}>{FORGE_LABELS[option]}</option>
-								{/each}
-							</select>
-						</div>
-						<div class="field">
-							<label class="label" for="host">Host</label>
-							<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
-						</div>
+						{#if needsForgeChoice}
+							<div class="field">
+								<label class="label" for="kind">Forge type</label>
+								<select id="kind" bind:value={kind}>
+									<option value="">Select forge type</option>
+									{#each kinds as option (option)}
+										<option value={option}>{FORGE_LABELS[option]}</option>
+									{/each}
+								</select>
+							</div>
+						{/if}
 					</div>
 
 					<div class="grid">
@@ -144,11 +173,17 @@
 							<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
 						</div>
 					</div>
-					<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
+					{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
 					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
 					<div class="row">
-						<button class="primary" type="submit" disabled={!input.trim()}>Save and open</button>
-						<button type="button" onclick={cancelCreate}>Cancel</button>
+						<button
+							class="primary"
+							type="submit"
+							disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
+						>
+							{isDetectingForge ? 'Detecting forge...' : 'Save and open'}
+						</button>
+						<button type="button" onclick={cancelCreate} disabled={isDetectingForge}>Cancel</button>
 					</div>
 				</form>
 			</li>

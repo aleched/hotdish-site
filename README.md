@@ -96,6 +96,10 @@ Recommended scopes:
 
 Moving a recipe is a single commit. On Gitea / Forgejo this needs version 1.20 or newer.
 
+Repository URLs are used to determine the host and known forge. For self-hosted instances, the
+site probes public forge version APIs; if a probe is blocked or inconclusive, select the forge
+type manually. The host still comes from the repository URL.
+
 ### Self-hosted Gitea
 
 Gitea ships with API CORS **disabled**. A self-hosted instance must enable it before a browser
