@@ -92,6 +92,8 @@
 	/** Folder preselected in the open "New recipe" dialog, or null when it is closed. */
 	let newIn = $state<string | null>(null);
 	let recipeDialog = $state<'move' | 'delete' | null>(null);
+	let foldersExpanded = $state<boolean | null>(null);
+	let foldersAreExpanded = $derived(foldersExpanded ?? repoStore.isFiltering);
 
 	let canWrite = $derived(repoStore.provider?.authenticated ?? false);
 	let currentFolder = $derived(entry ? parentFolder(path) : folder ? path : '');
@@ -103,6 +105,10 @@
 
 	function openCreate(folderPath: string) {
 		void withToken(() => (newIn = folderPath));
+	}
+
+	function toggleFolders() {
+		foldersExpanded = !foldersAreExpanded;
 	}
 
 	function startEdit(event: MouseEvent) {
@@ -214,7 +220,22 @@
 
 			{#if repoStore.status === 'ready'}
 				<div class="side-head">
-					<span class="side-label">Recipes</span>
+					<div class="side-heading">
+						<button
+							type="button"
+							class="icon-button"
+							title={foldersAreExpanded ? 'Collapse all folders' : 'Expand all folders'}
+							aria-label={foldersAreExpanded ? 'Collapse all folders' : 'Expand all folders'}
+							aria-expanded={foldersAreExpanded}
+							onclick={toggleFolders}
+						>
+							<Icon
+								name={foldersAreExpanded ? 'collapse' : 'expand'}
+								size={14}
+							/>
+						</button>
+						<span class="side-label">Recipes</span>
+					</div>
 					<button
 						type="button"
 						class="icon-button"
@@ -232,7 +253,8 @@
 					node={repoStore.tree}
 					{src}
 					currentPath={path}
-					expandAll={repoStore.isFiltering}
+					expandAll={foldersExpanded ?? repoStore.isFiltering}
+					collapseAll={foldersExpanded === false}
 				/>
 			{:else if repoStore.status === 'ready' && !repoStore.indexing}
 				<p class="muted">
@@ -513,6 +535,11 @@
 		justify-content: space-between;
 		margin-bottom: 0.4rem;
 	}
+	.side-heading {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
 	.side-label {
 		font-size: 0.78rem;
 		font-weight: 600;
@@ -522,6 +549,9 @@
 	}
 	.side-head .icon-button {
 		padding: 0.25rem 0.4rem;
+	}
+	.side-heading .icon-button {
+		padding: 0.2rem;
 	}
 
 	.cards {

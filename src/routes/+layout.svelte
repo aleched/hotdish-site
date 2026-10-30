@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
 	import RateLimitPrompt from '$lib/ui/RateLimitPrompt.svelte';
 
 	let { children } = $props();
@@ -30,6 +31,9 @@
 
 			<div class="spacer"></div>
 			<a class="nav" class:in-menu={!!activeSrc} href="/about">About</a>
+			<a class="nav settings" href="/settings" title="Settings" aria-label="Settings">
+				<Icon name="settings" size={20} />
+			</a>
 			{#if activeSrc}
 				<button
 					type="button"
@@ -113,6 +117,10 @@
 	}
 	.nav:hover {
 		color: var(--accent);
+	}
+	.settings {
+		display: inline-flex;
+		align-items: center;
 	}
 
 	.burger {

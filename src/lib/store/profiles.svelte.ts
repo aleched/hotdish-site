@@ -117,6 +117,19 @@ class ProfileStore {
 		this.#persist();
 	}
 
+	/** Moves a profile so it ends up at `toIndex` in the list. */
+	move(id: string, toIndex: number): void {
+		const from = this.profiles.findIndex((profile) => profile.id === id);
+		if (from === -1) return;
+		const to = Math.max(0, Math.min(this.profiles.length - 1, toIndex));
+		if (from === to) return;
+		const next = [...this.profiles];
+		const [item] = next.splice(from, 1);
+		next.splice(to, 0, item);
+		this.profiles = next;
+		this.#persist();
+	}
+
 	setActive(id: string | null): void {
 		this.activeId = id;
 		this.#persist();

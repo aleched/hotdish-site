@@ -8,10 +8,19 @@
 		currentPath?: string;
 		/** Force every folder open, used while a search or tag filter is active. */
 		expandAll?: boolean;
+		/** Force every folder closed, including ancestors of the current recipe. */
+		collapseAll?: boolean;
 		depth?: number;
 	}
 
-	let { node, src, currentPath = '', expandAll = false, depth = 0 }: Props = $props();
+	let {
+		node,
+		src,
+		currentPath = '',
+		expandAll = false,
+		collapseAll = false,
+		depth = 0
+	}: Props = $props();
 
 	function isAncestor(folderPath: string): boolean {
 		return currentPath === folderPath || currentPath.startsWith(`${folderPath}/`);
@@ -22,7 +31,7 @@
 	{#each node.children as child (child.path)}
 		{#if child.kind === 'folder'}
 			<li>
-				<details open={expandAll || isAncestor(child.path)}>
+				<details open={expandAll || (!collapseAll && isAncestor(child.path))}>
 					<summary>
 						<span class="name">{child.name}</span>
 						<span class="count">{child.count}</span>
@@ -32,6 +41,7 @@
 						{src}
 						{currentPath}
 						{expandAll}
+						{collapseAll}
 						depth={depth + 1}
 					/>
 				</details>
