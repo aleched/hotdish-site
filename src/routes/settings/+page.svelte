@@ -47,9 +47,6 @@
 		basePath = profile.basePath ?? '';
 		token = profile.token ?? '';
 		error = null;
-		requestAnimationFrame(() =>
-			document.getElementById('repo-form')?.scrollIntoView({ behavior: 'smooth' })
-		);
 	}
 
 	function onKindChange() {
@@ -140,6 +137,146 @@
 <h1>Settings</h1>
 
 <section class="panel">
+	<h2>Saved repositories</h2>
+	{#if profileStore.profiles.length === 0}
+		<p class="muted">No saved repositories yet. Add one from the home page.</p>
+	{:else}
+		<p class="muted hint">Drag the handle to reorder. The home page uses the same order.</p>
+		<ul class="profiles">
+			{#each profileStore.profiles as profile, index (profile.id)}
+				<li
+					class="card profile"
+					class:dragging={dragId === profile.id}
+					class:over={overId === profile.id && dragId !== profile.id}
+					ondragover={(event) => onDragOver(event, profile.id)}
+					ondrop={(event) => onDrop(event, profile.id)}
+				>
+					<button
+						type="button"
+						class="grip"
+						draggable="true"
+						data-grip={profile.id}
+						title="Drag to reorder (or use Arrow Up/Down)"
+						aria-label={`Reorder ${profile.name}`}
+						ondragstart={(event) => onDragStart(event, profile.id)}
+						ondragend={onDragEnd}
+						onkeydown={(event) => onGripKey(event, profile.id, index)}
+					>
+						<Icon name="grip" />
+					</button>
+					{#if editingId === profile.id}
+						<form onsubmit={save} class="form inline-form">
+							<div class="field">
+								<label class="label" for="input">Repository URL</label>
+								<input
+									id="input"
+									type="text"
+									bind:value={input}
+									placeholder="https://github.com/alice/recipes or alice/recipes"
+									autocomplete="off"
+									spellcheck="false"
+								/>
+							</div>
+							<div class="grid">
+								<div class="field">
+									<label class="label" for="name">Name</label>
+									<input id="name" type="text" bind:value={name} placeholder="My recipes" />
+								</div>
+								<div class="field">
+									<label class="label" for="kind">Forge</label>
+									<select id="kind" bind:value={kind} onchange={onKindChange}>
+										{#each kinds as option (option)}
+											<option value={option}>{FORGE_LABELS[option]}</option>
+										{/each}
+									</select>
+								</div>
+								<div class="field">
+									<label class="label" for="host">Host</label>
+									<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
+								</div>
+							</div>
+							<div class="grid">
+								<div class="field">
+									<label class="label" for="ref">Branch (optional)</label>
+									<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
+								</div>
+								<div class="field">
+									<label class="label" for="base">Sub-folder (optional)</label>
+									<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
+								</div>
+								<div class="field">
+									<label class="label" for="token">Access token (optional)</label>
+									<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
+								</div>
+							</div>
+							<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
+							{#if error}<p class="banner error" role="alert">{error}</p>{/if}
+							<div class="row">
+								<button class="primary" type="submit" disabled={!input.trim()}>Save changes</button>
+								<button type="button" onclick={reset}>Cancel</button>
+							</div>
+						</form>
+					{:else}
+						<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
+							<strong>{profile.name}</strong>
+							<span class="muted path">
+								{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
+								{#if profile.ref}@{profile.ref}{/if}
+								{#if profile.basePath}· {profile.basePath}{/if}
+							</span>
+							<span class="muted path">
+								{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
+							</span>
+						</a>
+					{/if}
+					<div class="row actions">
+						{#if editingId !== profile.id}
+							<button
+								type="button"
+								class="icon-button"
+								title="Edit"
+								aria-label="Edit"
+								disabled={editingId !== null}
+								onclick={() => startEdit(profile)}
+							>
+								<Icon name="edit" />
+							</button>
+							{#if profile.token}
+								<button
+									type="button"
+									class="icon-button"
+									title="Remove token"
+									aria-label="Remove token"
+									onclick={() => profileStore.clearToken(profile.id)}
+								>
+									<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<circle cx="5" cy="11" r="2.5" />
+										<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
+										<path d="M2 2l12 12" />
+									</svg>
+								</button>
+							{/if}
+						{/if}
+						<button
+							type="button"
+							class="icon-button danger-hover"
+							title="Delete"
+							aria-label="Delete"
+							onclick={() => {
+								profileStore.remove(profile.id);
+								if (editingId === profile.id) reset();
+							}}
+						>
+							<Icon name="trash" />
+						</button>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>
+
+<section class="panel">
 	<h2>Theme</h2>
 	<div class="card stack">
 		<div class="field">
@@ -194,148 +331,6 @@
 	</div>
 </section>
 
-<section class="panel">
-	<h2>Saved repositories</h2>
-	{#if profileStore.profiles.length === 0}
-		<p class="muted">No saved repositories yet. Add one from the home page.</p>
-	{:else}
-		<p class="muted hint">Drag the handle to reorder. The home page uses the same order.</p>
-		<ul class="profiles">
-			{#each profileStore.profiles as profile, index (profile.id)}
-				<li
-					class="card profile"
-					class:dragging={dragId === profile.id}
-					class:over={overId === profile.id && dragId !== profile.id}
-					ondragover={(event) => onDragOver(event, profile.id)}
-					ondrop={(event) => onDrop(event, profile.id)}
-				>
-					<button
-						type="button"
-						class="grip"
-						draggable="true"
-						data-grip={profile.id}
-						title="Drag to reorder (or use Arrow Up/Down)"
-						aria-label={`Reorder ${profile.name}`}
-						ondragstart={(event) => onDragStart(event, profile.id)}
-						ondragend={onDragEnd}
-						onkeydown={(event) => onGripKey(event, profile.id, index)}
-					>
-						<Icon name="grip" />
-					</button>
-					<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
-						<strong>{profile.name}</strong>
-						<span class="muted path">
-							{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
-							{#if profile.ref}@{profile.ref}{/if}
-							{#if profile.basePath}· {profile.basePath}{/if}
-						</span>
-						<span class="muted path">
-							{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
-						</span>
-					</a>
-					<div class="row actions">
-						<button type="button" class="icon-button" title="Edit" aria-label="Edit" onclick={() => startEdit(profile)}>
-							<Icon name="edit" />
-						</button>
-						{#if profile.token}
-							<button
-								type="button"
-								class="icon-button"
-								title="Remove token"
-								aria-label="Remove token"
-								onclick={() => profileStore.clearToken(profile.id)}
-							>
-								<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-									<circle cx="5" cy="11" r="2.5" />
-									<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
-									<path d="M2 2l12 12" />
-								</svg>
-							</button>
-						{/if}
-						<button
-							type="button"
-							class="icon-button danger-hover"
-							title="Delete"
-							aria-label="Delete"
-							onclick={() => profileStore.remove(profile.id)}
-						>
-							<Icon name="trash" />
-						</button>
-					</div>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
-
-{#if editingId}
-	<section class="panel" id="repo-form">
-		<h2>Edit repository</h2>
-
-		<form onsubmit={save} class="form card">
-			<div class="field">
-				<label class="label" for="input">Repository URL</label>
-				<input
-					id="input"
-					type="text"
-					bind:value={input}
-					placeholder="https://github.com/alice/recipes or alice/recipes"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</div>
-
-			<div class="grid">
-				<div class="field">
-					<label class="label" for="name">Name</label>
-					<input id="name" type="text" bind:value={name} placeholder="My recipes" />
-				</div>
-
-				<div class="field">
-					<label class="label" for="kind">Forge</label>
-					<select id="kind" bind:value={kind} onchange={onKindChange}>
-						{#each kinds as option (option)}
-							<option value={option}>{FORGE_LABELS[option]}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div class="field">
-					<label class="label" for="host">Host</label>
-					<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
-				</div>
-			</div>
-
-			<div class="grid">
-				<div class="field">
-					<label class="label" for="ref">Branch (optional)</label>
-					<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
-				</div>
-
-				<div class="field">
-					<label class="label" for="base">Sub-folder (optional)</label>
-					<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
-				</div>
-
-				<div class="field">
-					<label class="label" for="token">Access token (optional)</label>
-					<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
-				</div>
-			</div>
-			<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
-
-			{#if error}
-				<p class="banner error" role="alert">{error}</p>
-			{/if}
-
-			<div class="row">
-				<button class="primary" type="submit" disabled={!input.trim()}>Save changes</button>
-				<button type="button" onclick={reset}>Cancel</button>
-			</div>
-		</form>
-	</section>
-{/if}
-
 <style>
 	h2 {
 		font-size: 1rem;
@@ -360,6 +355,10 @@
 		gap: 0.6rem;
 		justify-content: space-between;
 		align-items: center;
+	}
+	.inline-form {
+		flex: 1;
+		min-width: 200px;
 	}
 	.profile:hover {
 		border-color: var(--accent);

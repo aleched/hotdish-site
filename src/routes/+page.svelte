@@ -5,9 +5,11 @@
 	import type { ForgeKind, RepoRef } from '$lib/forge/types';
 	import { encodeSrc } from '$lib/share/codec';
 	import { profileStore, profileToRef } from '$lib/store/profiles.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 
+	let isCreating = $state(false);
 	let input = $state('');
 	let name = $state('');
 	let kind = $state<ForgeKind>('github');
@@ -17,7 +19,8 @@
 	let token = $state('');
 	let error = $state<string | null>(null);
 
-	function reset() {
+	function startCreate() {
+		isCreating = true;
 		input = '';
 		name = '';
 		kind = 'github';
@@ -25,6 +28,11 @@
 		gitRef = '';
 		basePath = '';
 		token = '';
+		error = null;
+	}
+
+	function cancelCreate() {
+		isCreating = false;
 		error = null;
 	}
 
@@ -51,10 +59,11 @@
 		}
 	}
 
-	function add() {
+	async function save(event: SubmitEvent) {
+		event.preventDefault();
 		const ref = buildRef();
 		if (!ref) return;
-		profileStore.save({
+		const profile = profileStore.save({
 			name: name.trim() || `${ref.owner}/${ref.repo}`,
 			kind: ref.kind,
 			host: ref.host,
@@ -64,19 +73,7 @@
 			basePath: ref.basePath || undefined,
 			token: token.trim() || undefined
 		});
-		reset();
-	}
-
-	function open() {
-		const ref = buildRef();
-		if (!ref) return;
-		profileStore.setSessionToken(ref, token.trim() || undefined);
-		void goto(`/r/${encodeSrc(ref)}`);
-	}
-
-	function submit(event: SubmitEvent) {
-		event.preventDefault();
-		open();
+		await goto(`/r/${encodeSrc(profileToRef(profile))}`);
 	}
 </script>
 
@@ -84,93 +81,94 @@
 	<title>Hotdish — recipes from any git repository</title>
 </svelte:head>
 
-{#if profileStore.profiles.length > 0}
-	<section class="panel">
+<section class="panel">
+	<div class="section-heading">
 		<h2>Saved repositories</h2>
-		<ul class="profiles">
-			{#each profileStore.profiles as profile (profile.id)}
-				<li class="card profile">
-					<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
-						<strong>{profile.name}</strong>
-						<span class="muted path">
-							{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
-							{#if profile.ref}@{profile.ref}{/if}
-							{#if profile.basePath}· {profile.basePath}{/if}
-						</span>
-						<span class="muted path">
-							{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
-						</span>
-					</a>
-				</li>
-			{/each}
-		</ul>
-	</section>
-{/if}
+		<button
+			type="button"
+			class="icon-button"
+			title="Add saved repository"
+			aria-label="Add saved repository"
+			disabled={isCreating}
+			onclick={startCreate}
+		>
+			<Icon name="plus" />
+		</button>
+	</div>
+	<ul class="profiles">
+		{#if isCreating}
+			<li class="card profile editing">
+				<form onsubmit={save} class="form">
+					<div class="field">
+						<label class="label" for="input">Repository URL</label>
+						<input
+							id="input"
+							type="text"
+							bind:value={input}
+							placeholder="https://github.com/alice/recipes or alice/recipes"
+							autocomplete="off"
+							spellcheck="false"
+						/>
+					</div>
 
-<section class="panel" id="repo-form">
-	<h2>Add or open a repository</h2>
+					<div class="grid">
+						<div class="field">
+							<label class="label" for="name">Name</label>
+							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
+						</div>
+						<div class="field">
+							<label class="label" for="kind">Forge</label>
+							<select id="kind" bind:value={kind} onchange={onKindChange}>
+								{#each kinds as option (option)}
+									<option value={option}>{FORGE_LABELS[option]}</option>
+								{/each}
+							</select>
+						</div>
+						<div class="field">
+							<label class="label" for="host">Host</label>
+							<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
+						</div>
+					</div>
 
-	<form onsubmit={submit} class="form card">
-		<div class="field">
-			<label class="label" for="input">Repository URL</label>
-			<input
-				id="input"
-				type="text"
-				bind:value={input}
-				placeholder="https://github.com/alice/recipes or alice/recipes"
-				autocomplete="off"
-				spellcheck="false"
-			/>
-		</div>
-
-		<div class="grid">
-			<div class="field">
-				<label class="label" for="name">Name</label>
-				<input id="name" type="text" bind:value={name} placeholder="My recipes" />
-			</div>
-
-			<div class="field">
-				<label class="label" for="kind">Forge</label>
-				<select id="kind" bind:value={kind} onchange={onKindChange}>
-					{#each kinds as option (option)}
-						<option value={option}>{FORGE_LABELS[option]}</option>
-					{/each}
-				</select>
-			</div>
-
-			<div class="field">
-				<label class="label" for="host">Host</label>
-				<input id="host" type="text" bind:value={host} placeholder={DEFAULT_HOSTS[kind]} />
-			</div>
-		</div>
-
-		<div class="grid">
-			<div class="field">
-				<label class="label" for="ref">Branch (optional)</label>
-				<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
-			</div>
-
-			<div class="field">
-				<label class="label" for="base">Sub-folder (optional)</label>
-				<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
-			</div>
-
-			<div class="field">
-				<label class="label" for="token">Access token (optional)</label>
-				<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
-			</div>
-		</div>
-		<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
-
-		{#if error}
-			<p class="banner error" role="alert">{error}</p>
+					<div class="grid">
+						<div class="field">
+							<label class="label" for="ref">Branch (optional)</label>
+							<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
+						</div>
+						<div class="field">
+							<label class="label" for="base">Sub-folder (optional)</label>
+							<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
+						</div>
+						<div class="field">
+							<label class="label" for="token">Access token (optional)</label>
+							<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
+						</div>
+					</div>
+					<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>
+					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
+					<div class="row">
+						<button class="primary" type="submit" disabled={!input.trim()}>Save and open</button>
+						<button type="button" onclick={cancelCreate}>Cancel</button>
+					</div>
+				</form>
+			</li>
 		{/if}
-
-		<div class="row">
-			<button class="primary" type="button" onclick={add} disabled={!input.trim()}>Add</button>
-			<button type="submit" disabled={!input.trim()}>Open</button>
-		</div>
-	</form>
+		{#each profileStore.profiles as profile (profile.id)}
+			<li class="card profile">
+				<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
+					<strong>{profile.name}</strong>
+					<span class="muted path">
+						{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
+						{#if profile.ref}@{profile.ref}{/if}
+						{#if profile.basePath}· {profile.basePath}{/if}
+					</span>
+					<span class="muted path">
+						{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
+					</span>
+				</a>
+			</li>
+		{/each}
+	</ul>
 </section>
 
 <style>
@@ -181,6 +179,15 @@
 
 	.panel {
 		margin-bottom: 2rem;
+	}
+	.section-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.5rem;
+	}
+	.section-heading h2 {
+		margin: 0;
 	}
 
 	.profiles {
@@ -197,6 +204,9 @@
 		gap: 0.6rem;
 		justify-content: space-between;
 		align-items: center;
+	}
+	.profile.editing {
+		display: block;
 	}
 	.profile:hover {
 		border-color: var(--accent);
