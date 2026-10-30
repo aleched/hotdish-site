@@ -130,14 +130,36 @@
 						</span>
 					</a>
 					<div class="row actions">
-						<button type="button" onclick={() => startEdit(profile)}>Edit</button>
+						<button type="button" title="Edit" aria-label="Edit" onclick={() => startEdit(profile)}>
+							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M11.2 2.3a1.5 1.5 0 0 1 2.1 0l.4.4a1.5 1.5 0 0 1 0 2.1L5.4 13.1 2 14l.9-3.4z" />
+								<path d="M10 3.5l2.5 2.5" />
+							</svg>
+						</button>
 						{#if profile.token}
-							<button type="button" onclick={() => profileStore.clearToken(profile.id)}>
-								Remove token
+							<button
+								type="button"
+								title="Remove token"
+								aria-label="Remove token"
+								onclick={() => profileStore.clearToken(profile.id)}
+							>
+								<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<circle cx="5" cy="11" r="2.5" />
+									<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
+									<path d="M2 2l12 12" />
+								</svg>
 							</button>
 						{/if}
-						<button type="button" class="danger" onclick={() => profileStore.remove(profile.id)}>
-							Delete
+						<button
+							type="button"
+							class="danger"
+							title="Delete"
+							aria-label="Delete"
+							onclick={() => profileStore.remove(profile.id)}
+						>
+							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4.5M9.5 6.5v4.5" />
+							</svg>
 						</button>
 					</div>
 				</li>

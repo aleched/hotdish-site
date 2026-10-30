@@ -205,7 +205,17 @@
 				<Breadcrumbs {src} {path} {rootLabel} />
 				<div class="head-actions">
 					{#if entry && !editing}
-						<a class="button-link" href={`/r/${src}/${encodeURI(path)}?edit`}>Edit</a>
+						<a
+							class="button-link icon-link"
+							href={`/r/${src}/${encodeURI(path)}?edit`}
+							title="Edit"
+							aria-label="Edit"
+						>
+							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M11.2 2.3a1.5 1.5 0 0 1 2.1 0l.4.4a1.5 1.5 0 0 1 0 2.1L5.4 13.1 2 14l.9-3.4z" />
+								<path d="M10 3.5l2.5 2.5" />
+							</svg>
+						</a>
 					{:else if folder && repoStore.provider?.authenticated}
 						<button type="button" onclick={() => (creatingNew = !creatingNew)}>
 							{creatingNew ? 'Cancel' : 'New recipe'}
@@ -377,6 +387,11 @@
 		color: var(--text);
 		background: var(--surface);
 		font-size: 0.9rem;
+	}
+	.icon-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.button-link:hover {
 		text-decoration: none;
