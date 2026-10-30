@@ -1,3 +1,4 @@
+import { rateLimitStore } from '$lib/store/rateLimit.svelte';
 import { ForgeError, networkError } from './errors';
 import type { ForgeKind, RateLimitInfo } from './types';
 
@@ -38,6 +39,11 @@ export async function forgeFetch(
 	if (response.status === 403 || response.status === 429) {
 		const remaining = readInt(response.headers, 'x-ratelimit-remaining');
 		if (remaining === 0 || response.status === 429) {
+			rateLimitStore.report({
+				kind: ctx.kind,
+				host: ctx.host,
+				resetAt: readRateLimit(response.headers)?.resetAt ?? null
+			});
 			throw new ForgeError('rate-limit', 'Rate limit exceeded.', {
 				status: response.status,
 				hint: 'Add a personal access token in Settings to raise the limit, or wait for the window to reset.'

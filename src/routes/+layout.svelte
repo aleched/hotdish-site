@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
+	import RateLimitPrompt from '$lib/ui/RateLimitPrompt.svelte';
 
 	let { children } = $props();
 
@@ -48,6 +49,8 @@
 		{@render children()}
 	</main>
 </div>
+
+<RateLimitPrompt />
 
 <style>
 	.shell {

@@ -11,7 +11,7 @@
 
 	let { value = $bindable(), id = 'folder-picker', label = 'Folder' }: Props = $props();
 
-	const listId = `${id}-options`;
+	let listId = $derived(`${id}-options`);
 
 	let normalized = $derived(normalizeFolder(value));
 	let invalid = $derived(folderError(value));
