@@ -10,10 +10,11 @@
 
 	let copied = $state(false);
 	let failed = $state(false);
+	let toast = $state<string | null>(null);
 	let timer: ReturnType<typeof setTimeout> | undefined;
+	let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 	let shareUrl = $derived(`${$page.url.origin}${$page.url.pathname}`);
-	let usesToken = $derived(repoStore.provider?.authenticated ?? false);
 
 	async function copy() {
 		failed = false;
@@ -25,6 +26,29 @@
 		} catch {
 			failed = true;
 		}
+		void warnIfPrivate();
+	}
+
+	/** Recipients of a link to a non-public repository cannot open it without their own access. */
+	async function warnIfPrivate() {
+		const isPublic = await repoStore.isPublic();
+		if (isPublic) return;
+		showToast(
+			isPublic === false
+				? 'This repository is private, so people you share this link with will need their own access to open it. Your token is never included in the link.'
+				: 'Could not confirm whether this repository is public. If it is private, people you share this link with will need their own access. Your token is never included in the link.'
+		);
+	}
+
+	function showToast(message: string) {
+		toast = message;
+		clearTimeout(toastTimer);
+		toastTimer = setTimeout(() => (toast = null), 8000);
+	}
+
+	function dismissToast() {
+		clearTimeout(toastTimer);
+		toast = null;
 	}
 </script>
 
@@ -77,11 +101,15 @@
 		<input class="fallback" type="text" readonly value={shareUrl} aria-label="Share link" />
 	{/if}
 
-	{#if usesToken}
-		<p class="muted note">
-			This link contains only the repository and path — never your token. Anyone you share it
-			with will need their own access if the repository is private.
-		</p>
+	{#if toast}
+		<div class="toast" role="status">
+			<p>{toast}</p>
+			<button type="button" class="ghost close" aria-label="Dismiss" onclick={dismissToast}>
+				<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+					<path d="M4 4l8 8M12 4l-8 8" />
+				</svg>
+			</button>
+		</div>
 	{/if}
 </div>
 
@@ -124,11 +152,39 @@
 	.split > .part + .part {
 		margin-left: -1px;
 	}
-	.note {
-		font-size: 0.75rem;
-		max-width: 28ch;
-		text-align: right;
+	.toast {
+		position: fixed;
+		left: 50%;
+		bottom: 1.25rem;
+		transform: translateX(-50%);
+		z-index: 100;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		width: min(440px, calc(100vw - 2rem));
+		padding: 0.7rem 0.6rem 0.7rem 0.9rem;
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--warn);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
+		font-size: 0.88rem;
+		animation: toast-in 0.15s ease-out;
+	}
+	.toast p {
 		margin: 0;
+		flex: 1;
+	}
+	.close {
+		display: inline-flex;
+		padding: 0.2rem;
+		line-height: 0;
+	}
+	@keyframes toast-in {
+		from {
+			opacity: 0;
+			transform: translate(-50%, 0.5rem);
+		}
 	}
 	.fallback {
 		font-size: 0.8rem;

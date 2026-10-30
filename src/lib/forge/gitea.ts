@@ -15,6 +15,8 @@ import type {
 
 interface GiteaRepo {
 	default_branch: string;
+	private?: boolean;
+	internal?: boolean;
 }
 
 interface GiteaTreeEntry {
@@ -97,6 +99,15 @@ export class GiteaProvider implements ForgeProvider {
 			this.#ctx
 		);
 		return repo.default_branch;
+	}
+
+	async isPublic(): Promise<boolean> {
+		const repo = await forgeFetchJson<GiteaRepo>(
+			`${this.#apiBase}/repos/${this.#slug}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		return repo.private === false && !repo.internal;
 	}
 
 	async listTree(ref: string): Promise<TreeResult> {

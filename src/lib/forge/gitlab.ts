@@ -14,6 +14,7 @@ import type {
 
 interface GlProject {
 	default_branch: string;
+	visibility?: 'public' | 'internal' | 'private';
 }
 
 interface GlTreeEntry {
@@ -95,6 +96,16 @@ export class GitLabProvider implements ForgeProvider {
 			this.#ctx
 		);
 		return project.default_branch;
+	}
+
+	async isPublic(): Promise<boolean> {
+		const project = await forgeFetchJson<GlProject>(
+			`${this.#apiBase}/projects/${this.#projectId}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		// "internal" projects are visible only to signed-in users of the instance.
+		return project.visibility === 'public';
 	}
 
 	async listTree(ref: string): Promise<TreeResult> {

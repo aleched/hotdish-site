@@ -71,6 +71,8 @@ export interface ForgeProvider {
 	readonly authenticated: boolean;
 
 	resolveDefaultBranch(): Promise<string>;
+	/** True when anyone can read the repository without signing in. */
+	isPublic(): Promise<boolean>;
 	listTree(ref: string): Promise<TreeResult>;
 	readFile(path: string, ref: string): Promise<string>;
 	writeFile(args: WriteArgs): Promise<WriteResult>;

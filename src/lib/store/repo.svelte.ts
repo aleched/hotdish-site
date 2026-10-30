@@ -50,6 +50,7 @@ class RepoStore {
 	#token: string | undefined;
 	#docs = new Map<string, RecipeDoc>();
 	#loadToken = 0;
+	#visibility: Promise<boolean | null> | null = null;
 
 	get provider(): ForgeProvider | null {
 		return this.#provider;
@@ -148,6 +149,7 @@ class RepoStore {
 		this.template = null;
 		this.templateError = null;
 		this.#docs.clear();
+		this.#visibility = null;
 
 		const provider = createProvider(ref, token);
 		this.#provider = provider;
@@ -186,6 +188,22 @@ class RepoStore {
 	async reload(): Promise<void> {
 		if (!this.ref) return;
 		await this.load(this.ref, this.#token, { force: true });
+	}
+
+	/**
+	 * Whether the repository is readable without a token, or null if that could not be
+	 * determined. Cached per load, since visibility rarely changes.
+	 */
+	isPublic(): Promise<boolean | null> {
+		const provider = this.#provider;
+		if (!provider) return Promise.resolve(null);
+		// Loading without a token already proves the repository is public.
+		if (!provider.authenticated && this.status === 'ready') return Promise.resolve(true);
+		this.#visibility ??= provider.isPublic().catch(() => {
+			this.#visibility = null;
+			return null;
+		});
+		return this.#visibility;
 	}
 
 	entryFor(path: string): BlobEntry | undefined {

@@ -15,6 +15,8 @@ import type {
 
 interface GhRepo {
 	default_branch: string;
+	private?: boolean;
+	visibility?: 'public' | 'private' | 'internal';
 }
 
 interface GhTreeEntry {
@@ -102,6 +104,16 @@ export class GitHubProvider implements ForgeProvider {
 			this.#ctx
 		);
 		return repo.default_branch;
+	}
+
+	async isPublic(): Promise<boolean> {
+		const repo = await forgeFetchJson<GhRepo>(
+			`${this.#apiBase}/repos/${this.#slug}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		// Enterprise "internal" repos report private: false but still need an account.
+		return repo.visibility ? repo.visibility === 'public' : repo.private === false;
 	}
 
 	async listTree(ref: string): Promise<TreeResult> {
