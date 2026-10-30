@@ -45,7 +45,7 @@ class RepoStore {
 	selectedTags = $state<string[]>([]);
 	selectedFolder = $state('');
 
-	#provider: ForgeProvider | null = null;
+	#provider = $state<ForgeProvider | null>(null);
 	#key: string | null = null;
 	#token: string | undefined;
 	#docs = new Map<string, RecipeDoc>();
@@ -228,6 +228,41 @@ class RepoStore {
 		const doc = parseRecipe(entry, raw);
 		this.#docs.set(sha, doc);
 		this.recipes = [...this.recipes, toSummary(doc)];
+	}
+
+	removeFile(path: string): void {
+		this.entries = this.entries.filter((entry) => entry.path !== path);
+		this.recipes = this.recipes.filter((recipe) => recipe.path !== path);
+	}
+
+	/** Moves are content-preserving, so the blob sha (and cached raw text) carry over. */
+	renameFile(from: string, to: string): void {
+		const entry = this.entryFor(from);
+		if (!entry) return;
+		const sha = entry.sha;
+		this.entries = [...this.entries.filter((item) => item.path !== from), { ...entry, path: to }];
+
+		const cached = this.#docs.get(sha);
+		if (cached) {
+			const doc = parseRecipe({ path: to, sha }, cached.raw);
+			this.#docs.set(sha, doc);
+			this.recipes = [...this.recipes.filter((recipe) => recipe.path !== from), toSummary(doc)];
+		} else {
+			this.recipes = this.recipes.map((recipe) =>
+				recipe.path === from ? { ...recipe, path: to } : recipe
+			);
+		}
+	}
+
+	/**
+	 * Swaps in an authenticated provider without reloading, so adding a token mid-session
+	 * keeps the index and open recipe intact.
+	 */
+	setToken(token: string): void {
+		if (!this.ref) return;
+		this.#token = token;
+		this.#key = storeKey(this.ref, token);
+		this.#provider = createProvider(this.ref, token);
 	}
 
 	async #readEntry(entry: BlobEntry): Promise<string> {

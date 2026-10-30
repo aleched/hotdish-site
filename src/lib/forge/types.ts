@@ -45,6 +45,25 @@ export interface WriteResult {
 	sha?: string;
 }
 
+export interface DeleteArgs {
+	path: string;
+	/** Value from `resolveWriteBase`, guarding against deleting a newer version. */
+	baseSha?: string;
+	message: string;
+	branch: string;
+}
+
+export interface MoveArgs {
+	from: string;
+	to: string;
+	/** Current file content; forges that cannot move without re-sending it need this. */
+	content: string;
+	/** Value from `resolveWriteBase` for `from`. */
+	baseSha?: string;
+	message: string;
+	branch: string;
+}
+
 export interface ForgeProvider {
 	readonly kind: ForgeKind;
 	readonly ref: RepoRef;
@@ -55,6 +74,9 @@ export interface ForgeProvider {
 	listTree(ref: string): Promise<TreeResult>;
 	readFile(path: string, ref: string): Promise<string>;
 	writeFile(args: WriteArgs): Promise<WriteResult>;
+	deleteFile(args: DeleteArgs): Promise<void>;
+	/** Moves or renames a file in a single commit. The content is unchanged. */
+	moveFile(args: MoveArgs): Promise<void>;
 
 	/**
 	 * Returns the value to send as the write precondition. GitHub and Gitea use the blob sha

@@ -56,6 +56,28 @@ class HistoryStore {
 		this.items = [];
 		this.#key = null;
 	}
+
+	async forget(ref: RepoRef, path: string): Promise<void> {
+		await this.load(ref);
+		await this.#save(this.items.filter((item) => item.path !== path));
+	}
+
+	async rename(ref: RepoRef, from: string, to: string): Promise<void> {
+		await this.load(ref);
+		await this.#save(this.items.map((item) => (item.path === from ? { ...item, path: to } : item)));
+	}
+
+	async #save(next: HistoryItem[]): Promise<void> {
+		const key = this.#key;
+		if (!key) return;
+		this.items = next;
+		if (!browser) return;
+		try {
+			await set(key, $state.snapshot(next));
+		} catch {
+			// Quota or blocked storage; the in-memory list still works this session.
+		}
+	}
 }
 
 export const historyStore = new HistoryStore();

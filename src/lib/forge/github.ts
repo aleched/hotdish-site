@@ -3,7 +3,9 @@ import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import type {
 	BlobEntry,
+	DeleteArgs,
 	ForgeProvider,
+	MoveArgs,
 	RateLimitInfo,
 	RepoRef,
 	TreeResult,
@@ -163,6 +165,103 @@ export class GitHubProvider implements ForgeProvider {
 		);
 
 		return { sha: result.content?.sha };
+	}
+
+	#requireToken(): void {
+		if (!this.#token) {
+			throw new ForgeError('auth', 'Saving requires an access token.', {
+				hint: 'Add a token with Contents: Read and write permission in Settings.'
+			});
+		}
+	}
+
+	async deleteFile(args: DeleteArgs): Promise<void> {
+		this.#requireToken();
+		await forgeFetch(
+			`${this.#apiBase}/repos/${this.#slug}/contents/${encodePath(args.path)}`,
+			{
+				method: 'DELETE',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({ message: args.message, sha: args.baseSha, branch: args.branch })
+			},
+			this.#ctx
+		);
+	}
+
+	/**
+	 * The contents API cannot move files, so this builds the commit by hand: a new tree that
+	 * adds the blob at `to` and removes `from`, then a fast-forward-only ref update.
+	 */
+	async moveFile(args: MoveArgs): Promise<void> {
+		this.#requireToken();
+		const repoBase = `${this.#apiBase}/repos/${this.#slug}`;
+		const json = { headers: this.#headers({ 'Content-Type': 'application/json' }) };
+
+		const ref = await forgeFetchJson<{ object: { sha: string } }>(
+			`${repoBase}/git/ref/heads/${encodePath(args.branch)}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		const headSha = ref.object.sha;
+
+		const current = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/contents/${encodePath(args.from)}?ref=${encodeURIComponent(headSha)}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		if (args.baseSha && current.sha !== args.baseSha) {
+			throw new ForgeError('conflict', 'The file changed since it was loaded.', {
+				hint: 'Reload the recipe to pick up the newer version before moving it.'
+			});
+		}
+
+		const commit = await forgeFetchJson<{ tree: { sha: string } }>(
+			`${repoBase}/git/commits/${headSha}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+
+		const tree = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/git/trees`,
+			{
+				...json,
+				method: 'POST',
+				body: JSON.stringify({
+					base_tree: commit.tree.sha,
+					tree: [
+						{ path: args.to, mode: '100644', type: 'blob', sha: current.sha },
+						{ path: args.from, mode: '100644', type: 'blob', sha: null }
+					]
+				})
+			},
+			this.#ctx
+		);
+
+		const created = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/git/commits`,
+			{
+				...json,
+				method: 'POST',
+				body: JSON.stringify({ message: args.message, tree: tree.sha, parents: [headSha] })
+			},
+			this.#ctx
+		);
+
+		try {
+			await forgeFetch(
+				`${repoBase}/git/refs/heads/${encodePath(args.branch)}`,
+				{ ...json, method: 'PATCH', body: JSON.stringify({ sha: created.sha, force: false }) },
+				this.#ctx
+			);
+		} catch (error) {
+			// A non-fast-forward update means someone else pushed in the meantime.
+			if (error instanceof ForgeError && error.kind === 'invalid') {
+				throw new ForgeError('conflict', 'The branch changed while moving the file.', {
+					hint: 'Reload the repository and try again.'
+				});
+			}
+			throw error;
+		}
 	}
 }
 

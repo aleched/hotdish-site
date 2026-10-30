@@ -15,6 +15,13 @@
 	import TagFilter from '$lib/ui/TagFilter.svelte';
 	import { findFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
+	import { untrack } from 'svelte';
+	import { parentFolder } from '$lib/paths';
+	import { authStore } from '$lib/store/auth.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
+	import TokenPrompt from '$lib/ui/TokenPrompt.svelte';
+	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
+	import MoveRecipe from '$lib/editor/MoveRecipe.svelte';
 
 	let src = $derived($page.params.src ?? '');
 
@@ -82,7 +89,43 @@
 	let doc = $state<RecipeDoc | null>(null);
 	let docError = $state<string | null>(null);
 	let docLoading = $state(false);
-	let creatingNew = $state(false);
+	/** Folder preselected in the open "New recipe" dialog, or null when it is closed. */
+	let newIn = $state<string | null>(null);
+	let recipeDialog = $state<'move' | 'delete' | null>(null);
+
+	let canWrite = $derived(repoStore.provider?.authenticated ?? false);
+	let currentFolder = $derived(entry ? parentFolder(path) : folder ? path : '');
+
+	/** Runs a write action, first asking for an access token if none is configured. */
+	async function withToken(action: () => void) {
+		if (await authStore.requireToken()) action();
+	}
+
+	function openCreate(folderPath: string) {
+		void withToken(() => (newIn = folderPath));
+	}
+
+	function startEdit(event: MouseEvent) {
+		if (canWrite) return;
+		event.preventDefault();
+		void withToken(() => goto(`/r/${src}/${encodeURI(path)}?edit`));
+	}
+
+	// An ?edit link opened without a token asks for one; cancelling falls back to viewing.
+	$effect(() => {
+		if (!editing || !entry || canWrite || repoStore.status !== 'ready') return;
+		const viewUrl = `/r/${src}/${encodeURI(path)}`;
+		untrack(() => {
+			void authStore.requireToken().then((ok) => {
+				if (!ok) void goto(viewUrl, { replaceState: true });
+			});
+		});
+	});
+
+	$effect(() => {
+		void path;
+		recipeDialog = null;
+	});
 
 	$effect(() => {
 		const target = entry;
@@ -169,6 +212,21 @@
 				</p>
 			{/if}
 
+			{#if repoStore.status === 'ready'}
+				<div class="side-head">
+					<span class="side-label">Recipes</span>
+					<button
+						type="button"
+						class="icon-button"
+						title="New recipe"
+						aria-label="New recipe"
+						onclick={() => openCreate(currentFolder)}
+					>
+						<Icon name="plus" size={14} />
+					</button>
+				</div>
+			{/if}
+
 			{#if repoStore.tree.children.length > 0}
 				<FolderTree
 					node={repoStore.tree}
@@ -210,15 +268,39 @@
 							href={`/r/${src}/${encodeURI(path)}?edit`}
 							title="Edit"
 							aria-label="Edit"
+							onclick={startEdit}
 						>
-							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-								<path d="M11.2 2.3a1.5 1.5 0 0 1 2.1 0l.4.4a1.5 1.5 0 0 1 0 2.1L5.4 13.1 2 14l.9-3.4z" />
-								<path d="M10 3.5l2.5 2.5" />
-							</svg>
+							<Icon name="edit" />
 						</a>
-					{:else if folder && repoStore.provider?.authenticated}
-						<button type="button" onclick={() => (creatingNew = !creatingNew)}>
-							{creatingNew ? 'Cancel' : 'New recipe'}
+						<button
+							type="button"
+							class="icon-button"
+							title="Move or rename"
+							aria-label="Move or rename"
+							disabled={!doc}
+							onclick={() => withToken(() => (recipeDialog = 'move'))}
+						>
+							<Icon name="move" />
+						</button>
+						<button
+							type="button"
+							class="icon-button danger-hover"
+							title="Delete"
+							aria-label="Delete"
+							disabled={!doc}
+							onclick={() => withToken(() => (recipeDialog = 'delete'))}
+						>
+							<Icon name="trash" />
+						</button>
+					{:else if folder && !showRecent}
+						<button
+							type="button"
+							class="icon-button"
+							title="New recipe"
+							aria-label="New recipe"
+							onclick={() => openCreate(path)}
+						>
+							<Icon name="plus" />
 						</button>
 					{/if}
 					<ShareButton source={sourceLink} />
@@ -239,20 +321,24 @@
 					<p class="muted">Loading recipe…</p>
 				{:else if doc}
 					{#if editing}
-						{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-							<p class="muted">Loading editor…</p>
-						{:then module}
-							{@const Editor = module.default}
-							{#key doc.sha}
-								<Editor {doc} onclose={() => goto(`/r/${src}/${encodeURI(path)}`)} />
-							{/key}
-						{:catch error}
-							<p class="banner error">
-								The editor could not be loaded ({error instanceof Error
-									? error.message
-									: String(error)}).
-							</p>
-						{/await}
+						{#if !canWrite}
+							<p class="muted">An access token is needed to edit this recipe.</p>
+						{:else}
+							{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
+								<p class="muted">Loading editor…</p>
+							{:then module}
+								{@const Editor = module.default}
+								{#key doc.sha}
+									<Editor {doc} onclose={() => goto(`/r/${src}/${encodeURI(path)}`)} />
+								{/key}
+							{:catch error}
+								<p class="banner error">
+									The editor could not be loaded ({error instanceof Error
+										? error.message
+										: String(error)}).
+								</p>
+							{/await}
+						{/if}
 					{:else}
 						<RecipeView {doc} />
 					{/if}
@@ -260,22 +346,18 @@
 			{:else if folder}
 				<h1 class="folder-title">{path ? folder.name : rootLabel}</h1>
 
-				{#if creatingNew}
-					{#await import('$lib/editor/NewRecipe.svelte')}
-						<p class="muted">Loading…</p>
-					{:then module}
-						{@const NewRecipe = module.default}
-						<div class="new-wrap">
-							<NewRecipe folderPath={path} {src} onclose={() => (creatingNew = false)} />
-						</div>
-					{:catch error}
-						<p class="banner error">
-							Could not load the form ({error instanceof Error ? error.message : String(error)}).
-						</p>
-					{/await}
-				{/if}
-
 				{#if showRecent}
+					<div class="recent-actions">
+						<button
+							type="button"
+							class="icon-button"
+							title="New recipe"
+							aria-label="New recipe"
+							onclick={() => openCreate('')}
+						>
+							<Icon name="plus" />
+						</button>
+					</div>
 					<h2 class="recent-title">Recently viewed</h2>
 					{#if recentItems.length > 0}
 						<ul class="cards">
@@ -331,6 +413,23 @@
 			{/if}
 		</section>
 	</div>
+
+	{#if newIn !== null}
+		{#await import('$lib/editor/NewRecipe.svelte') then module}
+			{@const NewRecipe = module.default}
+			<NewRecipe folderPath={newIn} {src} onclose={() => (newIn = null)} />
+		{/await}
+	{/if}
+
+	{#if doc && entry && recipeDialog === 'move'}
+		<MoveRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
+	{:else if doc && entry && recipeDialog === 'delete'}
+		<DeleteRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
+	{/if}
+
+	{#if authStore.prompting}
+		<TokenPrompt />
+	{/if}
 {/if}
 
 <style>
@@ -403,9 +502,26 @@
 		font-size: 1.4rem;
 	}
 
-	.new-wrap {
-		margin-bottom: 1rem;
-		max-width: 520px;
+	.recent-actions {
+		display: flex;
+		margin-bottom: 0.75rem;
+	}
+
+	.side-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.4rem;
+	}
+	.side-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-dim);
+	}
+	.side-head .icon-button {
+		padding: 0.25rem 0.4rem;
 	}
 
 	.cards {

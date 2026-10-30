@@ -78,6 +78,28 @@ class ProfileStore {
 		return this.profiles.find((profile) => refMatchesProfile(ref, profile));
 	}
 
+	/** Stores a token for a repository, creating a saved profile for it if there is none. */
+	saveTokenFor(ref: RepoRef, token: string): void {
+		const existing = this.profileFor(ref);
+		if (existing) {
+			existing.token = token;
+		} else {
+			this.profiles.push({
+				id: crypto.randomUUID(),
+				name: `${ref.owner}/${ref.repo}`,
+				kind: ref.kind,
+				host: ref.host,
+				owner: ref.owner,
+				repo: ref.repo,
+				ref: ref.ref,
+				basePath: ref.basePath,
+				token
+			});
+		}
+		this.#sessionTokens.delete(sessionKey(ref));
+		this.#persist();
+	}
+
 	save(profile: Omit<Profile, 'id'> & { id?: string }): Profile {
 		const id = profile.id ?? crypto.randomUUID();
 		const next: Profile = { ...profile, id };

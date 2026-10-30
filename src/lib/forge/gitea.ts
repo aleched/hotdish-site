@@ -3,7 +3,9 @@ import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import type {
 	BlobEntry,
+	DeleteArgs,
 	ForgeProvider,
+	MoveArgs,
 	RateLimitInfo,
 	RepoRef,
 	TreeResult,
@@ -163,6 +165,63 @@ export class GiteaProvider implements ForgeProvider {
 		);
 
 		return { sha: result.content?.sha };
+	}
+
+	#requireToken(): void {
+		if (!this.#token) {
+			throw new ForgeError('auth', 'Saving requires an access token.', {
+				hint: 'Add a Gitea token with repository write access in Settings.'
+			});
+		}
+	}
+
+	async deleteFile(args: DeleteArgs): Promise<void> {
+		this.#requireToken();
+		await forgeFetch(
+			`${this.#apiBase}/repos/${this.#slug}/contents/${encodePath(args.path)}`,
+			{
+				method: 'DELETE',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({ message: args.message, sha: args.baseSha, branch: args.branch })
+			},
+			this.#ctx
+		);
+	}
+
+	/** Uses the multi-file ChangeFiles endpoint, available from Gitea 1.20 / Forgejo 1.20. */
+	async moveFile(args: MoveArgs): Promise<void> {
+		this.#requireToken();
+		try {
+			await forgeFetch(
+				`${this.#apiBase}/repos/${this.#slug}/contents`,
+				{
+					method: 'POST',
+					headers: this.#headers({ 'Content-Type': 'application/json' }),
+					body: JSON.stringify({
+						message: args.message,
+						branch: args.branch,
+						files: [
+							{
+								operation: 'update',
+								path: args.to,
+								from_path: args.from,
+								content: utf8ToBase64(args.content),
+								sha: args.baseSha
+							}
+						]
+					})
+				},
+				this.#ctx
+			);
+		} catch (error) {
+			if (error instanceof ForgeError && (error.status === 404 || error.status === 405)) {
+				throw new ForgeError('unknown', 'The file could not be moved.', {
+					status: error.status,
+					hint: 'The file may have been removed, or the server is older than Gitea / Forgejo 1.20, which is needed for moving files.'
+				});
+			}
+			throw error;
+		}
 	}
 }
 

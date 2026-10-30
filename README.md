@@ -9,6 +9,8 @@ reads the files directly from the forge's API in your browser, and renders them.
 - **Hosting:** Cloudflare Pages (static output, no functions required).
 - **Editing:** a Milkdown/Crepe WYSIWYG, a markdown source view, and an optional template-driven
   form — all writing idiomatic markdown back to your repository.
+- **Managing recipes:** create, delete, and move or rename recipes between folders (new folders are
+  created as needed). Every change is a commit with an editable message.
 
 ## Getting started
 
@@ -71,8 +73,10 @@ servings: 8
 
 ## Access tokens
 
-A token is only needed for private repositories or for saving edits.
+A token is only needed for private repositories or for making changes.
 
+- If you create, edit, move or delete a recipe without a token, the site asks for one, checks it
+  against the forge, saves it to that repository's profile and then continues with the action.
 - Tokens are stored in `localStorage` under a named profile and sent only to the forge they
   belong to.
 - A token is **never** put in a URL. URLs leak through history, `Referer` headers, link previews
@@ -89,6 +93,8 @@ Recommended scopes:
 | GitHub | Fine-grained PAT scoped to the one repository, **Contents: Read** (or Read and write) |
 | GitLab | Project access token with `read_repository` (or `write_repository`) |
 | Gitea | Token limited to repository read (or write) |
+
+Moving a recipe is a single commit. On Gitea / Forgejo this needs version 1.20 or newer.
 
 ### Self-hosted Gitea
 
@@ -152,9 +158,11 @@ they must appear in, so a recipe can place its own boxes.
 
 The site rewrites files you own, so content loss is treated as the worst possible bug:
 
-- Every save shows a line diff and a commit message before anything is written.
+- Every save shows a line diff and a commit message before anything is written. Create, move and
+  delete also open a commit message prompt, and nothing is committed until you submit it.
 - Writes use the forge's precondition (blob SHA, or `last_commit_id` on GitLab), so a file that
-  changed underneath you produces a conflict rather than an overwrite.
+  changed underneath you produces a conflict rather than an overwrite. Moves and deletes are
+  guarded the same way.
 - A file whose frontmatter cannot be parsed is editable only as raw text, because any structured
   edit would silently drop the unparseable block.
 - Raw HTML in markdown is dropped during rendering (and the result is sanitized with DOMPurify).
@@ -169,7 +177,7 @@ src/lib/markdown/   frontmatter, rendering, recipe parsing
 src/lib/template/   template schema, document structuring, serialization
 src/lib/store/      repository state and saved profiles (Svelte 5 runes)
 src/lib/cache/      content-addressed blob cache
-src/lib/editor/     lazily loaded Milkdown/Crepe editor
+src/lib/editor/     lazily loaded Milkdown/Crepe editor; new / move / delete dialogs
 src/lib/ui/         presentation components
 src/routes/         home (repos, theme, cache), /about, /r/[src]/[...path] browser
 ```

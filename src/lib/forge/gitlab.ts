@@ -2,7 +2,9 @@ import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import type {
 	BlobEntry,
+	DeleteArgs,
 	ForgeProvider,
+	MoveArgs,
 	RateLimitInfo,
 	RepoRef,
 	TreeResult,
@@ -173,5 +175,56 @@ export class GitLabProvider implements ForgeProvider {
 		);
 
 		return {};
+	}
+
+	#requireToken(): void {
+		if (!this.#token) {
+			throw new ForgeError('auth', 'Saving requires an access token.', {
+				hint: 'Add a GitLab token with api or write_repository scope in Settings.'
+			});
+		}
+	}
+
+	async deleteFile(args: DeleteArgs): Promise<void> {
+		this.#requireToken();
+		const body: Record<string, unknown> = {
+			branch: args.branch,
+			commit_message: args.message
+		};
+		if (args.baseSha) body.last_commit_id = args.baseSha;
+
+		await forgeFetch(
+			`${this.#apiBase}/projects/${this.#projectId}/repository/files/${encodeURIComponent(args.path)}`,
+			{
+				method: 'DELETE',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify(body)
+			},
+			this.#ctx
+		);
+	}
+
+	async moveFile(args: MoveArgs): Promise<void> {
+		this.#requireToken();
+		const action: Record<string, unknown> = {
+			action: 'move',
+			file_path: args.to,
+			previous_path: args.from
+		};
+		if (args.baseSha) action.last_commit_id = args.baseSha;
+
+		await forgeFetch(
+			`${this.#apiBase}/projects/${this.#projectId}/repository/commits`,
+			{
+				method: 'POST',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({
+					branch: args.branch,
+					commit_message: args.message,
+					actions: [action]
+				})
+			},
+			this.#ctx
+		);
 	}
 }

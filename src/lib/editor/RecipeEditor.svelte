@@ -7,7 +7,10 @@
 	import { serializeDocument } from '$lib/template/serialize';
 	import StructuredForm from '$lib/ui/StructuredForm.svelte';
 	import { diffLines } from '$lib/util/diff';
-	import { ForgeError, describeForgeError } from '$lib/forge/errors';
+	import { ForgeError } from '$lib/forge/errors';
+	import { commitMessages } from '$lib/paths';
+	import { authStore } from '$lib/store/auth.svelte';
+	import CommitDialog from '$lib/ui/CommitDialog.svelte';
 	import Milkdown from './Milkdown.svelte';
 
 	type Mode = 'form' | 'rich' | 'source';
@@ -39,7 +42,7 @@
 	let richEditor = $state<{ getMarkdown(): string | null } | null>(null);
 
 	let saving = $state(false);
-	let saveError = $state<{ message: string; hint?: string } | null>(null);
+	let saveError = $state<unknown>(null);
 	let conflict = $state(false);
 	let message = $state('');
 	let confirming = $state(false);
@@ -105,7 +108,8 @@
 		capture();
 		saveError = null;
 		conflict = false;
-		if (!message.trim()) message = `Update ${doc.path.split('/').pop()}`;
+		const title = typeof fields.title === 'string' && fields.title.trim() ? fields.title.trim() : doc.title;
+		message = commitMessages.update(title);
 		confirming = true;
 	}
 
@@ -113,19 +117,14 @@
 		const provider = repoStore.provider;
 		const branch = repoStore.resolvedRef;
 		if (!provider || !branch) {
-			saveError = { message: 'The repository is not loaded.' };
+			saveError = new Error('The repository is not loaded.');
 			return;
 		}
-		if (!provider.authenticated) {
-			saveError = {
-				message: 'An access token with write permission is required to save.',
-				hint: 'Add one in Settings for this repository.'
-			};
-			return;
-		}
+		if (!(await authStore.requireToken())) return;
 
 		saving = true;
 		saveError = null;
+		conflict = false;
 
 		try {
 			const content = currentRaw.endsWith('\n') ? currentRaw : `${currentRaw}\n`;
@@ -136,7 +135,7 @@
 				path: doc.path,
 				content,
 				baseSha,
-				message: message.trim() || `Update ${doc.path}`,
+				message: message.trim(),
 				branch
 			});
 
@@ -144,8 +143,7 @@
 			confirming = false;
 			onclose?.();
 		} catch (error) {
-			const described = describeForgeError(error);
-			saveError = described;
+			saveError = error;
 			conflict = error instanceof ForgeError && error.kind === 'conflict';
 		} finally {
 			saving = false;
@@ -251,9 +249,18 @@
 	{/if}
 
 	{#if confirming}
-		<div class="card stack confirm">
-			<h2>Review changes</h2>
-
+		<CommitDialog
+			title="Save changes"
+			bind:message
+			busy={saving}
+			error={saveError}
+			submitLabel="Submit"
+			busyLabel="Saving…"
+			disabled={diff.identical}
+			wide
+			onsubmit={commit}
+			oncancel={() => (confirming = false)}
+		>
 			{#if diff.identical}
 				<p class="muted">No changes to save.</p>
 			{:else}
@@ -266,39 +273,16 @@
 					>{'\n'}{/each}</pre>
 			{/if}
 
-			<div class="field">
-				<label class="label" for="commit-message">Commit message</label>
-				<input id="commit-message" type="text" bind:value={message} />
-			</div>
-
-			{#if saveError}
-				<div class="banner error">
-					<p><strong>{saveError.message}</strong></p>
-					{#if saveError.hint}<p>{saveError.hint}</p>{/if}
-					{#if conflict}
-						<p>
-							The file changed in the repository since it was loaded. Reload to get the latest
-							version — your edits here will be lost, so copy anything you need first.
-						</p>
-						<button type="button" onclick={reloadFromRepo}>Reload from repository</button>
-					{/if}
-				</div>
-			{/if}
-
-			<div class="row">
-				<button
-					class="primary"
-					type="button"
-					disabled={saving || diff.identical}
-					onclick={commit}
-				>
-					{saving ? 'Saving…' : 'Commit'}
-				</button>
-				<button type="button" disabled={saving} onclick={() => (confirming = false)}>
-					Keep editing
-				</button>
-			</div>
-		</div>
+			{#snippet errorExtra()}
+				{#if conflict}
+					<p>
+						The file changed in the repository since it was loaded. Reload to get the latest
+						version — your edits here will be lost, so copy anything you need first.
+					</p>
+					<button type="button" onclick={reloadFromRepo}>Reload from repository</button>
+				{/if}
+			{/snippet}
+		</CommitDialog>
 	{/if}
 </div>
 
@@ -348,11 +332,6 @@
 		overflow-x: auto;
 	}
 
-	.confirm h2 {
-		font-size: 0.95rem;
-		margin: 0;
-	}
-
 	.diff {
 		max-height: 320px;
 		overflow: auto;
@@ -374,16 +353,6 @@
 	}
 	.diff .context {
 		color: var(--text-dim);
-	}
-
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-	.label {
-		font-size: 0.85rem;
-		font-weight: 600;
 	}
 
 	@media (max-width: 900px) {
