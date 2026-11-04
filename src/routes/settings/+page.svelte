@@ -87,10 +87,6 @@
 				so the repository works without this site.
 			</li>
 			<li>
-				<strong>Optional templates.</strong> Add <code>.hotdish/template.yml</code> for structured
-				editing and a fixed set of tags.
-			</li>
-			<li>
 				<strong>Tokens stay local.</strong> They are stored in this browser's
 				<code>localStorage</code>, sent only to their forge, and never placed in a URL. On a shared
 				computer, leave the token blank or remove it when done.
@@ -98,6 +94,18 @@
 			<li>
 				<strong>Sharing is public only.</strong> Share links hold just the repository and path, so
 				private repositories can't be shared.
+			</li>
+			<li>
+				<strong>Optional templates.</strong> Add <code>.hotdish/template.yml</code> for structured
+				editing and a fixed set of tags. Copy the
+				<a href="/template.example.yml" target="_blank" rel="noopener">example template</a> to get
+				started.
+			</li>
+			<li>
+				<strong>API rate limits apply.</strong> Forges cap requests per hour. GitHub allows about
+				60 per hour without a token and 5,000 with one, and GitLab and Gitea set their own limits.
+				Large repositories or heavy browsing can hit them, so add an access token if you see
+				rate-limit errors. Caching reduces repeat requests.
 			</li>
 		</ul>
 	</div>

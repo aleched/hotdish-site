@@ -162,7 +162,11 @@
 		};
 	});
 
-	let rootLabel = $derived(repoStore.ref ? repoStore.ref.repo : 'Repository');
+	let rootLabel = $derived(
+		repoStore.ref
+			? (profileStore.profileFor(repoStore.ref)?.name ?? repoStore.ref.repo)
+			: 'Repository'
+	);
 
 	// At the repository root the cards show view history; filtering or browsing into a folder shows the tree.
 	let showRecent = $derived(path === '' && !repoStore.isFiltering);
@@ -284,36 +288,38 @@
 				<Breadcrumbs {src} {path} {rootLabel} />
 				<div class="head-actions">
 					{#if entry && !editing}
-						<a
-							class="button-link icon-link"
-							href={`/r/${src}/${encodeURI(path)}?edit`}
-							title="Edit"
-							aria-label="Edit"
-							onclick={startEdit}
-						>
-							<Icon name="edit" />
-						</a>
-						<button
-							type="button"
-							class="icon-button"
-							title="Move or rename"
-							aria-label="Move or rename"
-							disabled={!doc}
-							onclick={() => withToken(() => (recipeDialog = 'move'))}
-						>
-							<Icon name="move" />
-						</button>
-						<button
-							type="button"
-							class="icon-button danger-hover"
-							title="Delete"
-							aria-label="Delete"
-							disabled={!doc}
-							onclick={() => withToken(() => (recipeDialog = 'delete'))}
-						>
-							<Icon name="trash" />
-						</button>
-					{:else if folder && !showRecent}
+						<div class="split">
+							<a
+								class="part"
+								href={`/r/${src}/${encodeURI(path)}?edit`}
+								title="Edit"
+								aria-label="Edit"
+								onclick={startEdit}
+							>
+								<Icon name="edit" />
+							</a>
+							<button
+								type="button"
+								class="part"
+								title="Move or rename"
+								aria-label="Move or rename"
+								disabled={!doc}
+								onclick={() => withToken(() => (recipeDialog = 'move'))}
+							>
+								<Icon name="move" />
+							</button>
+							<button
+								type="button"
+								class="part danger-hover"
+								title="Delete"
+								aria-label="Delete"
+								disabled={!doc}
+								onclick={() => withToken(() => (recipeDialog = 'delete'))}
+							>
+								<Icon name="trash" />
+							</button>
+						</div>
+					{:else if folder}
 						<button
 							type="button"
 							class="icon-button"
@@ -365,20 +371,7 @@
 					{/if}
 				{/if}
 			{:else if folder}
-				<h1 class="folder-title">{path ? folder.name : rootLabel}</h1>
-
 				{#if showRecent}
-					<div class="recent-actions">
-						<button
-							type="button"
-							class="icon-button"
-							title="New recipe"
-							aria-label="New recipe"
-							onclick={() => openCreate('')}
-						>
-							<Icon name="plus" />
-						</button>
-					</div>
 					<h2 class="recent-title">Recently viewed</h2>
 					{#if recentItems.length > 0}
 						<ul class="cards">
@@ -464,8 +457,12 @@
 	aside {
 		position: sticky;
 		top: 72px;
-		max-height: calc(100vh - 88px);
+		/* Viewport minus header (56px) and main's vertical padding (1.5rem + 2.5rem), so a
+		   full-height list never makes the page itself scroll. */
+		max-height: calc(100vh - 56px - 4rem);
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--border) transparent;
 		/* Room for focus outlines, which overflow-y would otherwise clip. */
 		padding: 4px;
 		margin: -4px;
@@ -494,32 +491,42 @@
 		gap: 0.5rem;
 	}
 
-	.button-link {
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		padding: 0.4rem 0.75rem;
-		color: var(--text);
-		background: var(--surface);
-		font-size: 0.9rem;
+	.split {
+		display: inline-flex;
 	}
-	.icon-link {
+	.part {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--surface);
+		color: var(--text);
+		line-height: 0;
+		cursor: pointer;
 	}
-	.button-link:hover {
+	.part:hover:not(:disabled) {
 		text-decoration: none;
 		border-color: var(--accent);
+		position: relative;
 	}
-
-	.folder-title {
-		margin: 0 0 1rem;
-		font-size: 1.4rem;
+	.part.danger-hover:hover:not(:disabled) {
+		border-color: var(--danger);
+		color: var(--danger);
 	}
-
-	.recent-actions {
-		display: flex;
-		margin-bottom: 0.75rem;
+	.part:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.split > .part:first-child {
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	}
+	.split > .part:last-child {
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.split > .part + .part {
+		margin-left: -1px;
 	}
 
 	.side-head {

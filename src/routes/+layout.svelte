@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import RateLimitPrompt from '$lib/ui/RateLimitPrompt.svelte';
@@ -9,7 +10,27 @@
 	let { children } = $props();
 
 	let activeSrc = $derived($page.params.src ?? null);
-	let repoName = $derived(repoStore.ref ? `${repoStore.ref.owner}/${repoStore.ref.repo}` : null);
+	let repoName = $derived(
+		repoStore.ref
+			? (profileStore.profileFor(repoStore.ref)?.name ?? `${repoStore.ref.owner}/${repoStore.ref.repo}`)
+			: null
+	);
+	let isUnsaved = $derived(!!repoStore.ref && !profileStore.profileFor(repoStore.ref));
+
+	function saveRepo() {
+		const ref = repoStore.ref;
+		if (!ref) return;
+		profileStore.save({
+			name: `${ref.owner}/${ref.repo}`,
+			kind: ref.kind,
+			host: ref.host,
+			owner: ref.owner,
+			repo: ref.repo,
+			ref: ref.ref,
+			basePath: ref.basePath,
+			token: profileStore.tokenFor(ref)
+		});
+	}
 </script>
 
 <svelte:head>
@@ -27,6 +48,17 @@
 
 			{#if repoName && activeSrc}
 				<a class="repo" href={`/r/${activeSrc}`} title="Browse this repository">{repoName}</a>
+				{#if isUnsaved}
+					<button
+						type="button"
+						class="icon-button save-repo"
+						title="Add to saved repositories"
+						aria-label="Add to saved repositories"
+						onclick={saveRepo}
+					>
+						<Icon name="plus" />
+					</button>
+				{/if}
 			{/if}
 
 			<div class="spacer"></div>
@@ -104,6 +136,11 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		max-width: 40vw;
+	}
+
+	.save-repo {
+		margin-left: -0.35rem;
+		flex-shrink: 0;
 	}
 
 	.spacer {

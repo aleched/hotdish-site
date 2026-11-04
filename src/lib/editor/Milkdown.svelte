@@ -22,10 +22,17 @@
 	let ready = $state(false);
 
 	let crepe: CrepeLike | null = null;
+	// Crepe re-serializes markdown on load (list markers, escaping, spacing). Until the user
+	// really edits, the original text is reported so opening the editor is never "unsaved".
+	let baseline: string | null = null;
+
+	function original(markdown: string): string {
+		return baseline !== null && markdown === baseline ? value : markdown;
+	}
 
 	export function getMarkdown(): string | null {
 		try {
-			return crepe ? crepe.getMarkdown() : null;
+			return crepe ? original(crepe.getMarkdown()) : null;
 		} catch {
 			return null;
 		}
@@ -43,7 +50,10 @@
 
 			try {
 				instance.on((listener) => {
-					listener.markdownUpdated(() => onchange?.(instance.getMarkdown()));
+					listener.markdownUpdated(() => {
+						if (baseline === null) return;
+						onchange?.(original(instance.getMarkdown()));
+					});
 				});
 			} catch {
 				// Change notifications are an optimisation; markdown is read again at save time.
@@ -51,6 +61,7 @@
 
 			await instance.create();
 			crepe = instance;
+			baseline = instance.getMarkdown();
 			ready = true;
 		} catch (cause) {
 			error = cause instanceof Error ? cause.message : String(cause);
@@ -85,5 +96,24 @@
 	}
 	.host :global(.milkdown) {
 		padding: 0.5rem;
+		--crepe-color-background: var(--surface);
+		--crepe-color-on-background: var(--text);
+		--crepe-color-surface: var(--surface-2);
+		--crepe-color-surface-low: var(--surface-2);
+		--crepe-color-on-surface: var(--text);
+		--crepe-color-on-surface-variant: var(--text-dim);
+		--crepe-color-outline: var(--border);
+		--crepe-color-primary: var(--accent);
+		--crepe-color-secondary: var(--surface-2);
+		--crepe-color-on-secondary: var(--text);
+		--crepe-color-inverse: var(--text);
+		--crepe-color-on-inverse: var(--surface);
+		--crepe-color-inline-code: var(--accent);
+		--crepe-color-error: var(--danger);
+		--crepe-color-hover: var(--surface-2);
+		--crepe-color-selected: var(--border);
+		--crepe-color-inline-area: var(--border);
+		--crepe-font-default: var(--font);
+		--crepe-font-code: var(--mono);
 	}
 </style>
