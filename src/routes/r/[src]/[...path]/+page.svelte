@@ -503,16 +503,17 @@
 
 	aside {
 		position: sticky;
-		top: 72px;
-		/* Viewport minus header (56px) and main's vertical padding (1.5rem + 2.5rem), so a
+		/* Header (56px bar + 1px border) plus main's top padding (1.5rem): exactly where the list
+		   naturally sits, so it neither shifts on load nor nudges when it starts to stick. */
+		top: calc(57px + 1.5rem);
+		/* Viewport minus header (57px) and main's vertical padding (1.5rem + 2.5rem), so a
 		   full-height list never makes the page itself scroll. */
-		max-height: calc(100vh - 56px - 4rem);
+		max-height: calc(100vh - 57px - 4rem);
 		overflow-y: auto;
 		scrollbar-width: thin;
 		scrollbar-color: var(--border) transparent;
 		/* Room for focus outlines, which overflow-y would otherwise clip. */
 		padding: 4px;
-		margin: -4px;
 	}
 
 	.progress {

@@ -41,6 +41,23 @@
 <div class="shell">
 	<header class="no-print">
 		<div class="container bar">
+			{#if activeSrc}
+				<button
+					type="button"
+					class="burger ghost"
+					class:open={navStore.open}
+					aria-label="Menu"
+					aria-expanded={navStore.open}
+					aria-controls="recipe-nav"
+					onclick={() => navStore.toggle()}
+				>
+					<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+						<path class="bar-top" d="M3 5.5h14" />
+						<path class="bar-mid" d="M3 10h14" />
+						<path class="bar-bot" d="M3 14.5h14" />
+					</svg>
+				</button>
+			{/if}
 			<a class="brand" href="/">
 				<span class="mark" aria-hidden="true">🥘</span>
 				<span>Hotdish</span>
@@ -65,18 +82,6 @@
 			<a class="nav settings" href="/settings" title="Settings" aria-label="Settings">
 				<Icon name="settings" size={20} />
 			</a>
-			{#if activeSrc}
-				<button
-					type="button"
-					class="burger ghost"
-					aria-label="Menu"
-					aria-expanded={navStore.open}
-					aria-controls="recipe-nav"
-					onclick={() => navStore.toggle()}
-				>
-					{navStore.open ? '✕' : '☰'}
-				</button>
-			{/if}
 		</div>
 	</header>
 
@@ -161,14 +166,35 @@
 
 	.burger {
 		display: none;
-		font-size: 1.2rem;
-		line-height: 1;
-		padding: 0.4rem 0.6rem;
+		line-height: 0;
+		padding: 0.4rem;
+		margin-left: -0.4rem;
+	}
+	.burger svg path {
+		transform-box: view-box;
+		transform-origin: center;
+		transition:
+			transform 0.2s ease,
+			opacity 0.15s ease;
+	}
+	.burger.open .bar-top {
+		transform: translateY(4.5px) rotate(45deg);
+	}
+	.burger.open .bar-mid {
+		opacity: 0;
+	}
+	.burger.open .bar-bot {
+		transform: translateY(-4.5px) rotate(-45deg);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.burger svg path {
+			transition: none;
+		}
 	}
 
 	@media (max-width: 860px) {
 		.burger {
-			display: inline-block;
+			display: inline-flex;
 		}
 		.repo {
 			max-width: 30vw;
