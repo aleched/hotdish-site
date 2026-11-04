@@ -30,7 +30,6 @@
 			{/if}
 
 			<div class="spacer"></div>
-			<a class="nav" class:in-menu={!!activeSrc} href="/about">About</a>
 			<a class="nav settings" href="/settings" title="Settings" aria-label="Settings">
 				<Icon name="settings" size={20} />
 			</a>
@@ -136,9 +135,6 @@
 		}
 		.repo {
 			max-width: 30vw;
-		}
-		.nav.in-menu {
-			display: none;
 		}
 	}
 

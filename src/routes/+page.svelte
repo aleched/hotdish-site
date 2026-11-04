@@ -6,7 +6,7 @@
 	import { knownForgeKind, parseRepoInput } from '$lib/forge/parse';
 	import type { ForgeKind, RepoRef } from '$lib/forge/types';
 	import { encodeSrc } from '$lib/share/codec';
-	import { profileStore, profileToRef } from '$lib/store/profiles.svelte';
+	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
@@ -16,6 +16,9 @@
 	});
 
 	let isCreating = $state(false);
+	let editingId = $state<string | null>(null);
+	let dragId = $state<string | null>(null);
+	let overId = $state<string | null>(null);
 	let input = $state('');
 	let name = $state('');
 	let kind = $state<ForgeKind | ''>('');
@@ -28,6 +31,7 @@
 
 	function startCreate() {
 		isCreating = true;
+		editingId = null;
 		input = '';
 		name = '';
 		kind = '';
@@ -38,8 +42,22 @@
 		error = null;
 	}
 
-	function cancelCreate() {
+	function startEdit(profile: Profile) {
 		isCreating = false;
+		editingId = profile.id;
+		input = `https://${profile.host}/${profile.owner}/${profile.repo}`;
+		name = profile.name;
+		kind = profile.kind;
+		needsForgeChoice = false;
+		gitRef = profile.ref ?? '';
+		basePath = profile.basePath ?? '';
+		token = profile.token ?? '';
+		error = null;
+	}
+
+	function cancelEdit() {
+		isCreating = false;
+		editingId = null;
 		error = null;
 	}
 
@@ -91,7 +109,9 @@
 		event.preventDefault();
 		const ref = await buildRef();
 		if (!ref) return;
+		const wasCreating = isCreating;
 		const profile = profileStore.save({
+			id: editingId ?? undefined,
 			name: name.trim() || `${ref.owner}/${ref.repo}`,
 			kind: ref.kind,
 			host: ref.host,
@@ -101,13 +121,124 @@
 			basePath: ref.basePath || undefined,
 			token: token.trim() || undefined
 		});
-		await goto(`/r/${encodeSrc(profileToRef(profile))}`);
+		if (wasCreating) await goto(`/r/${encodeSrc(profileToRef(profile))}`);
+		else cancelEdit();
+	}
+
+	function onDragStart(event: DragEvent, id: string) {
+		dragId = id;
+		if (event.dataTransfer) {
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('text/plain', id);
+		}
+	}
+
+	function onDragOver(event: DragEvent, id: string) {
+		if (!dragId) return;
+		event.preventDefault();
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+		overId = id;
+	}
+
+	function onDrop(event: DragEvent, id: string) {
+		event.preventDefault();
+		if (dragId && dragId !== id) {
+			const to = profileStore.profiles.findIndex((profile) => profile.id === id);
+			if (to !== -1) profileStore.move(dragId, to);
+		}
+		onDragEnd();
+	}
+
+	function onDragEnd() {
+		dragId = null;
+		overId = null;
+	}
+
+	let confirming = $state<{ id: string; action: 'delete' | 'token' } | null>(null);
+
+	function runConfirmed(profile: Profile) {
+		if (confirming?.action === 'delete') profileStore.remove(profile.id);
+		else if (confirming?.action === 'token') profileStore.clearToken(profile.id);
+		confirming = null;
+	}
+
+	function onGripKey(event: KeyboardEvent, id: string, index: number) {
+		if (event.key === 'ArrowUp') profileStore.move(id, index - 1);
+		else if (event.key === 'ArrowDown') profileStore.move(id, index + 1);
+		else return;
+		event.preventDefault();
+		requestAnimationFrame(() =>
+			document.querySelector<HTMLElement>(`[data-grip="${id}"]`)?.focus()
+		);
 	}
 </script>
 
 <svelte:head>
 	<title>Hotdish — recipes from any git repository</title>
 </svelte:head>
+
+{#snippet editForm()}
+				<form onsubmit={save} class="form inline-form">
+					<div class="grid url-row">
+						<div class="field">
+							<label class="label" for="input">Repository URL <span class="required" aria-hidden="true">*</span></label>
+							<input
+								id="input"
+								type="text"
+								aria-required="true"
+								bind:value={input}
+								placeholder="https://github.com/alice/recipes"
+								autocomplete="off"
+								spellcheck="false"
+								disabled={isDetectingForge}
+								oninput={onInput}
+							/>
+						</div>
+						<div class="field">
+							<label class="label" for="name">Name</label>
+							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
+						</div>
+					</div>
+
+					<div class="grid profile-fields">
+						<div class="field">
+							<label class="label" for="ref">Branch</label>
+							<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
+						</div>
+						<div class="field">
+							<label class="label" for="base">Sub-folder</label>
+							<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
+						</div>
+						<div class="field">
+							<label class="label" for="token">Access token</label>
+							<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
+						</div>
+					</div>
+					{#if needsForgeChoice}
+						<div class="field">
+							<label class="label" for="kind">Forge type</label>
+							<select id="kind" bind:value={kind}>
+								<option value="">Select forge type</option>
+								{#each kinds as option (option)}
+									<option value={option}>{FORGE_LABELS[option]}</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
+					{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
+					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
+					<div class="row">
+						<button
+							class="primary"
+							type="submit"
+							disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
+						>
+							{isDetectingForge ? 'Detecting forge...' : isCreating ? 'Save and open' : 'Save changes'}
+						</button>
+						<button type="button" onclick={cancelEdit} disabled={isDetectingForge}>Cancel</button>
+					</div>
+				</form>
+{/snippet}
 
 <section class="panel">
 	<div class="section-heading">
@@ -117,7 +248,7 @@
 			class="icon-button"
 			title="Add saved repository"
 			aria-label="Add saved repository"
-			disabled={isCreating}
+			disabled={isCreating || editingId !== null}
 			onclick={startCreate}
 		>
 			<Icon name="plus" />
@@ -125,85 +256,92 @@
 	</div>
 	<ul class="profiles">
 		{#if isCreating}
-			<li class="card profile editing">
-				<form onsubmit={save} class="form">
-					<div class="field">
-						<label class="label" for="input">Repository URL</label>
-						<input
-							id="input"
-							type="text"
-							bind:value={input}
-							placeholder="https://github.com/alice/recipes"
-							autocomplete="off"
-							spellcheck="false"
-							disabled={isDetectingForge}
-							oninput={onInput}
-						/>
-					</div>
-
-					<div class="grid">
-						<div class="field">
-							<label class="label" for="name">Name</label>
-							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
-						</div>
-						{#if needsForgeChoice}
-							<div class="field">
-								<label class="label" for="kind">Forge type</label>
-								<select id="kind" bind:value={kind}>
-									<option value="">Select forge type</option>
-									{#each kinds as option (option)}
-										<option value={option}>{FORGE_LABELS[option]}</option>
-									{/each}
-								</select>
-							</div>
+			<li class="card profile">{@render editForm()}</li>
+		{/if}
+		{#each profileStore.profiles as profile, index (profile.id)}
+			<li
+				class="card profile"
+				class:dragging={dragId === profile.id}
+				class:over={overId === profile.id && dragId !== profile.id}
+				ondragover={(event) => onDragOver(event, profile.id)}
+				ondrop={(event) => onDrop(event, profile.id)}
+			>
+				<button
+					type="button"
+					class="grip"
+					draggable="true"
+					data-grip={profile.id}
+					title="Drag to reorder (or use Arrow Up/Down)"
+					aria-label={`Reorder ${profile.name}`}
+					ondragstart={(event) => onDragStart(event, profile.id)}
+					ondragend={onDragEnd}
+					onkeydown={(event) => onGripKey(event, profile.id, index)}
+				>
+					<Icon name="grip" />
+				</button>
+				{#if editingId === profile.id}
+					{@render editForm()}
+				{:else}
+					<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
+						<strong>{profile.name}</strong>
+						<span class="muted path">
+							{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
+							{#if profile.ref}@{profile.ref}{/if}
+							{#if profile.basePath}· {profile.basePath}{/if}
+						</span>
+					</a>
+					<div class="row actions">
+						{#if confirming?.id === profile.id}
+							<span class="confirm-text">
+								{confirming.action === 'delete' ? 'Delete this repository?' : 'Remove token?'}
+							</span>
+							<button type="button" class="danger" onclick={() => runConfirmed(profile)}>
+								{confirming.action === 'delete' ? 'Delete' : 'Remove'}
+							</button>
+							<button type="button" onclick={() => (confirming = null)}>Cancel</button>
+						{:else}
+						<button
+							type="button"
+							class="icon-button"
+							title="Edit"
+							aria-label="Edit"
+							disabled={isCreating || editingId !== null}
+							onclick={() => startEdit(profile)}
+						>
+							<Icon name="edit" />
+						</button>
+						<button
+							type="button"
+							class="icon-button"
+							title={profile.token ? 'Remove token' : 'No token'}
+							aria-label={profile.token ? 'Remove token' : 'No token'}
+							disabled={!profile.token}
+							onclick={() => (confirming = { id: profile.id, action: 'token' })}
+						>
+							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<circle cx="5" cy="11" r="2.5" />
+								<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
+								<path d="M2 2l12 12" />
+							</svg>
+						</button>
+						<button
+							type="button"
+							class="icon-button danger-hover"
+							title="Delete"
+							aria-label="Delete"
+							onclick={() => (confirming = { id: profile.id, action: 'delete' })}
+						>
+							<Icon name="trash" />
+						</button>
 						{/if}
 					</div>
-
-					<div class="grid">
-						<div class="field">
-							<label class="label" for="ref">Branch (optional)</label>
-							<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
-						</div>
-						<div class="field">
-							<label class="label" for="base">Sub-folder (optional)</label>
-							<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
-						</div>
-						<div class="field">
-							<label class="label" for="token">Access token (optional)</label>
-							<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
-						</div>
-					</div>
-					{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
-					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
-					<div class="row">
-						<button
-							class="primary"
-							type="submit"
-							disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
-						>
-							{isDetectingForge ? 'Detecting forge...' : 'Save and open'}
-						</button>
-						<button type="button" onclick={cancelCreate} disabled={isDetectingForge}>Cancel</button>
-					</div>
-				</form>
-			</li>
-		{/if}
-		{#each profileStore.profiles as profile (profile.id)}
-			<li class="card profile">
-				<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
-					<strong>{profile.name}</strong>
-					<span class="muted path">
-						{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
-						{#if profile.ref}@{profile.ref}{/if}
-						{#if profile.basePath}· {profile.basePath}{/if}
-					</span>
-					<span class="muted path">
-						{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
-					</span>
-				</a>
+				{/if}
 			</li>
 		{/each}
 	</ul>
+	{#if !isCreating && !profileStore.profiles.length}
+		<p class="muted">No saved repositories yet. Use the + button to add one.</p>
+	{/if}
 </section>
 
 <style>
@@ -240,11 +378,32 @@
 		justify-content: space-between;
 		align-items: center;
 	}
-	.profile.editing {
-		display: block;
+	.inline-form {
+		flex: 1;
+		min-width: 200px;
 	}
 	.profile:hover {
 		border-color: var(--accent);
+	}
+	.profile.dragging {
+		opacity: 0.45;
+	}
+	.profile.over {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 2px var(--accent);
+	}
+	.grip {
+		cursor: grab;
+		background: none;
+		border: none;
+		padding: 0.25rem;
+		color: var(--text-dim);
+		display: inline-flex;
+		align-items: center;
+		touch-action: none;
+	}
+	.grip:active {
+		cursor: grabbing;
 	}
 	.info {
 		flex: 1;
@@ -272,6 +431,15 @@
 		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 		gap: 0.75rem;
 	}
+	.url-row {
+		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+	}
+	.profile-fields {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.confirm-text {
+		font-size: 0.9rem;
+	}
 	.field {
 		display: flex;
 		flex-direction: column;
@@ -281,8 +449,17 @@
 		font-size: 0.85rem;
 		font-weight: 600;
 	}
+	.required {
+		color: var(--danger);
+	}
 	.hint {
 		font-size: 0.78rem;
 		margin: 0;
+	}
+	@media (max-width: 640px) {
+		.url-row,
+		.profile-fields {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

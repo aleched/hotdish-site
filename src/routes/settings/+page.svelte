@@ -1,160 +1,15 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
-	import { FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
-	import { detectForgeKind } from '$lib/forge/detect';
-	import { knownForgeKind, parseRepoInput } from '$lib/forge/parse';
-	import type { ForgeKind } from '$lib/forge/types';
-	import { encodeSrc } from '$lib/share/codec';
-	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
 
-	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
-	let isMounted = true;
-	onDestroy(() => {
-		isMounted = false;
-	});
-
-	let editingId = $state<string | null>(null);
-	let input = $state('');
-	let name = $state('');
-	let kind = $state<ForgeKind | ''>('');
-	let needsForgeChoice = $state(false);
-	let isDetectingForge = $state(false);
-	let gitRef = $state('');
-	let basePath = $state('');
-	let token = $state('');
-	let error = $state<string | null>(null);
 	let cacheMessage = $state<string | null>(null);
-
-	let dragId = $state<string | null>(null);
-	let overId = $state<string | null>(null);
-
-	function reset() {
-		editingId = null;
-		input = '';
-		name = '';
-		kind = '';
-		needsForgeChoice = false;
-		gitRef = '';
-		basePath = '';
-		token = '';
-		error = null;
-	}
-
-	function startEdit(profile: Profile) {
-		editingId = profile.id;
-		input = `https://${profile.host}/${profile.owner}/${profile.repo}`;
-		name = profile.name;
-		kind = profile.kind;
-		needsForgeChoice = false;
-		gitRef = profile.ref ?? '';
-		basePath = profile.basePath ?? '';
-		token = profile.token ?? '';
-		error = null;
-	}
-
-	function onInput() {
-		kind = '';
-		needsForgeChoice = false;
-		error = null;
-	}
-
-	async function save(event: SubmitEvent) {
-		event.preventDefault();
-		error = null;
-		try {
-			if (!/^https?:\/\//i.test(input.trim())) {
-				throw new Error('Enter a full repository URL so its host and forge can be detected.');
-			}
-			const parsed = parseRepoInput(input);
-			let forge: ForgeKind | null | undefined = knownForgeKind(parsed.host) ?? (kind || null);
-			if (!forge) {
-				isDetectingForge = true;
-				try {
-					forge = await detectForgeKind(parsed.host);
-				} finally {
-					if (isMounted) isDetectingForge = false;
-				}
-				if (!isMounted) return;
-			}
-			if (!forge) {
-				needsForgeChoice = true;
-				error =
-					'Could not identify this forge automatically. Select its type; self-hosted APIs may block browser detection.';
-				return;
-			}
-			needsForgeChoice = false;
-			kind = forge;
-			const identified = parseRepoInput(input, { fallbackKind: forge });
-			const ref = {
-				...identified,
-				ref: gitRef.trim() || identified.ref,
-				basePath: basePath.trim().replace(/^\/+|\/+$/g, '') || identified.basePath
-			};
-			profileStore.save({
-				id: editingId ?? undefined,
-				name: name.trim() || `${ref.owner}/${ref.repo}`,
-				kind: ref.kind,
-				host: ref.host,
-				owner: ref.owner,
-				repo: ref.repo,
-				ref: ref.ref || undefined,
-				basePath: ref.basePath || undefined,
-				token: token.trim() || undefined
-			});
-			reset();
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : String(cause);
-		}
-	}
 
 	async function emptyCache() {
 		await clearBlobCache();
 		historyStore.reset();
 		cacheMessage = 'Cached recipe content cleared.';
 		setTimeout(() => (cacheMessage = null), 3000);
-	}
-
-	function onDragStart(event: DragEvent, id: string) {
-		dragId = id;
-		if (event.dataTransfer) {
-			event.dataTransfer.effectAllowed = 'move';
-			event.dataTransfer.setData('text/plain', id);
-		}
-	}
-
-	function onDragOver(event: DragEvent, id: string) {
-		if (!dragId) return;
-		event.preventDefault();
-		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-		overId = id;
-	}
-
-	function onDrop(event: DragEvent, id: string) {
-		event.preventDefault();
-		if (dragId && dragId !== id) {
-			const to = profileStore.profiles.findIndex((profile) => profile.id === id);
-			if (to !== -1) profileStore.move(dragId, to);
-		}
-		onDragEnd();
-	}
-
-	function onDragEnd() {
-		dragId = null;
-		overId = null;
-	}
-
-	function onGripKey(event: KeyboardEvent, id: string, index: number) {
-		if (event.key === 'ArrowUp') profileStore.move(id, index - 1);
-		else if (event.key === 'ArrowDown') profileStore.move(id, index + 1);
-		else return;
-		event.preventDefault();
-		requestAnimationFrame(() =>
-			document.querySelector<HTMLElement>(`[data-grip="${id}"]`)?.focus()
-		);
 	}
 </script>
 
@@ -163,154 +18,6 @@
 </svelte:head>
 
 <h1>Settings</h1>
-
-<section class="panel">
-	<h2>Saved repositories</h2>
-	{#if profileStore.profiles.length === 0}
-		<p class="muted">No saved repositories yet. Add one from the home page.</p>
-	{:else}
-		<p class="muted hint">Drag the handle to reorder. The home page uses the same order.</p>
-		<ul class="profiles">
-			{#each profileStore.profiles as profile, index (profile.id)}
-				<li
-					class="card profile"
-					class:dragging={dragId === profile.id}
-					class:over={overId === profile.id && dragId !== profile.id}
-					ondragover={(event) => onDragOver(event, profile.id)}
-					ondrop={(event) => onDrop(event, profile.id)}
-				>
-					<button
-						type="button"
-						class="grip"
-						draggable="true"
-						data-grip={profile.id}
-						title="Drag to reorder (or use Arrow Up/Down)"
-						aria-label={`Reorder ${profile.name}`}
-						ondragstart={(event) => onDragStart(event, profile.id)}
-						ondragend={onDragEnd}
-						onkeydown={(event) => onGripKey(event, profile.id, index)}
-					>
-						<Icon name="grip" />
-					</button>
-					{#if editingId === profile.id}
-						<form onsubmit={save} class="form inline-form">
-							<div class="field">
-								<label class="label" for="input">Repository URL</label>
-								<input
-									id="input"
-									type="text"
-									bind:value={input}
-									placeholder="https://github.com/alice/recipes"
-									autocomplete="off"
-									spellcheck="false"
-									disabled={isDetectingForge}
-									oninput={onInput}
-								/>
-							</div>
-							<div class="grid">
-								<div class="field">
-									<label class="label" for="name">Name</label>
-									<input id="name" type="text" bind:value={name} placeholder="My recipes" />
-								</div>
-								{#if needsForgeChoice}
-									<div class="field">
-										<label class="label" for="kind">Forge type</label>
-										<select id="kind" bind:value={kind}>
-											<option value="">Select forge type</option>
-											{#each kinds as option (option)}
-												<option value={option}>{FORGE_LABELS[option]}</option>
-											{/each}
-										</select>
-									</div>
-								{/if}
-							</div>
-							<div class="grid">
-								<div class="field">
-									<label class="label" for="ref">Branch (optional)</label>
-									<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
-								</div>
-								<div class="field">
-									<label class="label" for="base">Sub-folder (optional)</label>
-									<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
-								</div>
-								<div class="field">
-									<label class="label" for="token">Access token (optional)</label>
-									<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
-								</div>
-							</div>
-							{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
-							{#if error}<p class="banner error" role="alert">{error}</p>{/if}
-							<div class="row">
-								<button
-									class="primary"
-									type="submit"
-									disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
-								>
-									{isDetectingForge ? 'Detecting forge...' : 'Save changes'}
-								</button>
-								<button type="button" onclick={reset} disabled={isDetectingForge}>Cancel</button>
-							</div>
-						</form>
-					{:else}
-						<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
-							<strong>{profile.name}</strong>
-							<span class="muted path">
-								{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
-								{#if profile.ref}@{profile.ref}{/if}
-								{#if profile.basePath}· {profile.basePath}{/if}
-							</span>
-							<span class="muted path">
-								{profile.token ? 'Token stored in this browser' : 'No token (public access only)'}
-							</span>
-						</a>
-					{/if}
-					<div class="row actions">
-						{#if editingId !== profile.id}
-							<button
-								type="button"
-								class="icon-button"
-								title="Edit"
-								aria-label="Edit"
-								disabled={editingId !== null}
-								onclick={() => startEdit(profile)}
-							>
-								<Icon name="edit" />
-							</button>
-							{#if profile.token}
-								<button
-									type="button"
-									class="icon-button"
-									title="Remove token"
-									aria-label="Remove token"
-									onclick={() => profileStore.clearToken(profile.id)}
-								>
-									<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-										<circle cx="5" cy="11" r="2.5" />
-										<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
-										<path d="M2 2l12 12" />
-									</svg>
-								</button>
-							{/if}
-						{/if}
-						<button
-							type="button"
-							class="icon-button danger-hover"
-							title="Delete"
-							aria-label="Delete"
-							disabled={isDetectingForge}
-							onclick={() => {
-								profileStore.remove(profile.id);
-								if (editingId === profile.id) reset();
-							}}
-						>
-							<Icon name="trash" />
-						</button>
-					</div>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
 
 <section class="panel">
 	<h2>Theme</h2>
@@ -367,6 +74,35 @@
 	</div>
 </section>
 
+<section class="panel">
+	<h2>About</h2>
+	<div class="card stack">
+		<p class="muted">
+			Hotdish renders recipes from a GitHub, GitLab or Gitea repository of markdown files, right
+			in your browser. No account, server or database.
+		</p>
+		<ul class="muted about-list">
+			<li>
+				<strong>Your files stay yours.</strong> Recipes are plain markdown with YAML frontmatter,
+				so the repository works without this site.
+			</li>
+			<li>
+				<strong>Optional templates.</strong> Add <code>.hotdish/template.yml</code> for structured
+				editing and a fixed set of tags.
+			</li>
+			<li>
+				<strong>Tokens stay local.</strong> They are stored in this browser's
+				<code>localStorage</code>, sent only to their forge, and never placed in a URL. On a shared
+				computer, leave the token blank or remove it when done.
+			</li>
+			<li>
+				<strong>Sharing is public only.</strong> Share links hold just the repository and path, so
+				private repositories can't be shared.
+			</li>
+		</ul>
+	</div>
+</section>
+
 <style>
 	h2 {
 		font-size: 1rem;
@@ -377,74 +113,6 @@
 		margin-bottom: 2rem;
 	}
 
-	.profiles {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-	.profile {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.6rem;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.inline-form {
-		flex: 1;
-		min-width: 200px;
-	}
-	.profile:hover {
-		border-color: var(--accent);
-	}
-	.profile.dragging {
-		opacity: 0.45;
-	}
-	.profile.over {
-		border-color: var(--accent);
-		box-shadow: 0 0 0 2px var(--accent);
-	}
-	.grip {
-		cursor: grab;
-		background: none;
-		border: none;
-		padding: 0.25rem;
-		color: var(--text-dim);
-		display: inline-flex;
-		align-items: center;
-		touch-action: none;
-	}
-	.grip:active {
-		cursor: grabbing;
-	}
-	.info {
-		flex: 1;
-		min-width: 200px;
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		color: var(--text);
-	}
-	.info:hover {
-		text-decoration: none;
-	}
-	.path {
-		font-size: 0.8rem;
-		font-family: var(--mono);
-	}
-
-	.form {
-		display: flex;
-		flex-direction: column;
-		gap: 0.85rem;
-	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 0.75rem;
-	}
 	.field {
 		display: flex;
 		flex-direction: column;
@@ -453,13 +121,6 @@
 	.label {
 		font-size: 0.85rem;
 		font-weight: 600;
-	}
-	.hint {
-		font-size: 0.78rem;
-		margin: 0 0 0.5rem;
-	}
-	.form .hint {
-		margin: 0;
 	}
 
 	.choices {
@@ -479,5 +140,14 @@
 		height: 0.9rem;
 		border-radius: 50%;
 		display: inline-block;
+	}
+
+	.about-list {
+		margin: 0;
+		padding-left: 1.1rem;
+		font-size: 0.9rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
 	}
 </style>

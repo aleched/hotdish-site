@@ -209,7 +209,6 @@
 {:else}
 	<div class="layout" class:menu-open={navStore.open}>
 		<aside id="recipe-nav" class="no-print" class:open={navStore.open}>
-			<a class="about-link" href="/about">About</a>
 			<TagFilter />
 
 			{#if repoStore.indexing}
@@ -482,12 +481,6 @@
 		color: var(--text-dim);
 	}
 
-	.about-link {
-		display: none;
-		margin-bottom: 0.75rem;
-		font-weight: 600;
-	}
-
 	.head {
 		display: flex;
 		justify-content: space-between;
@@ -609,9 +602,6 @@
 			display: none;
 		}
 		aside.open {
-			display: block;
-		}
-		.about-link {
 			display: block;
 		}
 		.menu-open .content {
