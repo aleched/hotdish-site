@@ -27,9 +27,7 @@ export const DEFAULT_HOSTS: Record<ForgeKind, string> = {
 };
 
 export const TOKEN_GUIDANCE: Record<ForgeKind, string> = {
-	github:
-		'Use a fine-grained personal access token scoped to this one repository, with Contents: Read (or Read and write to edit), and set an expiry.',
-	gitlab:
-		'Use a project access token with read_repository scope (or write_repository to edit), and set an expiry.',
-	gitea: 'Use a token limited to repository read (or write, to edit) and set an expiry.'
+	github: 'Fine-grained token, this repo only, Contents: read (write to edit).',
+	gitlab: 'Project token, read_repository (write_repository to edit).',
+	gitea: 'Token with repository read (write to edit).'
 };

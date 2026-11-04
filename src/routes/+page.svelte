@@ -192,7 +192,21 @@
 
 {#snippet editForm()}
 				<form onsubmit={save} class="form inline-form">
-					<div class="form-actions">
+					<div class="url-row">
+						<div class="field url-field">
+							<label class="label" for="input">Repository URL <span class="required" aria-hidden="true">*</span></label>
+							<input
+								id="input"
+								type="text"
+								aria-required="true"
+								bind:value={input}
+								placeholder="https://github.com/alice/recipes"
+								autocomplete="off"
+								spellcheck="false"
+								disabled={isDetectingForge}
+								oninput={onInput}
+							/>
+						</div>
 						<div class="split">
 							{#if formDirty}
 								<button
@@ -227,40 +241,32 @@
 							</button>
 						</div>
 					</div>
-					<div class="grid url-row">
-						<div class="field">
-							<label class="label" for="input">Repository URL <span class="required" aria-hidden="true">*</span></label>
-							<input
-								id="input"
-								type="text"
-								aria-required="true"
-								bind:value={input}
-								placeholder="https://github.com/alice/recipes"
-								autocomplete="off"
-								spellcheck="false"
-								disabled={isDetectingForge}
-								oninput={onInput}
-							/>
-						</div>
+
+					<div class="grid profile-fields">
 						<div class="field">
 							<label class="label" for="name">Name</label>
 							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
 						</div>
-					</div>
-
-					<div class="grid profile-fields">
 						<div class="field">
 							<label class="label" for="ref">Branch</label>
-							<input id="ref" type="text" bind:value={gitRef} placeholder="default branch" />
+							<input id="ref" type="text" bind:value={gitRef} placeholder="main" />
 						</div>
 						<div class="field">
 							<label class="label" for="base">Sub-folder</label>
 							<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
 						</div>
-						<div class="field">
-							<label class="label" for="token">Access token</label>
-							<input id="token" type="password" bind:value={token} autocomplete="off" spellcheck="false" />
-						</div>
+					</div>
+
+					<div class="field">
+						<label class="label" for="token">Access token</label>
+						<input
+							id="token"
+							type="password"
+							bind:value={token}
+							placeholder={kind ? TOKEN_GUIDANCE[kind] : 'Optional. Needed for private repositories and saving changes'}
+							autocomplete="off"
+							spellcheck="false"
+						/>
 					</div>
 					{#if needsForgeChoice}
 						<div class="field">
@@ -273,7 +279,6 @@
 							</select>
 						</div>
 					{/if}
-					{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
 					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
 				</form>
 {/snippet}
@@ -350,7 +355,7 @@
 						</button>
 						<button
 							type="button"
-							class="icon-button"
+							class="icon-button danger-hover"
 							title={profile.token ? 'Remove token' : 'No token'}
 							aria-label={profile.token ? 'Remove token' : 'No token'}
 							disabled={!profile.token}
@@ -386,15 +391,14 @@
 	.split {
 		display: inline-flex;
 	}
-	.form-actions {
-		display: flex;
-		justify-content: flex-end;
-	}
 	.part {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.4rem 0.7rem;
+		padding: 0 0.7rem;
+		box-sizing: border-box;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
 		border: 1px solid var(--border);
 		border-radius: 0;
 		background: var(--surface);
@@ -513,7 +517,13 @@
 		gap: 0.75rem;
 	}
 	.url-row {
-		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+		display: flex;
+		align-items: flex-end;
+		gap: 0.75rem;
+	}
+	.url-field {
+		flex: 1;
+		min-width: 0;
 	}
 	.profile-fields {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -533,12 +543,7 @@
 	.required {
 		color: var(--danger);
 	}
-	.hint {
-		font-size: 0.78rem;
-		margin: 0;
-	}
 	@media (max-width: 640px) {
-		.url-row,
 		.profile-fields {
 			grid-template-columns: 1fr;
 		}

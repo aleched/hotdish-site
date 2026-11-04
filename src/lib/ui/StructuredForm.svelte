@@ -518,7 +518,8 @@
 	.field-icon {
 		display: inline-flex;
 		align-items: center;
-		height: 2.1rem;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
 		color: var(--text-dim);
 	}
 	.label {
