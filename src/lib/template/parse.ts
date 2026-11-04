@@ -43,7 +43,7 @@ export function structureDocument(raw: string, template: RecipeTemplate | null):
 
 	const sections: StructuredSection[] = parts.map((part) => {
 		const templateSection = findSectionByHeading(template, part.heading);
-		const type = templateSection?.type ?? inferType(part.content);
+		const type = templateSection?.type ?? inferType(part.content, part.heading);
 		const repeatable = templateSection?.repeatable ?? true;
 
 		return {
@@ -119,7 +119,7 @@ function parseBlock(content: string, type: SectionType): StructuredBlock {
 	};
 }
 
-function inferType(content: string): SectionType {
+function inferType(content: string, heading = ''): SectionType {
 	let ordered = 0;
 	let bullet = 0;
 	let inFence = false;
@@ -134,7 +134,14 @@ function inferType(content: string): SectionType {
 		else if (BULLET.test(line)) bullet++;
 	}
 
-	if (ordered === 0 && bullet === 0) return 'text';
+	if (ordered === 0 && bullet === 0) {
+		// An empty section, like the default scaffold, has nothing to infer from, so go by its name.
+		if (content.trim()) return 'text';
+		const name = heading.trim().toLowerCase();
+		if (name === 'ingredients') return 'list';
+		if (name === 'instructions') return 'ordered';
+		return 'text';
+	}
 	return ordered > bullet ? 'ordered' : 'list';
 }
 

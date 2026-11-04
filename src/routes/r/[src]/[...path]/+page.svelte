@@ -13,7 +13,7 @@
 	import RecipeView from '$lib/ui/RecipeView.svelte';
 	import ShareButton from '$lib/ui/ShareButton.svelte';
 	import TagFilter from '$lib/ui/TagFilter.svelte';
-	import { findFolder } from '$lib/tree';
+	import { findFolder, type TreeFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
 	import { untrack } from 'svelte';
 	import { parentFolder } from '$lib/paths';
@@ -92,9 +92,69 @@
 	/** Folder preselected in the open "New recipe" dialog, or null when it is closed. */
 	let newIn = $state<string | null>(null);
 	let recipeDialog = $state<'move' | 'delete' | null>(null);
-	let foldersExpanded = $state<boolean | null>(null);
-	let foldersAreExpanded = $derived(foldersExpanded ?? repoStore.isFiltering);
+	// Open state of every folder in the sidebar tree; a missing entry means closed.
+	let open = $state<Record<string, boolean>>({});
 
+	let folderPaths = $derived.by(() => {
+		const paths: string[] = [];
+		const walk = (node: TreeFolder) => {
+			for (const child of node.children) {
+				if (child.kind !== 'folder') continue;
+				paths.push(child.path);
+				walk(child);
+			}
+		};
+		walk(repoStore.tree);
+		return paths;
+	});
+
+	function ancestorsOf(target: string): Record<string, boolean> {
+		const result: Record<string, boolean> = {};
+		const parts = target.split('/');
+		for (let i = 1; i <= parts.length; i++) result[parts.slice(0, i).join('/')] = true;
+		return result;
+	}
+
+	// Folders start collapsed when a repository opens.
+	$effect(() => {
+		void src;
+		open = {};
+	});
+
+	// Navigating reveals the current location without closing anything else.
+	$effect(() => {
+		const current = path;
+		untrack(() => {
+			if (current) open = { ...open, ...ancestorsOf(current) };
+		});
+	});
+
+	let wasFiltering = false;
+	$effect(() => {
+		const filtering = repoStore.isFiltering;
+		const paths = folderPaths;
+		untrack(() => {
+			if (filtering) {
+				open = Object.fromEntries(paths.map((item) => [item, true]));
+			} else if (wasFiltering) {
+				open = path ? ancestorsOf(path) : {};
+			}
+		});
+		wasFiltering = filtering;
+	});
+
+	// True once every folder is open, however that happened.
+	let foldersAreExpanded = $derived(folderPaths.length > 0 && folderPaths.every((item) => open[item]));
+
+	function toggleFolder(folderPath: string) {
+		open = { ...open, [folderPath]: !open[folderPath] };
+	}
+
+	// A mix of open and closed folders expands everything; only a fully open tree collapses.
+	function toggleFolders() {
+		const next = !foldersAreExpanded;
+		open = Object.fromEntries(folderPaths.map((item) => [item, next]));
+	}
 	let canWrite = $derived(repoStore.provider?.authenticated ?? false);
 	let currentFolder = $derived(entry ? parentFolder(path) : folder ? path : '');
 
@@ -105,10 +165,6 @@
 
 	function openCreate(folderPath: string) {
 		void withToken(() => (newIn = folderPath));
-	}
-
-	function toggleFolders() {
-		foldersExpanded = !foldersAreExpanded;
 	}
 
 	function startEdit(event: MouseEvent) {
@@ -164,7 +220,7 @@
 
 	let rootLabel = $derived(
 		repoStore.ref
-			? (profileStore.profileFor(repoStore.ref)?.name ?? repoStore.ref.repo)
+			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || repoStore.ref.repo)
 			: 'Repository'
 	);
 
@@ -237,17 +293,8 @@
 								size={14}
 							/>
 						</button>
-						<span class="side-label">Recipes</span>
+						<a class="side-label" href={`/r/${src}`} title="Repository home">{rootLabel}</a>
 					</div>
-					<button
-						type="button"
-						class="icon-button"
-						title="New recipe"
-						aria-label="New recipe"
-						onclick={() => openCreate(currentFolder)}
-					>
-						<Icon name="plus" size={14} />
-					</button>
 				</div>
 			{/if}
 
@@ -256,8 +303,8 @@
 					node={repoStore.tree}
 					{src}
 					currentPath={path}
-					expandAll={foldersExpanded ?? repoStore.isFiltering}
-					collapseAll={foldersExpanded === false}
+					{open}
+					ontoggle={toggleFolder}
 				/>
 			{:else if repoStore.status === 'ready' && !repoStore.indexing}
 				<p class="muted">
@@ -538,14 +585,20 @@
 	.side-heading {
 		display: flex;
 		align-items: center;
-		gap: 0.25rem;
+		gap: 0.5rem;
 	}
 	.side-label {
-		font-size: 0.78rem;
+		font-size: 0.9rem;
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--text-dim);
+		color: var(--text);
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.side-label:hover {
+		color: var(--accent);
+		text-decoration: none;
 	}
 	.side-head .icon-button {
 		padding: 0.25rem 0.4rem;

@@ -43,7 +43,7 @@ class RepoStore {
 
 	query = $state('');
 	selectedTags = $state<string[]>([]);
-	selectedFolder = $state('');
+	selectedFolders = $state<string[]>([]);
 
 	#provider = $state<ForgeProvider | null>(null);
 	#key: string | null = null;
@@ -95,13 +95,17 @@ class RepoStore {
 	filtered = $derived.by(() => {
 		const needle = this.query.trim().toLowerCase();
 		const tags = this.selectedTags.map((tag) => tag.toLowerCase());
+		const wanted = this.selectedFolders.map((folder) => folder.toLowerCase());
 		const base = this.basePath.replace(/\/+$/, '');
-		const folderPrefix = this.selectedFolder
-			? `${base ? `${base}/` : ''}${this.selectedFolder}/`
-			: '';
 
 		return this.recipes.filter((recipe) => {
-			if (folderPrefix && !recipe.path.startsWith(folderPrefix)) return false;
+			if (wanted.length > 0) {
+				const rel =
+					base && recipe.path.startsWith(`${base}/`) ? recipe.path.slice(base.length + 1) : recipe.path;
+				const folder = rel.split('/').slice(0, -1).join('/').toLowerCase();
+				// A selected folder includes its subfolders.
+				if (!wanted.some((name) => folder === name || folder.startsWith(`${name}/`))) return false;
+			}
 			if (needle && !recipe.haystack.includes(needle)) return false;
 			if (tags.length === 0) return true;
 			const recipeTags = recipe.tags.map((tag) => tag.toLowerCase());
@@ -113,7 +117,7 @@ class RepoStore {
 	tree = $derived.by<TreeFolder>(() => buildTree(this.filtered, this.basePath));
 
 	get isFiltering(): boolean {
-		return this.query.trim().length > 0 || 		this.selectedTags.length > 0 || this.selectedFolder !== '';
+		return this.query.trim().length > 0 || this.selectedTags.length > 0 || this.selectedFolders.length > 0;
 	}
 
 	toggleTag(tag: string): void {
@@ -123,10 +127,16 @@ class RepoStore {
 		else this.selectedTags = this.selectedTags.filter((_, i) => i !== index);
 	}
 
+	toggleFolder(path: string): void {
+		this.selectedFolders = this.selectedFolders.includes(path)
+			? this.selectedFolders.filter((item) => item !== path)
+			: [...this.selectedFolders, path];
+	}
+
+	/** Clears the tag and folder filters; the search text is left alone. */
 	clearFilters(): void {
-		this.query = '';
 		this.selectedTags = [];
-		this.selectedFolder = '';
+		this.selectedFolders = [];
 	}
 
 	async load(ref: RepoRef, token?: string, options: { force?: boolean } = {}): Promise<void> {
@@ -137,11 +147,11 @@ class RepoStore {
 		this.#key = key;
 		this.#token = token;
 		this.ref = ref;
+		if (!options.force) this.selectedFolders = [];
 		this.status = 'loading';
 		this.error = null;
 		this.entries = [];
 		this.recipes = [];
-		this.selectedFolder = '';
 		this.skipped = [];
 		this.truncated = false;
 		this.indexed = 0;

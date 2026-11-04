@@ -12,7 +12,7 @@
 	let activeSrc = $derived($page.params.src ?? null);
 	let repoName = $derived(
 		repoStore.ref
-			? (profileStore.profileFor(repoStore.ref)?.name ?? `${repoStore.ref.owner}/${repoStore.ref.repo}`)
+			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || `${repoStore.ref.owner}/${repoStore.ref.repo}`)
 			: null
 	);
 	let isUnsaved = $derived(!!repoStore.ref && !profileStore.profileFor(repoStore.ref));

@@ -6,45 +6,49 @@
 		node: TreeFolder;
 		src: string;
 		currentPath?: string;
-		/** Force every folder open, used while a search or tag filter is active. */
-		expandAll?: boolean;
-		/** Force every folder closed, including ancestors of the current recipe. */
-		collapseAll?: boolean;
+		/** Open state per folder path; a missing entry means closed. */
+		open: Record<string, boolean>;
+		ontoggle: (folderPath: string) => void;
 		depth?: number;
 	}
 
-	let {
-		node,
-		src,
-		currentPath = '',
-		expandAll = false,
-		collapseAll = false,
-		depth = 0
-	}: Props = $props();
-
-	function isAncestor(folderPath: string): boolean {
-		return currentPath === folderPath || currentPath.startsWith(`${folderPath}/`);
-	}
+	let { node, src, currentPath = '', open: openState, ontoggle, depth = 0 }: Props = $props();
 </script>
 
 <ul class:root={depth === 0}>
 	{#each node.children as child (child.path)}
 		{#if child.kind === 'folder'}
+			{@const open = Boolean(openState[child.path])}
 			<li>
-				<details open={expandAll || (!collapseAll && isAncestor(child.path))}>
-					<summary>
+				<div class="folder-row" class:active={currentPath === child.path}>
+					<button
+						type="button"
+						class="chevron"
+						class:open
+						aria-expanded={open}
+						aria-label={`${open ? 'Collapse' : 'Expand'} ${child.name}`}
+						title={open ? 'Collapse' : 'Expand'}
+						onclick={() => ontoggle(child.path)}
+					>
+						<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M6 3.5L10.5 8 6 12.5" />
+						</svg>
+					</button>
+					<a class="folder-link" href={`/r/${src}/${encodeURI(child.path)}`}>
 						<span class="name">{child.name}</span>
 						<span class="count">{child.count}</span>
-					</summary>
+					</a>
+				</div>
+				{#if open}
 					<FolderTree
 						node={child}
 						{src}
 						{currentPath}
-						{expandAll}
-						{collapseAll}
+						open={openState}
+						{ontoggle}
 						depth={depth + 1}
 					/>
-				</details>
+				{/if}
 			</li>
 		{:else}
 			<li>
@@ -76,18 +80,54 @@
 		margin: 0.1rem 0;
 	}
 
-	summary {
-		cursor: pointer;
+	.folder-row {
+		display: flex;
+		align-items: center;
+		gap: 0.1rem;
+		border-radius: var(--radius-sm);
+	}
+	.folder-row:hover {
+		background: var(--surface-2);
+	}
+	.folder-row.active {
+		background: var(--surface-2);
+		box-shadow: inset 2px 0 0 var(--accent);
+	}
+	.chevron {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 1.4rem;
+		padding: 0.25rem 0;
+		border: none;
+		background: none;
+		color: var(--text-dim);
+		line-height: 0;
+	}
+	.chevron:hover:not(:disabled) {
+		background: none;
+		color: var(--accent);
+	}
+	.chevron svg {
+		transition: transform 0.12s ease;
+	}
+	.chevron.open svg {
+		transform: rotate(90deg);
+	}
+	.folder-link {
+		flex: 1;
+		min-width: 0;
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.2rem 0.35rem;
-		border-radius: var(--radius-sm);
+		padding: 0.2rem 0.35rem 0.2rem 0;
 		font-size: 0.9rem;
 		font-weight: 600;
+		color: var(--text);
 	}
-	summary:hover {
-		background: var(--surface-2);
+	.folder-link:hover {
+		text-decoration: none;
 	}
 
 	.count {
