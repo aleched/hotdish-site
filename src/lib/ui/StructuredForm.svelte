@@ -1,8 +1,14 @@
 <script lang="ts">
 	import type { StructuredDoc, StructuredSection } from '$lib/template/parse';
 	import { itemsToLines, linesToItems } from '$lib/template/serialize';
-	import type { RecipeTemplate, TemplateField, TemplateSection } from '$lib/template/schema';
+	import type {
+		RecipeTemplate,
+		SectionType,
+		TemplateField,
+		TemplateSection
+	} from '$lib/template/schema';
 	import { validateFields } from '$lib/template/schema';
+	import Icon from '$lib/ui/Icon.svelte';
 
 	interface Props {
 		doc: StructuredDoc;
@@ -99,6 +105,94 @@
 
 	function fieldInputId(field: TemplateField): string {
 		return `field-${field.key}`;
+	}
+
+	const SECTION_TYPES: { value: SectionType; label: string }[] = [
+		{ value: 'text', label: 'Free text' },
+		{ value: 'list', label: 'Bulleted' },
+		{ value: 'ordered', label: 'Numbered' }
+	];
+
+	function onTypeKey(event: KeyboardEvent, section: StructuredSection) {
+		const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
+		if (!step) return;
+		event.preventDefault();
+		const current = SECTION_TYPES.findIndex((item) => item.value === section.type);
+		const next = (current + step + SECTION_TYPES.length) % SECTION_TYPES.length;
+		section.type = SECTION_TYPES[next].value;
+		// The first child is the sliding highlight, so the radios start at index 1.
+		const group = event.currentTarget as HTMLElement;
+		requestAnimationFrame(() =>
+			(group.parentElement?.children[next + 1] as HTMLElement | undefined)?.focus()
+		);
+	}
+
+	let dragIndex = $state<number | null>(null);
+	let overIndex = $state<number | null>(null);
+
+	function onDragStart(event: DragEvent, index: number) {
+		dragIndex = index;
+		if (event.dataTransfer) {
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('text/plain', String(index));
+			// Drag the whole card rather than just the grip.
+			const card = (event.currentTarget as HTMLElement).closest('section');
+			if (card) event.dataTransfer.setDragImage(card, 16, 16);
+		}
+	}
+
+	function onDragOver(event: DragEvent, index: number) {
+		if (dragIndex === null) return;
+		event.preventDefault();
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+		overIndex = index;
+	}
+
+	function onDrop(event: DragEvent, index: number) {
+		event.preventDefault();
+		if (dragIndex !== null && dragIndex !== index) moveSection(dragIndex, index - dragIndex);
+		onDragEnd();
+	}
+
+	function onDragEnd() {
+		dragIndex = null;
+		overIndex = null;
+	}
+
+	function onGripKey(event: KeyboardEvent, index: number) {
+		const delta = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+		if (!delta) return;
+		event.preventDefault();
+		moveSection(index, delta);
+		requestAnimationFrame(() =>
+			document.querySelector<HTMLElement>(`[data-section-grip="${index + delta}"]`)?.focus()
+		);
+	}
+
+	/** Sizes a textarea to its content so no inner scrollbar is needed, and keeps it that way. */
+	function autosize(node: HTMLTextAreaElement, _value?: unknown) {
+		let width = 0;
+		const fit = () => {
+			node.style.height = 'auto';
+			// scrollHeight excludes the border, which border-box sizing needs back.
+			node.style.height = `${node.scrollHeight + node.offsetHeight - node.clientHeight}px`;
+		};
+		fit();
+		node.addEventListener('input', fit);
+		// Wrapping changes with the width, so refit when it does.
+		const observer = new ResizeObserver(() => {
+			if (node.clientWidth === width) return;
+			width = node.clientWidth;
+			fit();
+		});
+		observer.observe(node);
+		return {
+			update: fit,
+			destroy() {
+				node.removeEventListener('input', fit);
+				observer.disconnect();
+			}
+		};
 	}
 </script>
 
@@ -226,44 +320,68 @@
 	{#if doc.preamble.trim()}
 		<section class="card stack">
 			<h2>Introduction</h2>
-			<textarea rows="3" bind:value={doc.preamble}></textarea>
+			<textarea rows="3" use:autosize={doc.preamble} bind:value={doc.preamble}></textarea>
 		</section>
 	{/if}
 
 	{#each doc.sections as section, sectionIndex (section)}
-		<section class="card stack">
+		<section
+			class="card stack"
+			class:dragging={dragIndex === sectionIndex}
+			class:over={overIndex === sectionIndex && dragIndex !== sectionIndex}
+			ondragover={(event) => onDragOver(event, sectionIndex)}
+			ondrop={(event) => onDrop(event, sectionIndex)}
+		>
 			<header class="section-head">
+				<button
+					type="button"
+					class="grip"
+					draggable="true"
+					data-section-grip={sectionIndex}
+					title="Drag to reorder (or use Arrow Up/Down)"
+					aria-label={`Reorder ${section.heading || 'section'}`}
+					ondragstart={(event) => onDragStart(event, sectionIndex)}
+					ondragend={onDragEnd}
+					onkeydown={(event) => onGripKey(event, sectionIndex)}
+				>
+					<Icon name="grip" />
+				</button>
 				<input
 					class="heading-input"
 					type="text"
 					bind:value={section.heading}
 					aria-label="Section heading"
 				/>
-				<select bind:value={section.type} aria-label="Section style">
-					<option value="list">Bulleted</option>
-					<option value="ordered">Numbered</option>
-					<option value="text">Free text</option>
-				</select>
-				<div class="row">
-					<button
-						type="button"
-						class="ghost"
-						title="Move up"
-						onclick={() => moveSection(sectionIndex, -1)}
-					>↑</button>
-					<button
-						type="button"
-						class="ghost"
-						title="Move down"
-						onclick={() => moveSection(sectionIndex, 1)}
-					>↓</button>
-					<button
-						type="button"
-						class="ghost danger"
-						title="Remove section"
-						onclick={() => removeSection(sectionIndex)}
-					>✕</button>
+				<div
+					class="type-toggle"
+					role="radiogroup"
+					aria-label="Section style"
+					style:--i={SECTION_TYPES.findIndex((item) => item.value === section.type)}
+				>
+					<span class="thumb" aria-hidden="true"></span>
+					{#each SECTION_TYPES as option (option.value)}
+						<button
+							type="button"
+							role="radio"
+							aria-checked={section.type === option.value}
+							aria-label={option.label}
+							title={option.label}
+							tabindex={section.type === option.value ? 0 : -1}
+							class:on={section.type === option.value}
+							onclick={() => (section.type = option.value)}
+							onkeydown={(event) => onTypeKey(event, section)}
+						>
+							<Icon name={option.value} size={15} />
+						</button>
+					{/each}
 				</div>
+				<button
+					type="button"
+					class="ghost danger"
+					title="Remove section"
+					aria-label="Remove section"
+					onclick={() => removeSection(sectionIndex)}
+				>✕</button>
 			</header>
 
 			{#if !section.matched && template}
@@ -295,7 +413,8 @@
 
 					{#if section.type === 'text'}
 						<textarea
-							rows="5"
+							rows="3"
+							use:autosize={block.leadingText}
 							placeholder={placeholderFor(section.type)}
 							value={block.leadingText}
 							oninput={(event) => (block.leadingText = event.currentTarget.value)}
@@ -305,6 +424,7 @@
 							<textarea
 								rows="2"
 								class="aside"
+								use:autosize={block.leadingText}
 								aria-label="Text before the list"
 								value={block.leadingText}
 								oninput={(event) => (block.leadingText = event.currentTarget.value)}
@@ -312,7 +432,8 @@
 						{/if}
 
 						<textarea
-							rows={Math.max(4, block.items.length + 1)}
+							rows="3"
+							use:autosize={block.items}
 							placeholder={placeholderFor(section.type)}
 							value={itemsToLines(block.items)}
 							oninput={(event) => (block.items = linesToItems(event.currentTarget.value))}
@@ -325,6 +446,7 @@
 							<textarea
 								rows="2"
 								class="aside"
+								use:autosize={block.trailingText}
 								aria-label="Text after the list"
 								value={block.trailingText}
 								oninput={(event) => (block.trailingText = event.currentTarget.value)}
@@ -335,7 +457,7 @@
 			{/each}
 
 			<div>
-				<button type="button" class="link" onclick={() => addBlock(section)}>
+				<button type="button" class="add-sub" onclick={() => addBlock(section)}>
 					+ Add {templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}
 				</button>
 			</div>
@@ -364,7 +486,7 @@
 					blocks: [{ items: [], leadingText: '', trailingText: '' }]
 				})}
 		>
-			+ Add custom section
+			+ Add section
 		</button>
 	</div>
 </div>
@@ -420,8 +542,86 @@
 		flex: 1 1 12rem;
 		font-weight: 600;
 	}
-	.section-head select {
+	.grip {
 		width: auto;
+		padding: 0.3rem 0.2rem;
+		border: none;
+		background: transparent;
+		color: var(--text-dim);
+		cursor: grab;
+		touch-action: none;
+		display: inline-flex;
+	}
+	.grip:hover {
+		color: var(--accent);
+		background: transparent;
+	}
+	.card.dragging {
+		opacity: 0.45;
+	}
+	.card.over {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 2px var(--accent);
+	}
+
+	.type-toggle {
+		position: relative;
+		display: inline-grid;
+		grid-template-columns: repeat(3, 2rem);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface-2);
+		padding: 2px;
+	}
+	.type-toggle .thumb {
+		position: absolute;
+		top: 2px;
+		bottom: 2px;
+		left: 2px;
+		width: 2rem;
+		border-radius: 999px;
+		background: var(--accent);
+		transform: translateX(calc(var(--i) * 2rem));
+		transition: transform 0.18s ease;
+	}
+	.type-toggle button {
+		position: relative;
+		width: 2rem;
+		height: 1.6rem;
+		padding: 0;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--text-dim);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.type-toggle button:hover {
+		background: transparent;
+		color: var(--text);
+	}
+	.type-toggle button.on {
+		color: #fff;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.type-toggle .thumb {
+			transition: none;
+		}
+	}
+
+	.add-sub {
+		font-size: 0.85rem;
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--text);
+		cursor: pointer;
+	}
+	.add-sub:hover {
+		border-color: var(--accent);
+		color: var(--accent);
 	}
 
 	.sub-input {

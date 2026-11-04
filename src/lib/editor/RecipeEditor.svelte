@@ -12,6 +12,7 @@
 	import { authStore } from '$lib/store/auth.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
 	import Milkdown from './Milkdown.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
 
 	type Mode = 'form' | 'rich' | 'source';
 
@@ -32,6 +33,26 @@
 	const rawOnly = Boolean(doc.frontmatterError);
 
 	let mode = $state<Mode>(rawOnly ? 'source' : 'form');
+
+	const ALL_MODES: { value: Mode; label: string; icon: 'form' | 'markdown' | 'rich' }[] = [
+		{ value: 'form', label: 'Form', icon: 'form' },
+		{ value: 'source', label: 'Markdown', icon: 'markdown' },
+		{ value: 'rich', label: 'Rich text', icon: 'rich' }
+	];
+	const modes = ALL_MODES;
+
+	function onModeKey(event: KeyboardEvent, index: number) {
+		const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
+		if (!step || rawOnly) return;
+		event.preventDefault();
+		const next = (index + step + modes.length) % modes.length;
+		setMode(modes[next].value);
+		const group = event.currentTarget as HTMLElement;
+		// The first child is the sliding highlight, so the radios start at index 1.
+		requestAnimationFrame(() =>
+			(group.parentElement?.children[next + 1] as HTMLElement | undefined)?.focus()
+		);
+	}
 	// svelte-ignore state_referenced_locally
 	let fields = $state<Record<string, unknown>>($state.snapshot(doc.fields));
 	// svelte-ignore state_referenced_locally
@@ -165,43 +186,58 @@
 
 <div class="editor stack">
 	<header class="bar">
-		<div class="tabs" role="tablist" aria-label="Editing mode">
-			{#if !rawOnly}
+		<div
+			class="mode-toggle"
+			role="radiogroup"
+			aria-label="Editing mode"
+			style:--n={modes.length}
+			style:--i={Math.max(0, modes.findIndex((item) => item.value === mode))}
+		>
+			<span class="thumb" aria-hidden="true"></span>
+			{#each modes as item, index (item.value)}
+				{@const unavailable = rawOnly && item.value !== 'source'}
 				<button
 					type="button"
-					role="tab"
-					aria-selected={mode === 'form'}
-					class:active={mode === 'form'}
-					onclick={() => setMode('form')}
+					role="radio"
+					aria-checked={mode === item.value}
+					aria-disabled={unavailable}
+					aria-label={item.label}
+					title={unavailable
+						? `${item.label} is unavailable: the frontmatter could not be parsed`
+						: item.label}
+					tabindex={mode === item.value ? 0 : -1}
+					class:on={mode === item.value}
+					class:unavailable
+					onclick={() => !unavailable && setMode(item.value)}
+					onkeydown={(event) => onModeKey(event, index)}
 				>
-					Form
+					<Icon name={item.icon} size={17} />
 				</button>
-				<button
-					type="button"
-					role="tab"
-					aria-selected={mode === 'rich'}
-					class:active={mode === 'rich'}
-					onclick={() => setMode('rich')}
-				>
-					Rich text
-				</button>
-			{/if}
-			<button
-				type="button"
-				role="tab"
-				aria-selected={mode === 'source'}
-				class:active={mode === 'source'}
-				onclick={() => setMode('source')}
-			>
-				Markdown
-			</button>
+			{/each}
 		</div>
 
 		<div class="row">
-			{#if dirty}<span class="muted small">Unsaved changes</span>{/if}
-			<button type="button" onclick={cancel}>Cancel</button>
-			<button class="primary" type="button" disabled={!dirty || saving} onclick={startSave}>
-				Save
+			{#if dirty}
+				<span class="dirty" role="status" title="Unsaved changes" aria-label="Unsaved changes">*</span>
+			{/if}
+			<button
+				type="button"
+				class="icon-btn"
+				title="Cancel"
+				aria-label="Cancel"
+				onclick={cancel}
+			>
+				<Icon name="close" />
+			</button>
+			<button
+				class="primary icon-btn"
+				type="button"
+				title="Save"
+				aria-label="Save"
+				disabled={!dirty || saving}
+				onclick={startSave}
+			>
+				<Icon name="check" />
 			</button>
 		</div>
 	</header>
@@ -300,14 +336,73 @@
 		z-index: 10;
 	}
 
-	.tabs {
-		display: flex;
-		gap: 0.25rem;
+	.mode-toggle {
+		position: relative;
+		display: inline-grid;
+		grid-template-columns: repeat(var(--n), 2.6rem);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface-2);
+		padding: 2px;
 	}
-	.tabs button.active {
+	.mode-toggle .thumb {
+		position: absolute;
+		top: 2px;
+		bottom: 2px;
+		left: 2px;
+		width: 2.6rem;
+		border-radius: 999px;
 		background: var(--accent);
-		border-color: var(--accent);
+		transform: translateX(calc(var(--i) * 2.6rem));
+		transition: transform 0.18s ease;
+	}
+	.mode-toggle button {
+		position: relative;
+		width: 2.6rem;
+		height: 1.9rem;
+		padding: 0;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--text-dim);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.mode-toggle button:hover {
+		background: transparent;
+		color: var(--text);
+	}
+	.mode-toggle button.on {
 		color: #fff;
+	}
+	.mode-toggle button.unavailable {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+	.mode-toggle button.unavailable:hover {
+		color: var(--text-dim);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.mode-toggle .thumb {
+			transition: none;
+		}
+	}
+
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.1rem;
+		height: 2.1rem;
+		padding: 0;
+	}
+	.dirty {
+		color: var(--danger);
+		font-size: 1.6rem;
+		font-weight: 700;
+		line-height: 1;
+		cursor: default;
 	}
 
 	.small {

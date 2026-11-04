@@ -9,7 +9,15 @@
 			| 'collapse'
 			| 'settings'
 			| 'grip'
-			| 'filter';
+			| 'filter'
+			| 'text'
+			| 'list'
+			| 'ordered'
+			| 'form'
+			| 'markdown'
+			| 'rich'
+			| 'check'
+			| 'close';
 		size?: number;
 	}
 
@@ -47,6 +55,29 @@
 	{:else if name === 'settings'}
 		<path stroke-width="1.2" d="M6.69 2.76L6.90 1.09L9.10 1.09L9.31 2.76A5.4 5.4 0 0 1 10.78 3.37L12.11 2.34L13.66 3.89L12.63 5.22A5.4 5.4 0 0 1 13.24 6.69L14.91 6.90L14.91 9.10L13.24 9.31A5.4 5.4 0 0 1 12.63 10.78L13.66 12.11L12.11 13.66L10.78 12.63A5.4 5.4 0 0 1 9.31 13.24L9.10 14.91L6.90 14.91L6.69 13.24A5.4 5.4 0 0 1 5.22 12.63L3.89 13.66L2.34 12.11L3.37 10.78A5.4 5.4 0 0 1 2.76 9.31L1.09 9.10L1.09 6.90L2.76 6.69A5.4 5.4 0 0 1 3.37 5.22L2.34 3.89L3.89 2.34L5.22 3.37A5.4 5.4 0 0 1 6.69 2.76z" />
 		<circle cx="8" cy="8" r="2.2" stroke-width="1.2" />
+	{:else if name === 'text'}
+		<path d="M2.5 4h11M2.5 8h11M2.5 12h7" />
+	{:else if name === 'list'}
+		<g fill="currentColor" stroke="none">
+			<circle cx="3" cy="4" r="1" /><circle cx="3" cy="8" r="1" /><circle cx="3" cy="12" r="1" />
+		</g>
+		<path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
+	{:else if name === 'ordered'}
+		<path d="M1.8 3.4l1.1-.7v3.3M1.8 9.4c.2-.9 2.2-.9 2.2.1 0 .9-2.2 1.5-2.2 2.5h2.3" stroke-width="1.1" />
+		<path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
+	{:else if name === 'form'}
+		<rect x="2" y="2" width="12" height="12" rx="1.5" />
+		<path d="M5 6h6M5 10h4" />
+	{:else if name === 'markdown'}
+		<rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+		<path d="M4 10V6l2 2.5L8 6v4M11 6v4M9.5 8.5l1.5 1.5 1.5-1.5" stroke-width="1.2" />
+	{:else if name === 'rich'}
+		<path d="M1.5 12.5l3.2-9 3.2 9M2.7 9.5h4" />
+		<path d="M10 12.5V8.2M10 9.6c.3-1 1-1.4 2-1.4s1.5.6 1.5 1.5v2.8" stroke-width="1.2" />
+	{:else if name === 'check'}
+		<path stroke-width="1.8" d="M3 8.5l3.3 3.3L13 4.5" />
+	{:else if name === 'close'}
+		<path stroke-width="1.8" d="M4 4l8 8M12 4l-8 8" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

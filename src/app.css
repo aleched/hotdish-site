@@ -228,6 +228,21 @@ textarea {
 	padding: 0.45rem 0.6rem;
 	width: 100%;
 }
+textarea {
+	scrollbar-width: thin;
+	scrollbar-color: var(--border) transparent;
+}
+textarea::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+textarea::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 4px;
+}
+textarea::-webkit-scrollbar-track {
+	background: transparent;
+}
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
