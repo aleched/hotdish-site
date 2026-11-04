@@ -16,8 +16,14 @@
 			| 'form'
 			| 'markdown'
 			| 'rich'
-			| 'check'
-			| 'close';
+			| 'save'
+			| 'cancel'
+			| 'undo'
+			| 'search'
+			| 'folder'
+			| 'tag'
+			| 'section'
+			| 'subsection';
 		size?: number;
 	}
 
@@ -74,10 +80,30 @@
 	{:else if name === 'rich'}
 		<path d="M1.5 12.5l3.2-9 3.2 9M2.7 9.5h4" />
 		<path d="M10 12.5V8.2M10 9.6c.3-1 1-1.4 2-1.4s1.5.6 1.5 1.5v2.8" stroke-width="1.2" />
-	{:else if name === 'check'}
-		<path stroke-width="1.8" d="M3 8.5l3.3 3.3L13 4.5" />
-	{:else if name === 'close'}
-		<path stroke-width="1.8" d="M4 4l8 8M12 4l-8 8" />
+	{:else if name === 'save'}
+		<path d="M2.5 3.5a1 1 0 0 1 1-1h7.6l2.4 2.4v7.6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z" />
+		<path d="M5 2.5v3.3h5V2.5M4.8 13.5V9.2h6.4v4.3" />
+	{:else if name === 'cancel'}
+		<circle cx="8" cy="8" r="6" />
+		<path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4" />
+	{:else if name === 'undo'}
+		<path d="M5.5 3L2.5 6l3 3" />
+		<path d="M2.5 6H9a4 4 0 0 1 0 8H6" />
+	{:else if name === 'search'}
+		<circle cx="7" cy="7" r="4.5" />
+		<path d="M10.4 10.4L14 14" />
+	{:else if name === 'folder'}
+		<path d="M1.5 3.5h4.2l1.5 1.5h7.3v7.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" />
+	{:else if name === 'tag'}
+		<path d="M2 2.5h5.6l6.4 6.4-5.1 5.1L2.5 7.6z" />
+		<circle cx="5.2" cy="5.2" r="1" />
+	{:else if name === 'section'}
+		<rect x="2" y="2.5" width="12" height="4" rx="1" />
+		<rect x="2" y="9.5" width="12" height="4" rx="1" />
+	{:else if name === 'subsection'}
+		<rect x="2" y="2.5" width="12" height="3.5" rx="1" />
+		<rect x="5" y="9.5" width="9" height="4" rx="1" />
+		<path d="M3.5 7v4.5H5" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

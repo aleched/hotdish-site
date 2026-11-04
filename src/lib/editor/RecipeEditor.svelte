@@ -11,6 +11,7 @@
 	import { commitMessages } from '$lib/paths';
 	import { authStore } from '$lib/store/auth.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
+	import { beforeNavigate } from '$app/navigation';
 	import Milkdown from './Milkdown.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 
@@ -67,6 +68,8 @@
 	let conflict = $state(false);
 	let message = $state('');
 	let confirming = $state(false);
+	let resetKey = $state(0);
+	let leaving = false;
 
 	if (!rawOnly) structured = toStructured();
 
@@ -162,6 +165,7 @@
 
 			repoStore.applySavedDoc(doc.path, content, result.sha);
 			confirming = false;
+			leaving = true;
 			onclose?.();
 		} catch (error) {
 			saveError = error;
@@ -173,13 +177,31 @@
 
 	async function reloadFromRepo() {
 		await repoStore.reload();
+		leaving = true;
 		onclose?.();
+	}
+
+	function undo() {
+		if (!window.confirm('Discard your unsaved changes?')) return;
+		fields = $state.snapshot(doc.fields);
+		body = doc.body;
+		rawText = doc.raw;
+		if (!rawOnly) structured = toStructured();
+		// Re-mounts the active editor so it picks up the restored content.
+		resetKey++;
 	}
 
 	function cancel() {
 		if (dirty && !window.confirm('Discard your unsaved changes?')) return;
+		leaving = true;
 		onclose?.();
 	}
+
+	// Guards in-app navigation (links, back button); beforeunload covers closing the tab.
+	beforeNavigate((navigation) => {
+		if (leaving || !dirty || navigation.type === 'leave') return;
+		if (!window.confirm('Discard your unsaved changes?')) navigation.cancel();
+	});
 </script>
 
 <svelte:window onbeforeunload={beforeUnload} />
@@ -216,28 +238,37 @@
 			{/each}
 		</div>
 
-		<div class="row">
+		<div class="split">
 			{#if dirty}
-				<span class="dirty" role="status" title="Unsaved changes" aria-label="Unsaved changes">*</span>
+				<button
+					type="button"
+					class="part"
+					title="Undo changes"
+					aria-label="Undo changes"
+					disabled={saving}
+					onclick={undo}
+				>
+					<Icon name="undo" />
+				</button>
 			{/if}
 			<button
 				type="button"
-				class="icon-btn"
+				class="part"
 				title="Cancel"
 				aria-label="Cancel"
 				onclick={cancel}
 			>
-				<Icon name="close" />
+				<Icon name="cancel" />
 			</button>
 			<button
-				class="primary icon-btn"
+				class="part save"
 				type="button"
 				title="Save"
 				aria-label="Save"
 				disabled={!dirty || saving}
 				onclick={startSave}
 			>
-				<Icon name="check" />
+				<Icon name="save" />
 			</button>
 		</div>
 	</header>
@@ -256,9 +287,13 @@
 	{/if}
 
 	{#if mode === 'form' && structured}
-		<StructuredForm doc={structured} template={repoStore.template} />
+		{#key resetKey}
+			<StructuredForm doc={structured} template={repoStore.template} />
+		{/key}
 	{:else if mode === 'rich'}
-		<Milkdown bind:this={richEditor} value={body} onchange={(markdown) => (body = markdown)} />
+		{#key resetKey}
+			<Milkdown bind:this={richEditor} value={body} onchange={(markdown) => (body = markdown)} />
+		{/key}
 	{:else}
 		<div class="source">
 			{#if rawOnly}
@@ -389,20 +424,43 @@
 		}
 	}
 
-	.icon-btn {
+	.split {
+		display: inline-flex;
+	}
+	.part {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.1rem;
-		height: 2.1rem;
-		padding: 0;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--surface);
+		color: var(--text);
+		line-height: 0;
+		cursor: pointer;
 	}
-	.dirty {
-		color: var(--danger);
-		font-size: 1.6rem;
-		font-weight: 700;
-		line-height: 1;
-		cursor: default;
+	.part:hover:not(:disabled) {
+		text-decoration: none;
+		border-color: var(--accent);
+		position: relative;
+	}
+	.part.save:not(:disabled) {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.part:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.split > .part:first-child {
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	}
+	.split > .part:last-child {
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.split > .part + .part {
+		margin-left: -1px;
 	}
 
 	.small {

@@ -9,6 +9,7 @@
 	} from '$lib/template/schema';
 	import { validateFields } from '$lib/template/schema';
 	import Icon from '$lib/ui/Icon.svelte';
+	import TagInput from '$lib/ui/TagInput.svelte';
 
 	interface Props {
 		doc: StructuredDoc;
@@ -198,23 +199,24 @@
 
 <div class="form stack">
 	<section class="card stack">
-		<h2>Details</h2>
-
-		<div class="field">
-			<label class="label" for="field-title">Title</label>
-			<input
-				id="field-title"
-				type="text"
-				value={textValue('title')}
-				oninput={(event) => setField('title', event.currentTarget.value)}
-			/>
-		</div>
+		<input
+			id="field-title"
+			type="text"
+			aria-label="Title"
+			title="Title"
+			value={textValue('title')}
+			oninput={(event) => setField('title', event.currentTarget.value)}
+		/>
 
 		{#if template}
 			{#each template.fields as field (field.key)}
 				{#if field.key !== 'title'}
-					<div class="field">
-						<label class="label" for={fieldInputId(field)}>
+					<div class="field" class:with-icon={field.key === 'tags'}>
+						{#if field.key === 'tags'}
+							<span class="field-icon" title="Tags"><Icon name="tag" size={20} /></span>
+						{/if}
+						<div class="field-body">
+						<label class="label" class:visually-hidden={field.key === 'tags'} for={fieldInputId(field)}>
 							{field.label}{#if field.required}<span class="req">*</span>{/if}
 						</label>
 
@@ -234,18 +236,10 @@
 								{/each}
 							</div>
 							{#if field.allowCustom}
-								<input
-									type="text"
-									placeholder="Comma separated, custom values allowed"
-									value={listValue(field.key).join(', ')}
-									oninput={(event) =>
-										setField(
-											field.key,
-											event.currentTarget.value
-												.split(',')
-												.map((item) => item.trim())
-												.filter(Boolean)
-										)}
+								<TagInput
+									values={listValue(field.key)}
+									placeholder="Add a custom value"
+									onchange={(values) => setField(field.key, values)}
 								/>
 							{/if}
 						{:else if field.type === 'enum'}
@@ -291,28 +285,23 @@
 						{#if issueFor(field.key)}
 							<p class="warn-text">{issueFor(field.key)}</p>
 						{/if}
+						</div>
 					</div>
 				{/if}
 			{/each}
 		{/if}
 
 		{#if !template || !template.fields.some((field) => field.key === 'tags')}
-			<div class="field">
-				<label class="label" for="field-tags">Tags</label>
-				<input
-					id="field-tags"
-					type="text"
-					placeholder="comma separated"
-					value={listValue('tags').join(', ')}
-					oninput={(event) =>
-						setField(
-							'tags',
-							event.currentTarget.value
-								.split(',')
-								.map((item) => item.trim())
-								.filter(Boolean)
-						)}
-				/>
+			<div class="field with-icon">
+				<span class="field-icon" title="Tags"><Icon name="tag" size={20} /></span>
+				<div class="field-body">
+					<label class="visually-hidden" for="field-tags">Tags</label>
+					<TagInput
+						id="field-tags"
+						values={listValue('tags')}
+						onchange={(values) => setField('tags', values)}
+					/>
+				</div>
 			</div>
 		{/if}
 	</section>
@@ -327,6 +316,8 @@
 	{#each doc.sections as section, sectionIndex (section)}
 		<section
 			class="card stack"
+			role="group"
+			aria-label={section.heading || 'Section'}
 			class:dragging={dragIndex === sectionIndex}
 			class:over={overIndex === sectionIndex && dragIndex !== sectionIndex}
 			ondragover={(event) => onDragOver(event, sectionIndex)}
@@ -377,11 +368,11 @@
 				</div>
 				<button
 					type="button"
-					class="ghost danger"
+					class="ghost danger remove"
 					title="Remove section"
 					aria-label="Remove section"
 					onclick={() => removeSection(sectionIndex)}
-				>✕</button>
+				><Icon name="trash" /></button>
 			</header>
 
 			{#if !section.matched && template}
@@ -404,10 +395,11 @@
 							/>
 							<button
 								type="button"
-								class="ghost danger"
-								title="Remove"
+								class="ghost danger remove"
+								title="Remove sub-section"
+								aria-label="Remove sub-section"
 								onclick={() => removeBlock(section, blockIndex)}
-							>✕</button>
+							><Icon name="trash" /></button>
 						</div>
 					{/if}
 
@@ -457,8 +449,14 @@
 			{/each}
 
 			<div>
-				<button type="button" class="add-sub" onclick={() => addBlock(section)}>
-					+ Add {templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}
+				<button
+					type="button"
+					class="add-sub add-btn"
+					title={`Add ${templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}`}
+					aria-label={`Add ${templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}`}
+					onclick={() => addBlock(section)}
+				>
+					<Icon name="plus" size={14} /><Icon name="subsection" />
 				</button>
 			</div>
 		</section>
@@ -478,6 +476,9 @@
 	<div>
 		<button
 			type="button"
+			class="add-btn"
+			title="Add section"
+			aria-label="Add section"
 			onclick={() =>
 				doc.sections.push({
 					heading: 'New section',
@@ -486,7 +487,7 @@
 					blocks: [{ items: [], leadingText: '', trailingText: '' }]
 				})}
 		>
-			+ Add section
+			<Icon name="plus" size={14} /><Icon name="section" />
 		</button>
 	</div>
 </div>
@@ -501,6 +502,24 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
+	}
+	.field.with-icon {
+		flex-direction: row;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+	.field-body {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	.field-icon {
+		display: inline-flex;
+		align-items: center;
+		height: 2.1rem;
+		color: var(--text-dim);
 	}
 	.label {
 		font-size: 0.85rem;
@@ -610,6 +629,32 @@
 		}
 	}
 
+	.remove {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: auto;
+		padding: 0.25rem;
+		line-height: 0;
+		border-color: transparent;
+	}
+	.remove:hover:not(:disabled) {
+		border-color: var(--danger);
+	}
+	/* Matches the type toggle beside it: 1.6rem button + 2px padding + 1px border, each side. */
+	.section-head .remove {
+		box-sizing: border-box;
+		height: calc(1.6rem + 6px);
+		padding: 0 0.5rem;
+		border-color: var(--border);
+	}
+
+	.add-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		line-height: 0;
+	}
 	.add-sub {
 		font-size: 0.85rem;
 		padding: 0.3rem 0.7rem;

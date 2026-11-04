@@ -42,9 +42,11 @@
 	<div class="row">
 		<label class="search">
 			<span class="visually-hidden">Search recipes</span>
+			<Icon name="search" />
 			<input
 				type="search"
-				placeholder="Search recipes…"
+				aria-label="Search recipes"
+				title="Search recipes"
 				bind:value={repoStore.query}
 				autocomplete="off"
 			/>
@@ -67,7 +69,7 @@
 	{#if open}
 		<div class="popover" id={popoverId}>
 			<section>
-				<h3>Folders</h3>
+				<h3 title="Folders"><Icon name="folder" /><span class="visually-hidden">Folders</span></h3>
 				{#if repoStore.folders.length === 0}
 					<p class="muted small">No folders.</p>
 				{:else}
@@ -103,7 +105,7 @@
 
 			{#if tags.length > 0}
 				<section>
-					<h3>Tags</h3>
+					<h3 title="Tags"><Icon name="tag" /><span class="visually-hidden">Tags</span></h3>
 					<div class="tags">
 						{#each visible as tag (tag.key)}
 							<button
@@ -138,7 +140,11 @@
 				title="Clear all filters"
 				onclick={() => repoStore.clearFilters()}
 			>
-				<span aria-hidden="true">×</span>
+				<span class="clear-x" aria-hidden="true">
+					<svg viewBox="0 0 10 10" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+						<path d="M1.5 1.5l7 7M8.5 1.5l-7 7" />
+					</svg>
+				</span>
 			</button>
 			{#each repoStore.selectedFolders as path (path)}
 				<button
@@ -147,7 +153,7 @@
 					aria-label={`Remove folder filter ${path}`}
 					onclick={() => repoStore.toggleFolder(path)}
 				>
-					<Icon name="move" size={12} />
+					<Icon name="folder" size={12} />
 					{path}
 					<span aria-hidden="true">×</span>
 				</button>
@@ -190,9 +196,20 @@
 	.search {
 		flex: 1;
 		min-width: 0;
+		position: relative;
+		display: block;
+	}
+	.search :global(svg) {
+		position: absolute;
+		left: 0.6rem;
+		top: 50%;
+		transform: translateY(-50%);
+		color: var(--text-dim);
+		pointer-events: none;
 	}
 	.search input {
 		width: 100%;
+		padding-left: 2rem;
 	}
 
 	.filter-button {
@@ -245,9 +262,7 @@
 	}
 	h3 {
 		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		display: flex;
 		color: var(--text-dim);
 	}
 	.small {
@@ -321,6 +336,13 @@
 		border-color: var(--danger);
 		color: var(--danger);
 		line-height: 1.2;
+	}
+	.selectable.clear-chip .clear-x {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.2em;
+		height: 1.2em;
 	}
 	.selectable.clear-chip:hover {
 		background: var(--danger);

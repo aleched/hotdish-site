@@ -28,6 +28,17 @@
 	let basePath = $state('');
 	let token = $state('');
 	let error = $state<string | null>(null);
+	let baseline = '';
+
+	const formSnapshot = () => JSON.stringify([input, name, kind, gitRef, basePath, token]);
+	let formDirty = $derived(formSnapshot() !== baseline);
+
+	function undoForm() {
+		if (!window.confirm('Discard your unsaved changes?')) return;
+		[input, name, kind, gitRef, basePath, token] = JSON.parse(baseline);
+		needsForgeChoice = false;
+		error = null;
+	}
 
 	function startCreate() {
 		isCreating = true;
@@ -40,6 +51,7 @@
 		basePath = '';
 		token = '';
 		error = null;
+		baseline = formSnapshot();
 	}
 
 	function startEdit(profile: Profile) {
@@ -53,6 +65,7 @@
 		basePath = profile.basePath ?? '';
 		token = profile.token ?? '';
 		error = null;
+		baseline = formSnapshot();
 	}
 
 	function cancelEdit() {
@@ -179,6 +192,41 @@
 
 {#snippet editForm()}
 				<form onsubmit={save} class="form inline-form">
+					<div class="form-actions">
+						<div class="split">
+							{#if formDirty}
+								<button
+									type="button"
+									class="part"
+									title="Discard changes"
+									aria-label="Discard changes"
+									disabled={isDetectingForge}
+									onclick={undoForm}
+								>
+									<Icon name="undo" />
+								</button>
+							{/if}
+							<button
+								type="button"
+								class="part"
+								title="Cancel"
+								aria-label="Cancel"
+								disabled={isDetectingForge}
+								onclick={cancelEdit}
+							>
+								<Icon name="cancel" />
+							</button>
+							<button
+								class="part save"
+								type="submit"
+								title={isDetectingForge ? 'Detecting forge...' : isCreating ? 'Save and open' : 'Save changes'}
+								aria-label={isCreating ? 'Save and open' : 'Save changes'}
+								disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
+							>
+								<Icon name="save" />
+							</button>
+						</div>
+					</div>
 					<div class="grid url-row">
 						<div class="field">
 							<label class="label" for="input">Repository URL <span class="required" aria-hidden="true">*</span></label>
@@ -227,16 +275,6 @@
 					{/if}
 					{#if kind}<p class="muted hint">{TOKEN_GUIDANCE[kind]}</p>{/if}
 					{#if error}<p class="banner error" role="alert">{error}</p>{/if}
-					<div class="row">
-						<button
-							class="primary"
-							type="submit"
-							disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
-						>
-							{isDetectingForge ? 'Detecting forge...' : isCreating ? 'Save and open' : 'Save changes'}
-						</button>
-						<button type="button" onclick={cancelEdit} disabled={isDetectingForge}>Cancel</button>
-					</div>
 				</form>
 {/snippet}
 
@@ -345,6 +383,49 @@
 </section>
 
 <style>
+	.split {
+		display: inline-flex;
+	}
+	.form-actions {
+		display: flex;
+		justify-content: flex-end;
+	}
+	.part {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--surface);
+		color: var(--text);
+		line-height: 0;
+		cursor: pointer;
+	}
+	.part:hover:not(:disabled) {
+		text-decoration: none;
+		border-color: var(--accent);
+		position: relative;
+	}
+	.part.save:not(:disabled) {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.part:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.split > .part:first-child {
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	}
+	.split > .part:last-child {
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.split > .part + .part {
+		margin-left: -1px;
+	}
+
 	h2 {
 		font-size: 1rem;
 		margin-bottom: 0.5rem;
