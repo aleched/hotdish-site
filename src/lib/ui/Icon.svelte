@@ -23,7 +23,12 @@
 			| 'folder'
 			| 'tag'
 			| 'section'
-			| 'subsection';
+			| 'subsection'
+			| 'clock'
+			| 'repos'
+			| 'link'
+			| 'branch'
+			| 'key';
 		size?: number;
 	}
 
@@ -104,6 +109,23 @@
 		<rect x="2" y="2.5" width="12" height="3.5" rx="1" />
 		<rect x="5" y="9.5" width="9" height="4" rx="1" />
 		<path d="M3.5 7v4.5H5" />
+	{:else if name === 'clock'}
+		<circle cx="8" cy="8" r="6" />
+		<path d="M8 4.5V8l2.3 1.5" />
+	{:else if name === 'repos'}
+		<path d="M3 2.5h8.5a1.5 1.5 0 0 1 1.5 1.5v8.5H4.5A1.5 1.5 0 0 1 3 11z" />
+		<path d="M3 11a1.5 1.5 0 0 1 1.5-1.5H13M6 5.5h4" />
+	{:else if name === 'link'}
+		<path d="M6.8 9.2a2.6 2.6 0 0 0 3.7 0l2.5-2.5a2.6 2.6 0 0 0-3.7-3.7l-.8.8" />
+		<path d="M9.2 6.8a2.6 2.6 0 0 0-3.7 0L3 9.3A2.6 2.6 0 0 0 6.7 13l.8-.8" />
+	{:else if name === 'branch'}
+		<circle cx="4.5" cy="3.5" r="1.5" />
+		<circle cx="4.5" cy="12.5" r="1.5" />
+		<circle cx="11.5" cy="5.5" r="1.5" />
+		<path d="M4.5 5v6M11.5 7c0 2.5-3 2.5-7 4" />
+	{:else if name === 'key'}
+		<circle cx="5" cy="8" r="2.8" />
+		<path d="M7.8 8H14M11.5 8v2.5M13.5 8v1.5" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

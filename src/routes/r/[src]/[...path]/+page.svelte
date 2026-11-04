@@ -419,7 +419,9 @@
 				{/if}
 			{:else if folder}
 				{#if showRecent}
-					<h2 class="recent-title">Recently viewed</h2>
+					<h2 class="recent-title" title="Recently viewed">
+						<Icon name="clock" size={20} /><span class="visually-hidden">Recently viewed</span>
+					</h2>
 					{#if recentItems.length > 0}
 						<ul class="cards">
 							{#each recentItems as item (item.path)}

@@ -100,7 +100,7 @@
 
 	function placeholderFor(type: string): string {
 		if (type === 'ordered') return 'One step per line';
-		if (type === 'list') return 'One ingredient per line';
+		if (type === 'list') return 'One bullet per line';
 		return 'Notes, prose, anything';
 	}
 
@@ -382,7 +382,7 @@
 			{/if}
 
 			{#each section.blocks as block, blockIndex (block)}
-				<div class="block">
+				<div class="block" class:grouped={section.blocks.length > 1}>
 					{#if section.blocks.length > 1 || block.heading !== undefined}
 						<div class="row">
 							<input
@@ -430,9 +430,6 @@
 							value={itemsToLines(block.items)}
 							oninput={(event) => (block.items = linesToItems(event.currentTarget.value))}
 						></textarea>
-						<p class="muted small">
-							Each line becomes {section.type === 'ordered' ? 'a numbered step' : 'a bullet'}.
-						</p>
 
 						{#if block.trailingText.trim()}
 							<textarea
@@ -678,6 +675,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+	}
+	.block.grouped {
 		padding-left: 0.6rem;
 		border-left: 2px solid var(--border);
 	}

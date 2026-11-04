@@ -194,18 +194,21 @@
 				<form onsubmit={save} class="form inline-form">
 					<div class="url-row">
 						<div class="field url-field">
-							<label class="label" for="input">Repository URL <span class="required" aria-hidden="true">*</span></label>
-							<input
-								id="input"
-								type="text"
-								aria-required="true"
-								bind:value={input}
-								placeholder="https://github.com/alice/recipes"
-								autocomplete="off"
-								spellcheck="false"
-								disabled={isDetectingForge}
-								oninput={onInput}
-							/>
+							<div class="input-icon" title="Repository URL (required)">
+								<Icon name="link" />
+								<input
+									id="input"
+									type="text"
+									aria-label="Repository URL"
+									aria-required="true"
+									bind:value={input}
+									placeholder="https://github.com/alice/recipes"
+									autocomplete="off"
+									spellcheck="false"
+									disabled={isDetectingForge}
+									oninput={onInput}
+								/>
+							</div>
 						</div>
 						<div class="split">
 							{#if formDirty}
@@ -243,25 +246,26 @@
 					</div>
 
 					<div class="grid profile-fields">
-						<div class="field">
-							<label class="label" for="name">Name</label>
-							<input id="name" type="text" bind:value={name} placeholder="My recipes" />
+						<div class="input-icon" title="Name">
+							<Icon name="repos" />
+							<input id="name" type="text" aria-label="Name" bind:value={name} placeholder="Name (My recipes)" />
 						</div>
-						<div class="field">
-							<label class="label" for="ref">Branch</label>
-							<input id="ref" type="text" bind:value={gitRef} placeholder="main" />
+						<div class="input-icon" title="Branch">
+							<Icon name="branch" />
+							<input id="ref" type="text" aria-label="Branch" bind:value={gitRef} placeholder="main" />
 						</div>
-						<div class="field">
-							<label class="label" for="base">Sub-folder</label>
-							<input id="base" type="text" bind:value={basePath} placeholder="recipes" />
+						<div class="input-icon" title="Sub-folder">
+							<Icon name="folder" />
+							<input id="base" type="text" aria-label="Sub-folder" bind:value={basePath} placeholder="recipes" />
 						</div>
 					</div>
 
-					<div class="field">
-						<label class="label" for="token">Access token</label>
+					<div class="input-icon" title="Access token">
+						<Icon name="key" />
 						<input
 							id="token"
 							type="password"
+							aria-label="Access token"
 							bind:value={token}
 							placeholder={kind ? TOKEN_GUIDANCE[kind] : 'Optional. Needed for private repositories and saving changes'}
 							autocomplete="off"
@@ -270,8 +274,7 @@
 					</div>
 					{#if needsForgeChoice}
 						<div class="field">
-							<label class="label" for="kind">Forge type</label>
-							<select id="kind" bind:value={kind}>
+							<select id="kind" aria-label="Forge type" bind:value={kind}>
 								<option value="">Select forge type</option>
 								{#each kinds as option (option)}
 									<option value={option}>{FORGE_LABELS[option]}</option>
@@ -285,7 +288,9 @@
 
 <section class="panel">
 	<div class="section-heading">
-		<h2>Saved repositories</h2>
+		<h2 title="Saved repositories">
+			<Icon name="repos" size={20} /><span class="visually-hidden">Saved repositories</span>
+		</h2>
 		<button
 			type="button"
 			class="icon-button"
@@ -518,7 +523,7 @@
 	}
 	.url-row {
 		display: flex;
-		align-items: flex-end;
+		align-items: center;
 		gap: 0.75rem;
 	}
 	.url-field {
@@ -536,12 +541,20 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}
-	.label {
-		font-size: 0.85rem;
-		font-weight: 600;
+	.input-icon {
+		position: relative;
+		display: flex;
+		align-items: center;
 	}
-	.required {
-		color: var(--danger);
+	.input-icon :global(svg) {
+		position: absolute;
+		left: 0.6rem;
+		color: var(--text-dim);
+		pointer-events: none;
+	}
+	.input-icon input {
+		width: 100%;
+		padding-left: 2rem;
 	}
 	@media (max-width: 640px) {
 		.profile-fields {
