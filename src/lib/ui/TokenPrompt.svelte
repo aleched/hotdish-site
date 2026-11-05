@@ -3,6 +3,7 @@
 	import { describeForgeError } from '$lib/forge/errors';
 	import { authStore } from '$lib/store/auth.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
 
 	let token = $state('');
@@ -63,10 +64,27 @@
 		{/if}
 
 		<div class="row actions">
-			<button type="button" disabled={checking} onclick={() => authStore.cancel()}>Cancel</button>
-			<button class="primary" type="submit" disabled={checking || !token.trim()}>
-				{checking ? 'Checking…' : 'Save token'}
-			</button>
+			<div class="split">
+				<button
+					type="button"
+					class="part"
+					title="Cancel"
+					aria-label="Cancel"
+					disabled={checking}
+					onclick={() => authStore.cancel()}
+				>
+					<Icon name="cancel" />
+				</button>
+				<button
+					class="part save"
+					type="submit"
+					title="Save token"
+					aria-label="Save token"
+					disabled={checking || !token.trim()}
+				>
+					<Icon name={checking ? 'spinner' : 'save'} />
+				</button>
+			</div>
 		</div>
 	</form>
 </Modal>
@@ -93,5 +111,45 @@
 	}
 	.actions {
 		justify-content: flex-end;
+	}
+	.split {
+		display: inline-flex;
+	}
+	.part {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 0.7rem;
+		box-sizing: border-box;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--surface);
+		color: var(--text);
+		line-height: 0;
+		cursor: pointer;
+	}
+	.part:hover:not(:disabled) {
+		border-color: var(--accent);
+		position: relative;
+	}
+	.part.save:not(:disabled) {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.part:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.split > .part:first-child {
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	}
+	.split > .part:last-child {
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.split > .part + .part {
+		margin-left: -1px;
 	}
 </style>

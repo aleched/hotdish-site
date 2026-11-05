@@ -61,7 +61,7 @@
 	{error}
 	danger
 	submitLabel="Delete"
-	busyLabel="Deleting…"
+	submitIcon="trash"
 	onsubmit={remove}
 	oncancel={onclose}
 >

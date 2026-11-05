@@ -3,6 +3,7 @@
 	import '@milkdown/crepe/theme/common/style.css';
 	import '@milkdown/crepe/theme/frame.css';
 	import { fractionBefore } from '$lib/editor/fractions';
+	import Loading from '$lib/ui/Loading.svelte';
 
 	interface CrepeLike {
 		create(): Promise<unknown>;
@@ -106,7 +107,7 @@
 <div class="host" bind:this={container}></div>
 
 {#if !ready && !error}
-	<p class="muted">Starting editor…</p>
+	<Loading label="Starting editor" />
 {/if}
 
 <style>

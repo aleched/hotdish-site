@@ -471,8 +471,8 @@
 			bind:message
 			busy={saving}
 			error={saveError}
-			submitLabel="Submit"
-			busyLabel="Saving…"
+			submitLabel="Save"
+			submitIcon="save"
 			disabled={diff.identical && !isNew && !moved}
 			wide
 			onsubmit={commit}
@@ -501,7 +501,15 @@
 						The file changed in the repository since it was loaded. Reload to get the latest
 						version — your edits here will be lost, so copy anything you need first.
 					</p>
-					<button type="button" onclick={reloadFromRepo}>Reload from repository</button>
+					<button
+						type="button"
+						class="icon-button dialog-button"
+						title="Reload from repository"
+						aria-label="Reload from repository"
+						onclick={reloadFromRepo}
+					>
+						<Icon name="refresh" />
+					</button>
 				{/if}
 			{/snippet}
 		</CommitDialog>

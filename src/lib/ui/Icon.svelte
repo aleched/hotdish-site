@@ -39,7 +39,11 @@
 			| 'monitor'
 			| 'palette'
 			| 'info'
-			| 'cache';
+			| 'cache'
+			| 'refresh'
+			| 'spinner'
+			| 'home'
+			| 'up';
 		size?: number;
 	}
 
@@ -56,6 +60,7 @@
 	stroke-linecap="round"
 	stroke-linejoin="round"
 	aria-hidden="true"
+	class:spin={name === 'spinner'}
 >
 	{#if name === 'plus'}
 		<path d="M8 3v10M3 8h10" />
@@ -177,6 +182,16 @@
 	{:else if name === 'cache'}
 		<ellipse cx="8" cy="4" rx="5" ry="2" />
 		<path d="M3 4v4c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8v4c0 1.1 2.2 2 5 2s5-.9 5-2V8" />
+	{:else if name === 'refresh'}
+		<path d="M13.5 3v3.5H10" />
+		<path d="M13.2 6.5A5.5 5.5 0 1 0 13.5 9" />
+	{:else if name === 'spinner'}
+		<path d="M8 2a6 6 0 1 0 6 6" />
+	{:else if name === 'home'}
+		<path d="M2 7.8L8 2.5l6 5.3" />
+		<path d="M3.8 6.8V13.5h8.4V6.8M6.5 13.5V9.5h3v4" />
+	{:else if name === 'up'}
+		<path d="M3 2.5h10M8 14V5.5M4.8 8.5L8 5.3l3.2 3.2" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}
@@ -187,3 +202,19 @@
 		</g>
 	{/if}
 </svg>
+
+<style>
+	.spin {
+		animation: icon-spin 0.8s linear infinite;
+	}
+	@keyframes icon-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.spin {
+			animation-duration: 2.4s;
+		}
+	}
+</style>

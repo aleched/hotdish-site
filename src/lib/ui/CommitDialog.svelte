@@ -3,6 +3,7 @@
 	import { ForgeError, describeForgeError } from '$lib/forge/errors';
 	import { authStore } from '$lib/store/auth.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
 
 	interface Props {
@@ -12,7 +13,7 @@
 		busy?: boolean;
 		error?: unknown;
 		submitLabel?: string;
-		busyLabel?: string;
+		submitIcon?: 'save' | 'trash';
 		danger?: boolean;
 		/** Extra validation from the caller, e.g. an invalid destination. */
 		disabled?: boolean;
@@ -32,7 +33,7 @@
 		busy = false,
 		error = null,
 		submitLabel = 'Submit',
-		busyLabel = 'Submitting…',
+		submitIcon = 'save',
 		danger = false,
 		disabled = false,
 		wide = false,
@@ -85,7 +86,11 @@
 				<p><strong>{described.message}</strong></p>
 				{#if described.hint}<p>{described.hint}</p>{/if}
 				{#if authFailed}
-					<button type="button" onclick={() => authStore.requireToken({ force: true })}>
+					<button
+						type="button"
+						class="dialog-button"
+						onclick={() => authStore.requireToken({ force: true })}
+					>
 						Update access token
 					</button>
 				{/if}
@@ -94,15 +99,28 @@
 		{/if}
 
 		<div class="row actions">
-			<button type="button" disabled={busy} onclick={oncancel}>Cancel</button>
-			<button
-				class="primary"
-				class:danger-fill={danger}
-				type="submit"
-				disabled={busy || disabled || !message.trim()}
-			>
-				{busy ? busyLabel : submitLabel}
-			</button>
+			<div class="split">
+				<button
+					type="button"
+					class="part"
+					title="Cancel"
+					aria-label="Cancel"
+					disabled={busy}
+					onclick={oncancel}
+				>
+					<Icon name="cancel" />
+				</button>
+				<button
+					class="part save"
+					class:danger-fill={danger}
+					type="submit"
+					title={submitLabel}
+					aria-label={submitLabel}
+					disabled={busy || disabled || !message.trim()}
+				>
+					<Icon name={busy ? 'spinner' : submitIcon} />
+				</button>
+			</div>
 		</div>
 	</form>
 </Modal>
@@ -127,13 +145,48 @@
 	.actions {
 		justify-content: flex-end;
 	}
-	button.primary.danger-fill {
+	.split {
+		display: inline-flex;
+	}
+	.part {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 0.7rem;
+		box-sizing: border-box;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--surface);
+		color: var(--text);
+		line-height: 0;
+		cursor: pointer;
+	}
+	.part:hover:not(:disabled) {
+		border-color: var(--accent);
+		position: relative;
+	}
+	.part.save:not(:disabled) {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.part.save.danger-fill:not(:disabled) {
 		background: var(--danger);
 		border-color: var(--danger);
 	}
-	button.primary.danger-fill:hover:not(:disabled) {
-		filter: brightness(1.1);
-		background: var(--danger);
-		border-color: var(--danger);
+	.part:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.split > .part:first-child {
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	}
+	.split > .part:last-child {
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.split > .part + .part {
+		margin-left: -1px;
 	}
 </style>

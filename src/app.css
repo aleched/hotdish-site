@@ -207,12 +207,46 @@ button.icon-button {
 	color: var(--text);
 	line-height: 0;
 }
+button.dialog-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	box-sizing: border-box;
+	/* Matches the home-page repo buttons and text inputs. */
+	height: calc(1.6rem + 0.9rem + 2px);
+	padding: 0 0.7rem;
+	line-height: 1;
+}
+
+button.icon-button.primary {
+	color: #fff;
+}
+button.icon-button.danger {
+	color: var(--danger);
+}
 button.icon-button:hover:not(:disabled) {
 	border-color: var(--accent);
 }
 button.icon-button.danger-hover:hover:not(:disabled) {
 	border-color: var(--danger);
 	color: var(--danger);
+}
+
+a.icon-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.4rem 0.6rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text);
+	line-height: 0;
+}
+a.icon-link:hover {
+	text-decoration: none;
+	border-color: var(--accent);
 }
 
 input[type='text'],

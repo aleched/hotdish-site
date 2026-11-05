@@ -8,6 +8,7 @@
 	import { encodeSrc } from '$lib/share/codec';
 	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import EmptyState from '$lib/ui/EmptyState.svelte';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 	let isMounted = true;
@@ -72,6 +73,11 @@
 		isCreating = false;
 		editingId = null;
 		error = null;
+	}
+
+	function cancelForm() {
+		if (formDirty && !window.confirm('Discard your unsaved changes?')) return;
+		cancelEdit();
 	}
 
 	// Clicking away from an untouched form simply closes it.
@@ -252,7 +258,7 @@
 								title="Cancel"
 								aria-label="Cancel"
 								disabled={isDetectingForge}
-								onclick={cancelEdit}
+								onclick={cancelForm}
 							>
 								<Icon name="cancel" />
 							</button>
@@ -376,8 +382,26 @@
 					<div class="row actions">
 						{#if confirming?.id === profile.id}
 							<span class="confirm-text">Delete this repository?</span>
-							<button type="button" class="danger" onclick={() => runConfirmed(profile)}>Delete</button>
-							<button type="button" onclick={() => (confirming = null)}>Cancel</button>
+							<div class="split">
+								<button
+									type="button"
+									class="part"
+									title="Cancel"
+									aria-label="Cancel"
+									onclick={() => (confirming = null)}
+								>
+									<Icon name="cancel" />
+								</button>
+								<button
+									type="button"
+									class="part danger-part"
+									title="Confirm delete"
+									aria-label="Confirm delete"
+									onclick={() => runConfirmed(profile)}
+								>
+									<Icon name="trash" />
+								</button>
+							</div>
 						{:else}
 							<div class="split">
 								<button
@@ -407,7 +431,7 @@
 		{/each}
 	</ul>
 	{#if !isCreating && !profileStore.profiles.length}
-		<p class="muted">No saved repositories yet. Use the + button to add one.</p>
+		<EmptyState icon="repos" label="No saved repositories yet. Use the + button to add one." />
 	{/if}
 </section>
 
@@ -452,6 +476,11 @@
 	}
 	.split > .part + .part {
 		margin-left: -1px;
+	}
+	.part.danger-part {
+		border-color: var(--danger);
+		color: var(--danger);
+		position: relative;
 	}
 	.part.danger-hover:hover:not(:disabled) {
 		border-color: var(--danger);

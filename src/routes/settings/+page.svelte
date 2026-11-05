@@ -91,9 +91,27 @@
 	<h2 title="Cache"><Icon name="cache" size={20} /><span class="visually-hidden">Cache</span></h2>
 	<div class="card row cache">
 		{#if confirmingCache}
+			<div class="split">
+				<button
+					type="button"
+					class="part"
+					title="Cancel"
+					aria-label="Cancel"
+					onclick={() => (confirmingCache = false)}
+				>
+					<Icon name="cancel" />
+				</button>
+				<button
+					type="button"
+					class="part danger-part"
+					title="Confirm clear cache"
+					aria-label="Confirm clear cache"
+					onclick={emptyCache}
+				>
+					<Icon name="trash" />
+				</button>
+			</div>
 			<span class="confirm-text">Clear cached recipes?</span>
-			<button type="button" class="danger" onclick={emptyCache}>Clear</button>
-			<button type="button" onclick={() => (confirmingCache = false)}>Cancel</button>
 		{:else}
 			<button
 				type="button"
@@ -172,6 +190,8 @@
 	.cache button {
 		display: inline-flex;
 		align-items: center;
+		box-sizing: border-box;
+		height: calc(1.6rem + 0.9rem + 2px);
 		gap: 0.4rem;
 	}
 	.switch {
@@ -248,11 +268,15 @@
 		justify-content: center;
 		gap: 0.4rem;
 		width: auto;
-		padding: 0.4rem 0.7rem;
+		padding: 0 0.7rem;
+		box-sizing: border-box;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
 		border: 1px solid var(--border);
 		border-radius: 0;
 		background: var(--surface);
 		color: var(--text);
+		line-height: 0;
 		cursor: pointer;
 	}
 	.part:hover {
@@ -263,6 +287,11 @@
 	.part.selected {
 		border-color: var(--accent);
 		color: var(--accent);
+		position: relative;
+	}
+	.part.danger-part {
+		border-color: var(--danger);
+		color: var(--danger);
 		position: relative;
 	}
 	.split > .part:first-child {

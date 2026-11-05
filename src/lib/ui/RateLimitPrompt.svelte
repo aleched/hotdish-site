@@ -22,7 +22,13 @@
 				Adding a personal access token to this repository raises the limit.
 			</p>
 			<div class="row actions">
-				<button class="primary" type="button" onclick={() => rateLimitStore.dismiss()}>OK</button>
+				<button
+					class="primary dialog-button"
+					type="button"
+					onclick={() => rateLimitStore.dismiss()}
+				>
+					OK
+				</button>
 			</div>
 		</div>
 	</Modal>

@@ -21,6 +21,8 @@
 	import { scaffoldRecipe } from '$lib/editor/scaffold';
 	import { authStore } from '$lib/store/auth.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import EmptyState from '$lib/ui/EmptyState.svelte';
+	import Loading from '$lib/ui/Loading.svelte';
 	import TokenPrompt from '$lib/ui/TokenPrompt.svelte';
 	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
 
@@ -277,15 +279,29 @@
 
 {#if decoded.error}
 	<p class="banner error">That share link could not be read ({decoded.error}).</p>
-	<p><a href="/">Open a different repository</a></p>
+	<p>
+		<a class="icon-link" href="/" title="Open a different repository" aria-label="Open a different repository">
+			<Icon name="home" size={20} />
+		</a>
+	</p>
 {:else if repoStore.status === 'error' && repoStore.error}
 	<div class="banner error">
 		<p><strong>{repoStore.error.message}</strong></p>
 		{#if repoStore.error.hint}<p>{repoStore.error.hint}</p>{/if}
 	</div>
 	<div class="row actions">
-		<button type="button" onclick={() => repoStore.reload()}>Retry</button>
-		<a href="/">Add an access token</a>
+		<button
+			type="button"
+			class="icon-button"
+			title="Retry"
+			aria-label="Retry"
+			onclick={() => repoStore.reload()}
+		>
+			<Icon name="refresh" />
+		</button>
+		<a class="icon-link" href="/" title="Add an access token" aria-label="Add an access token">
+			<Icon name="key" size={20} />
+		</a>
 	</div>
 {:else}
 	<div class="layout" class:menu-open={navStore.open}>
@@ -409,7 +425,7 @@
 
 			{#if draft}
 				{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-					<p class="muted">Loading editor…</p>
+					<Loading label="Loading editor" />
 				{:then module}
 					{@const Editor = module.default}
 					{#key draft.doc.path}
@@ -426,14 +442,14 @@
 				{#if docError}
 					<p class="banner error">{docError}</p>
 				{:else if docLoading && !doc}
-					<p class="muted">Loading recipe…</p>
+					<Loading label="Loading recipe" />
 				{:else if doc}
 					{#if editing}
 						{#if !canWrite}
 							<p class="muted">An access token is needed to edit this recipe.</p>
 						{:else}
 							{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-								<p class="muted">Loading editor…</p>
+								<Loading label="Loading editor" />
 							{:then module}
 								{@const Editor = module.default}
 								{#key doc.sha}
@@ -479,10 +495,10 @@
 							{/each}
 						</ul>
 					{:else if repoStore.status === 'ready' && !repoStore.indexing}
-						<p class="muted">No recipe view history</p>
+						<EmptyState icon="clock" label="No recipe view history" />
 					{/if}
 				{:else if folder.children.length === 0}
-					<p class="muted">This folder is empty.</p>
+					<EmptyState icon="folder" label="This folder is empty." />
 				{:else}
 					<ul class="cards">
 						{#each folder.children as child (child.path)}
@@ -508,9 +524,18 @@
 				{/if}
 			{:else if notFound}
 				<p class="banner warn">Nothing found at <code>{path}</code>.</p>
-				<p><a href={`/r/${src}`}>Back to the top of this repository</a></p>
+				<p>
+					<a
+						class="icon-link"
+						href={`/r/${src}`}
+						title="Back to the top of this repository"
+						aria-label="Back to the top of this repository"
+					>
+						<Icon name="up" size={20} />
+					</a>
+				</p>
 			{:else}
-				<p class="muted">Loading repository…</p>
+				<Loading label="Loading repository" />
 			{/if}
 		</section>
 	</div>
