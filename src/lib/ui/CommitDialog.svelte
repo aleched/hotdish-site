@@ -108,16 +108,22 @@
 		{#if children}{@render children()}{/if}
 
 		<div class="field">
-			<label class="label" for="commit-message">Commit message</label>
-			<input
-				id="commit-message"
-				type="text"
-				bind:value={message}
-				autocomplete="off"
-				use:focusAndSelect
-			/>
+			<label class="visually-hidden" for="commit-message">Commit message</label>
+			<div class="message-row">
+				<span class="message-icon" title="Commit message"><Icon name="message" size={18} /></span>
+				<input
+					id="commit-message"
+					type="text"
+					bind:value={message}
+					placeholder="Commit message"
+					autocomplete="off"
+					use:focusAndSelect
+				/>
+			</div>
 			{#if branch}
-				<p class="muted small">Commits directly to <code>{branch}</code>.</p>
+				<p class="muted small branch-note" title="Commits directly to {branch}">
+					<Icon name="branch" size={14} /><code>{branch}</code>
+				</p>
 			{/if}
 		</div>
 
@@ -192,9 +198,23 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}
-	.label {
-		font-size: 0.85rem;
-		font-weight: 600;
+	.message-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.message-row input {
+		flex: 1;
+		min-width: 0;
+	}
+	.message-icon {
+		display: inline-flex;
+		color: var(--text-dim);
+	}
+	.branch-note {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
 	}
 	.small {
 		font-size: 0.78rem;

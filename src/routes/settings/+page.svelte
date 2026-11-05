@@ -90,38 +90,24 @@
 <section class="panel">
 	<h2 title="Cache"><Icon name="cache" size={20} /><span class="visually-hidden">Cache</span></h2>
 	<div class="card row cache">
-		{#if confirmingCache}
-			<span class="confirm-text">Clear cached recipes?</span>
-			<div class="split">
-				<button
-					type="button"
-					class="part"
-					title="Cancel"
-					aria-label="Cancel"
-					onclick={() => (confirmingCache = false)}
-				>
-					<Icon name="cancel" />
-				</button>
-				<button
-					type="button"
-					class="part danger-part"
-					title="Confirm clear cache"
-					aria-label="Confirm clear cache"
-					onclick={emptyCache}
-				>
-					<Icon name="trash" />
-				</button>
-			</div>
-		{:else}
-			<button
-				type="button"
-				title="Clear cached recipe content (safe; it only costs a few extra requests)"
-				onclick={() => (confirmingCache = true)}
-			>
-				<Icon name="trash" /> Clear cache
-			</button>
-		{/if}
-		{#if cacheMessage}<span class="muted" role="status">{cacheMessage}</span>{/if}
+		<button
+			type="button"
+			class="clear"
+			class:confirming={confirmingCache}
+			title={confirmingCache
+				? 'Click again to clear the cache'
+				: 'Clear cached recipe content (safe; it only costs a few extra requests)'}
+			onclick={() => (confirmingCache ? emptyCache() : (confirmingCache = true))}
+			onblur={() => (confirmingCache = false)}
+		>
+			<Icon name="trash" />
+			<!-- Both labels share one grid cell so the button keeps its size when the text swaps. -->
+			<span class="labels">
+				<span class:hidden={confirmingCache}>Clear cache</span>
+				<span class:hidden={!confirmingCache}>Confirm clear?</span>
+			</span>
+		</button>
+		{#if cacheMessage}<span class="muted cleared" role="status" title={cacheMessage} aria-label={cacheMessage}><Icon name="check" /></span>{/if}
 	</div>
 </section>
 
@@ -194,6 +180,20 @@
 		height: calc(1.6rem + 0.9rem + 2px);
 		gap: 0.4rem;
 	}
+	.labels {
+		display: inline-grid;
+	}
+	.labels > span {
+		grid-area: 1 / 1;
+	}
+	.labels > .hidden {
+		visibility: hidden;
+	}
+	.cache button.clear.confirming {
+		background: var(--danger);
+		border-color: var(--danger);
+		color: #fff;
+	}
 	.switch {
 		display: inline-flex;
 		align-items: center;
@@ -255,10 +255,6 @@
 		text-align: left;
 		white-space: nowrap;
 	}
-	.confirm-text {
-		font-size: 0.9rem;
-	}
-
 	.split {
 		display: inline-flex;
 	}
@@ -287,11 +283,6 @@
 	.part.selected {
 		border-color: var(--accent);
 		color: var(--accent);
-		position: relative;
-	}
-	.part.danger-part {
-		border-color: var(--danger);
-		color: var(--danger);
 		position: relative;
 	}
 	.split > .part:first-child {

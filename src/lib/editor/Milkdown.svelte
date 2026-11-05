@@ -40,10 +40,6 @@
 		}
 	}
 
-	export function isReady(): boolean {
-		return ready;
-	}
-
 	/** Turns a typed fraction such as 3/4 into ¾ when space is pressed (not inside code). */
 	function onKeydown(event: KeyboardEvent) {
 		if (event.key !== ' ' || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;

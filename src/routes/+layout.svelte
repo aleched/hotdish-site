@@ -116,6 +116,7 @@
 
 	.brand {
 		display: flex;
+		flex-shrink: 0;
 		align-items: center;
 		gap: 0.45rem;
 		font-weight: 700;
@@ -140,7 +141,8 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		max-width: 40vw;
+		flex: 0 1 auto;
+		min-width: 0;
 	}
 
 	.save-repo {
@@ -161,6 +163,7 @@
 	}
 	.settings {
 		display: inline-flex;
+		flex-shrink: 0;
 		align-items: center;
 	}
 
@@ -195,9 +198,6 @@
 	@media (max-width: 860px) {
 		.burger {
 			display: inline-flex;
-		}
-		.repo {
-			max-width: 30vw;
 		}
 	}
 

@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { clear, del, get, set } from 'idb-keyval';
+import { clear, get, set } from 'idb-keyval';
 
 /**
  * Blob shas are content-addressed: a file's sha changes if and only if its content changes.
@@ -34,20 +34,6 @@ export async function writeBlob(sha: string, content: string): Promise<void> {
 	} catch {
 		// Quota exceeded or storage blocked; the in-memory cache still serves this session.
 	}
-}
-
-export async function dropBlob(sha: string): Promise<void> {
-	memory.delete(sha);
-	if (!browser) return;
-	try {
-		await del(PREFIX + sha);
-	} catch {
-		// Ignore.
-	}
-}
-
-export function clearMemoryCache(): void {
-	memory.clear();
 }
 
 /** Empties both the in-memory and persistent caches. Safe: content is re-fetched on demand. */

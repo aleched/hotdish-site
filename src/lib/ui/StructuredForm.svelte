@@ -538,10 +538,18 @@
 
 	{#if missingSections.length > 0}
 		<section class="card stack">
-			<h2>Add a section</h2>
+			<h2 title="Add a section">
+				<Icon name="plus" size={20} /><span class="visually-hidden">Add a section</span>
+			</h2>
 			<div class="row wrap">
 				{#each missingSections as section (section.id)}
-					<button type="button" onclick={() => addSection(section)}>+ {section.heading}</button>
+					<button
+						type="button"
+						class="add-section"
+						onclick={() => addSection(section)}
+					>
+						<Icon name="plus" size={14} />{section.heading}
+					</button>
 				{/each}
 			</div>
 		</section>
@@ -568,6 +576,11 @@
 </div>
 
 <style>
+	.add-section {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
 	h2 {
 		font-size: 0.95rem;
 		margin: 0;

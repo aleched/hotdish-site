@@ -43,7 +43,10 @@
 			| 'refresh'
 			| 'spinner'
 			| 'home'
-			| 'up';
+			| 'up'
+			| 'check'
+			| 'message'
+			| 'confirm';
 		size?: number;
 	}
 
@@ -192,6 +195,14 @@
 		<path d="M3.8 6.8V13.5h8.4V6.8M6.5 13.5V9.5h3v4" />
 	{:else if name === 'up'}
 		<path d="M3 2.5h10M8 14V5.5M4.8 8.5L8 5.3l3.2 3.2" />
+	{:else if name === 'check'}
+		<path d="M3 8.5l3.2 3.2L13 4.8" />
+	{:else if name === 'message'}
+		<path d="M2.5 3h11a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H8L5 14v-2.5H2.5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+	{:else if name === 'confirm'}
+		<path d="M8 2L14.5 13.5h-13z" />
+		<path d="M6.9 7.3a1.2 1.2 0 1 1 1.6 1.1c-.4.2-.5.5-.5.9" />
+		<path d="M8 11.4v.1" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

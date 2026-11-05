@@ -458,8 +458,10 @@
 						{#each recentItems.slice(0, recentLimit) as item (item.path)}
 							<li>
 								<a class="card entry" href={`/r/${src}/${encodeURI(item.path)}`}>
-									<span class="kind">📄</span>
-									<span class="label">{item.title}</span>
+									<span class="head-row">
+										<span class="kind"><Icon name="file" size={18} /></span>
+										<span class="label">{item.title}</span>
+									</span>
 									{#if item.tags.length > 0}
 										<span class="sub tags">
 											{#each item.tags.slice(0, 4) as tag (tag)}
@@ -475,9 +477,9 @@
 						<button
 							type="button"
 							class="icon-button more"
-							title="Show more recent recipes"
-							aria-label="Show more recent recipes"
-							onclick={() => (recentLimit += PAGE_SIZE)}
+							title="Show all recent recipes"
+							aria-label="Show all recent recipes"
+							onclick={() => (recentLimit = Infinity)}
 						>
 							<Icon name="expand" />
 						</button>
@@ -493,13 +495,24 @@
 						{#each folder.children.slice(0, childLimit) as child (child.path)}
 							<li>
 								<a class="card entry" href={`/r/${src}/${encodeURI(child.path)}`}>
-									<span class="kind">{child.kind === 'folder' ? '📁' : '📄'}</span>
-									<span class="label">
-										{child.kind === 'folder' ? child.name : child.recipe.title}
+									<span class="head-row">
+										<span class="kind">
+											<Icon name={child.kind === 'folder' ? 'folder' : 'file'} size={18} />
+											{#if child.kind === 'folder'}
+												<span
+													class="count"
+													title="{child.count} recipes"
+													aria-label="{child.count} recipes"
+												>
+													{child.count}
+												</span>
+											{/if}
+										</span>
+										<span class="label">
+											{child.kind === 'folder' ? child.name : child.recipe.title}
+										</span>
 									</span>
-									{#if child.kind === 'folder'}
-										<span class="muted sub">{child.count} recipes</span>
-									{:else if child.recipe.tags.length > 0}
+									{#if child.kind !== 'folder' && child.recipe.tags.length > 0}
 										<span class="sub tags">
 											{#each child.recipe.tags.slice(0, 4) as tag (tag)}
 												<span class="tag">{tag}</span>
@@ -514,16 +527,18 @@
 						<button
 							type="button"
 							class="icon-button more"
-							title="Show more items"
-							aria-label="Show more items"
-							onclick={() => (childLimit += PAGE_SIZE)}
+							title="Show all items"
+							aria-label="Show all items"
+							onclick={() => (childLimit = Infinity)}
 						>
 							<Icon name="expand" />
 						</button>
 					{/if}
 				{/if}
 			{:else if notFound}
-				<p class="banner warn">Nothing found at <code>{path}</code>.</p>
+				<p class="banner warn nothing" title="Nothing found" role="status">
+					<Icon name="search" size={18} /><code>{path}</code>
+				</p>
 				<p>
 					<a
 						class="icon-link"
@@ -572,6 +587,11 @@
 		font-size: 0.8rem;
 	}
 
+	.nothing {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
 	.recent-title {
 		font-size: 1rem;
 		margin: 0 0 0.6rem;
@@ -689,8 +709,33 @@
 		text-decoration: none;
 		border-color: var(--accent);
 	}
+	.head-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-width: 0;
+	}
 	.kind {
 		font-size: 1.1rem;
+		display: inline-flex;
+		position: relative;
+		flex: none;
+		color: var(--text-dim);
+	}
+	.count {
+		position: absolute;
+		top: -0.45rem;
+		right: -0.6rem;
+		min-width: 1rem;
+		padding: 0 0.25rem;
+		box-sizing: border-box;
+		border-radius: 999px;
+		background: var(--accent);
+		color: #fff;
+		font-size: 0.68rem;
+		font-weight: 600;
+		line-height: 1rem;
+		text-align: center;
 	}
 	.label {
 		font-weight: 600;

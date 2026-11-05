@@ -20,12 +20,6 @@ export const FORGE_LABELS: Record<ForgeKind, string> = {
 	gitea: 'Gitea / Forgejo'
 };
 
-export const DEFAULT_HOSTS: Record<ForgeKind, string> = {
-	github: 'github.com',
-	gitlab: 'gitlab.com',
-	gitea: 'codeberg.org'
-};
-
 export const TOKEN_GUIDANCE: Record<ForgeKind, string> = {
 	github: 'Fine-grained token, this repo only, Contents: read (write to edit).',
 	gitlab: 'Project token, read_repository (write_repository to edit).',

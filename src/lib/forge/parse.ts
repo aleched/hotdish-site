@@ -94,7 +94,3 @@ function extractRefAndPath(
 
 	return { ref, basePath };
 }
-
-export function repoLabel(ref: RepoRef): string {
-	return `${ref.owner}/${ref.repo}`;
-}

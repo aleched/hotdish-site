@@ -316,7 +316,7 @@
 					{#if needsForgeChoice}
 						<div class="field">
 							<select id="kind" aria-label="Forge type" bind:value={kind}>
-								<option value="">Select forge type</option>
+								<option value="">Forge…</option>
 								{#each kinds as option (option)}
 									<option value={option}>{FORGE_LABELS[option]}</option>
 								{/each}
@@ -381,7 +381,7 @@
 					</a>
 					<div class="row actions">
 						{#if confirming?.id === profile.id}
-							<span class="confirm-text">Delete this repository?</span>
+							<span class="confirm-text" title="Delete this repository?" aria-label="Delete this repository?"><Icon name="confirm" size={20} /></span>
 							<div class="split">
 								<button
 									type="button"
@@ -611,7 +611,8 @@
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 	.confirm-text {
-		font-size: 0.9rem;
+		display: inline-flex;
+		color: var(--danger);
 	}
 	.field {
 		display: flex;

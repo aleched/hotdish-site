@@ -482,7 +482,7 @@
 				</p>
 			{/if}
 			{#if diff.identical}
-				{#if !moved}<p class="muted">No changes to save.</p>{/if}
+				{#if !moved}<p class="muted" title="No changes to save" aria-label="No changes to save"><Icon name="check" /></p>{/if}
 			{:else}
 				<p class="muted small">
 					+{diff.added} line(s), −{diff.removed} line(s) in

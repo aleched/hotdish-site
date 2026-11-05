@@ -71,7 +71,7 @@
 			<section>
 				<h3 title="Folders"><Icon name="folder" /><span class="visually-hidden">Folders</span></h3>
 				{#if repoStore.folders.length === 0}
-					<p class="muted small">No folders.</p>
+					<p class="muted small" title="No folders" aria-label="No folders"><Icon name="folder" size={18} /></p>
 				{:else}
 					{#if repoStore.folders.length > 8}
 						<input
@@ -97,7 +97,7 @@
 								</label>
 							</li>
 						{:else}
-							<li class="muted small">No matching folders.</li>
+							<li class="muted small" title="No matching folders" aria-label="No matching folders"><Icon name="search" size={18} /></li>
 						{/each}
 					</ul>
 				{/if}
@@ -121,8 +121,16 @@
 						{/each}
 
 						{#if tags.length > MAX_COLLAPSED}
-							<button type="button" class="link" onclick={() => (showAll = !showAll)}>
-								{showAll ? 'Show fewer' : `+${tags.length - MAX_COLLAPSED} more`}
+							<button
+								type="button"
+								class="link more-tags"
+								title={showAll ? 'Show fewer tags' : `Show ${tags.length - MAX_COLLAPSED} more tags`}
+								aria-label={showAll ? 'Show fewer tags' : `Show ${tags.length - MAX_COLLAPSED} more tags`}
+								aria-expanded={showAll}
+								onclick={() => (showAll = !showAll)}
+							>
+								<Icon name={showAll ? 'collapse' : 'expand'} size={14} />
+								{#if !showAll}{tags.length - MAX_COLLAPSED}{/if}
 							</button>
 						{/if}
 					</div>
@@ -180,6 +188,11 @@
 </div>
 
 <style>
+	.more-tags {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
 	.filters {
 		display: flex;
 		flex-direction: column;
