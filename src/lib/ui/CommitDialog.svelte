@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { ForgeError, describeForgeError } from '$lib/forge/errors';
-	import { authStore } from '$lib/store/auth.svelte';
+	import { createProvider, TOKEN_GUIDANCE } from '$lib/forge/factory';
+	import { profileStore } from '$lib/store/profiles.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
@@ -44,13 +45,52 @@
 		errorExtra
 	}: Props = $props();
 
-	let described = $derived(error ? describeForgeError(error) : null);
-	let authFailed = $derived(error instanceof ForgeError && error.kind === 'auth');
+	let acceptedError = $state.raw<unknown>(null);
+	// Once a token is saved the old auth error no longer applies; a new failure shows again.
+	let visibleError = $derived(error && error !== acceptedError ? error : null);
+	let described = $derived(visibleError ? describeForgeError(visibleError) : null);
+	let authFailed = $derived(visibleError instanceof ForgeError && visibleError.kind === 'auth');
+	let missingToken = $derived(!(repoStore.provider?.authenticated ?? true));
+	let needsToken = $derived(missingToken || authFailed);
+	// Without a token the prompt speaks for itself; only a rejected token needs the error text.
+	let shownError = $derived(missingToken && authFailed ? null : described);
+	let guidance = $derived(repoStore.ref ? TOKEN_GUIDANCE[repoStore.ref.kind] : 'Access token');
 	let branch = $derived(repoStore.resolvedRef);
+
+	let token = $state('');
+	let checkingToken = $state(false);
+	let tokenError = $state<string | null>(null);
+
+	async function saveToken() {
+		const value = token.trim();
+		const ref = repoStore.ref ? $state.snapshot(repoStore.ref) : null;
+		if (!ref || !value || checkingToken) return;
+
+		checkingToken = true;
+		tokenError = null;
+		try {
+			// Catch typos and expired tokens here rather than on the next save.
+			await createProvider(ref, value).resolveDefaultBranch();
+			repoStore.setToken(value);
+			profileStore.saveTokenFor(ref, value);
+			acceptedError = error;
+			token = '';
+		} catch (cause) {
+			tokenError = describeForgeError(cause).message;
+		} finally {
+			checkingToken = false;
+		}
+	}
+
+	function tokenKeydown(event: KeyboardEvent) {
+		if (event.key !== 'Enter') return;
+		event.preventDefault();
+		void saveToken();
+	}
 
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
-		if (busy || disabled || !message.trim()) return;
+		if (busy || disabled || missingToken || !message.trim()) return;
 		onsubmit();
 	}
 
@@ -81,18 +121,39 @@
 			{/if}
 		</div>
 
-		{#if described}
+		{#if shownError || needsToken}
 			<div class="banner error">
-				<p><strong>{described.message}</strong></p>
-				{#if described.hint}<p>{described.hint}</p>{/if}
-				{#if authFailed}
-					<button
-						type="button"
-						class="dialog-button"
-						onclick={() => authStore.requireToken({ force: true })}
-					>
-						Update access token
-					</button>
+				{#if shownError}
+					<p><strong>{shownError.message}</strong></p>
+					{#if shownError.hint}<p>{shownError.hint}</p>{/if}
+				{/if}
+				{#if needsToken}
+					<div class="token-row">
+						<span class="token-icon" title="Access token"><Icon name="key" size={18} /></span>
+						<input
+							type="password"
+							bind:value={token}
+							placeholder={guidance}
+							aria-label="Access token"
+							autocomplete="off"
+							spellcheck="false"
+							disabled={checkingToken}
+							onkeydown={tokenKeydown}
+						/>
+						<div class="split">
+							<button
+								type="button"
+								class="part save"
+								title="Save token"
+								aria-label="Save token"
+								disabled={checkingToken || !token.trim()}
+								onclick={saveToken}
+							>
+								<Icon name={checkingToken ? 'spinner' : 'save'} />
+							</button>
+						</div>
+					</div>
+					{#if tokenError}<p class="token-error">{tokenError}</p>{/if}
 				{/if}
 				{#if errorExtra}{@render errorExtra()}{/if}
 			</div>
@@ -116,7 +177,7 @@
 					type="submit"
 					title={submitLabel}
 					aria-label={submitLabel}
-					disabled={busy || disabled || !message.trim()}
+					disabled={busy || disabled || missingToken || !message.trim()}
 				>
 					<Icon name={busy ? 'spinner' : submitIcon} />
 				</button>
@@ -188,5 +249,26 @@
 	}
 	.split > .part + .part {
 		margin-left: -1px;
+	}
+	.split > .part:only-child {
+		border-radius: var(--radius-sm);
+	}
+	.token-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.25rem;
+	}
+	.token-row input {
+		flex: 1;
+		min-width: 0;
+	}
+	.token-icon {
+		display: inline-flex;
+		color: var(--text-dim);
+	}
+	.token-error {
+		margin: 0.4rem 0 0;
+		font-size: 0.85rem;
 	}
 </style>

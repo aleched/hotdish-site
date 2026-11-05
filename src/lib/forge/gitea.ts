@@ -152,11 +152,7 @@ export class GiteaProvider implements ForgeProvider {
 	}
 
 	async writeFile(args: WriteArgs): Promise<WriteResult> {
-		if (!this.#token) {
-			throw new ForgeError('auth', 'Saving requires an access token.', {
-				hint: 'Add a Gitea token with repository write access in Settings.'
-			});
-		}
+		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
 
 		const body: Record<string, unknown> = {
 			message: args.message,
@@ -179,11 +175,7 @@ export class GiteaProvider implements ForgeProvider {
 	}
 
 	#requireToken(): void {
-		if (!this.#token) {
-			throw new ForgeError('auth', 'Saving requires an access token.', {
-				hint: 'Add a Gitea token with repository write access in Settings.'
-			});
-		}
+		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
 	}
 
 	async deleteFile(args: DeleteArgs): Promise<void> {

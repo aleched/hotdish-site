@@ -91,6 +91,7 @@
 	<h2 title="Cache"><Icon name="cache" size={20} /><span class="visually-hidden">Cache</span></h2>
 	<div class="card row cache">
 		{#if confirmingCache}
+			<span class="confirm-text">Clear cached recipes?</span>
 			<div class="split">
 				<button
 					type="button"
@@ -111,7 +112,6 @@
 					<Icon name="trash" />
 				</button>
 			</div>
-			<span class="confirm-text">Clear cached recipes?</span>
 		{:else}
 			<button
 				type="button"

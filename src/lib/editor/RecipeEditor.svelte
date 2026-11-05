@@ -11,7 +11,6 @@
 	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '$lib/paths';
 	import { untrack } from 'svelte';
 	import { historyStore } from '$lib/store/history.svelte';
-	import { authStore } from '$lib/store/auth.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import Milkdown from './Milkdown.svelte';
@@ -232,7 +231,6 @@
 			saveError = new Error('The repository is not loaded.');
 			return;
 		}
-		if (!(await authStore.requireToken())) return;
 
 		saving = true;
 		saveError = null;

@@ -46,7 +46,7 @@ export async function forgeFetch(
 			});
 			throw new ForgeError('rate-limit', 'Rate limit exceeded.', {
 				status: response.status,
-				hint: 'Add a personal access token in Settings to raise the limit, or wait for the window to reset.'
+				hint: 'Add a personal access token to this repository on the home page to raise the limit, or wait for the window to reset.'
 			});
 		}
 		throw new ForgeError('auth', `Access denied: ${detail}`, {

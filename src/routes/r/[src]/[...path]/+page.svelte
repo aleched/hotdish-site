@@ -19,11 +19,9 @@
 	import { joinPath, parentFolder, toFull } from '$lib/paths';
 	import { parseRecipe } from '$lib/markdown/recipe';
 	import { scaffoldRecipe } from '$lib/editor/scaffold';
-	import { authStore } from '$lib/store/auth.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import EmptyState from '$lib/ui/EmptyState.svelte';
 	import Loading from '$lib/ui/Loading.svelte';
-	import TokenPrompt from '$lib/ui/TokenPrompt.svelte';
 	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
 
 	let src = $derived($page.params.src ?? '');
@@ -160,43 +158,18 @@
 		const next = !foldersAreExpanded;
 		open = Object.fromEntries(folderPaths.map((item) => [item, next]));
 	}
-	let canWrite = $derived(repoStore.provider?.authenticated ?? false);
 	let currentFolder = $derived(entry ? parentFolder(path) : folder ? path : '');
 
-	/** Runs a write action, first asking for an access token if none is configured. */
-	async function withToken(action: () => void) {
-		if (await authStore.requireToken()) action();
-	}
-
 	function openCreate(folderPath: string) {
-		void withToken(() => {
-			const relative = joinPath(folderPath, 'new-recipe.md');
-			renameValue = relative;
-			draft = {
-				doc: parseRecipe(
-					{ path: toFull(relative, repoStore.basePath), sha: 'draft' },
-					scaffoldRecipe(repoStore.template)
-				)
-			};
-		});
+		const relative = joinPath(folderPath, 'new-recipe.md');
+		renameValue = relative;
+		draft = {
+			doc: parseRecipe(
+				{ path: toFull(relative, repoStore.basePath), sha: 'draft' },
+				scaffoldRecipe(repoStore.template)
+			)
+		};
 	}
-
-	function startEdit(event: MouseEvent) {
-		if (canWrite) return;
-		event.preventDefault();
-		void withToken(() => goto(`/r/${src}/${encodeURI(path)}?edit`));
-	}
-
-	// An ?edit link opened without a token asks for one; cancelling falls back to viewing.
-	$effect(() => {
-		if (!editing || !entry || canWrite || repoStore.status !== 'ready') return;
-		const viewUrl = `/r/${src}/${encodeURI(path)}`;
-		untrack(() => {
-			void authStore.requireToken().then((ok) => {
-				if (!ok) void goto(viewUrl, { replaceState: true });
-			});
-		});
-	});
 
 	$effect(() => {
 		void path;
@@ -373,7 +346,7 @@
 					{src}
 					{path}
 					{rootLabel}
-					renamable={Boolean(draft || (entry && editing && canWrite && doc))}
+					renamable={Boolean(draft || (entry && editing && doc))}
 					forceEdit={Boolean(draft)}
 					bind:renaming
 					bind:value={renameValue}
@@ -386,7 +359,6 @@
 								href={`/r/${src}/${encodeURI(path)}?edit`}
 								title="Edit"
 								aria-label="Edit"
-								onclick={startEdit}
 							>
 								<Icon name="edit" />
 							</a>
@@ -396,7 +368,7 @@
 								title="Delete"
 								aria-label="Delete"
 								disabled={!doc}
-								onclick={() => withToken(() => (recipeDialog = 'delete'))}
+								onclick={() => (recipeDialog = 'delete')}
 							>
 								<Icon name="trash" />
 							</button>
@@ -445,28 +417,24 @@
 					<Loading label="Loading recipe" />
 				{:else if doc}
 					{#if editing}
-						{#if !canWrite}
-							<p class="muted">An access token is needed to edit this recipe.</p>
-						{:else}
-							{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-								<Loading label="Loading editor" />
-							{:then module}
-								{@const Editor = module.default}
-								{#key doc.sha}
-									<Editor
-										{doc}
-										targetRelative={renameValue}
-										onclose={(destination) => goto(`/r/${src}/${encodeURI(destination ?? path)}`)}
-									/>
-								{/key}
-							{:catch error}
-								<p class="banner error">
-									The editor could not be loaded ({error instanceof Error
-										? error.message
-										: String(error)}).
-								</p>
-							{/await}
-						{/if}
+						{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
+							<Loading label="Loading editor" />
+						{:then module}
+							{@const Editor = module.default}
+							{#key doc.sha}
+								<Editor
+									{doc}
+									targetRelative={renameValue}
+									onclose={(destination) => goto(`/r/${src}/${encodeURI(destination ?? path)}`)}
+								/>
+							{/key}
+						{:catch error}
+							<p class="banner error">
+								The editor could not be loaded ({error instanceof Error
+									? error.message
+									: String(error)}).
+							</p>
+						{/await}
 					{:else}
 						<RecipeView {doc} />
 					{/if}
@@ -542,10 +510,6 @@
 
 	{#if doc && entry && recipeDialog === 'delete'}
 		<DeleteRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
-	{/if}
-
-	{#if authStore.prompting}
-		<TokenPrompt />
 	{/if}
 {/if}
 

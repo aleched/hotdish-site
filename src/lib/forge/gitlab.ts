@@ -161,11 +161,7 @@ export class GitLabProvider implements ForgeProvider {
 	}
 
 	async writeFile(args: WriteArgs): Promise<WriteResult> {
-		if (!this.#token) {
-			throw new ForgeError('auth', 'Saving requires an access token.', {
-				hint: 'Add a GitLab token with api or write_repository scope in Settings.'
-			});
-		}
+		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
 
 		const body: Record<string, unknown> = {
 			branch: args.branch,
@@ -189,11 +185,7 @@ export class GitLabProvider implements ForgeProvider {
 	}
 
 	#requireToken(): void {
-		if (!this.#token) {
-			throw new ForgeError('auth', 'Saving requires an access token.', {
-				hint: 'Add a GitLab token with api or write_repository scope in Settings.'
-			});
-		}
+		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
 	}
 
 	async deleteFile(args: DeleteArgs): Promise<void> {
