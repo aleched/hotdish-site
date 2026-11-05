@@ -4,13 +4,13 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 export type ThemeAccent = 'purple' | 'blue' | 'red' | 'green' | 'yellow' | 'orange';
 
 export const THEME_MODES: ThemeMode[] = ['system', 'light', 'dark'];
-export const THEME_ACCENTS: { id: ThemeAccent; label: string; color: string }[] = [
-	{ id: 'purple', label: 'Plum', color: '#7b3fa0' },
-	{ id: 'blue', label: 'Blueberry', color: '#2557a7' },
-	{ id: 'green', label: 'Olive', color: '#5b7a1f' },
-	{ id: 'yellow', label: 'Banana', color: '#d4a017' },
-	{ id: 'orange', label: 'Apricot', color: '#bf6a14' },
-	{ id: 'red', label: 'Tomato', color: '#c62f1f' }
+export const THEME_ACCENTS: { id: ThemeAccent; label: string; emoji: string; color: string }[] = [
+	{ id: 'purple', label: 'Grape', emoji: '🍇', color: '#7b3fa0' },
+	{ id: 'blue', label: 'Blueberry', emoji: '🫐', color: '#2557a7' },
+	{ id: 'green', label: 'Avocado', emoji: '🥑', color: '#5b7a1f' },
+	{ id: 'yellow', label: 'Banana', emoji: '🍌', color: '#d4a017' },
+	{ id: 'orange', label: 'Carrot', emoji: '🥕', color: '#bf6a14' },
+	{ id: 'red', label: 'Tomato', emoji: '🍅', color: '#c62f1f' }
 ];
 
 const STORAGE_KEY = 'hotdish.theme.v1';

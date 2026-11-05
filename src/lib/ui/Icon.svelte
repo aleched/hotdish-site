@@ -33,7 +33,13 @@
 			| 'servings'
 			| 'prep'
 			| 'cook'
-			| 'file';
+			| 'file'
+			| 'sun'
+			| 'moon'
+			| 'monitor'
+			| 'palette'
+			| 'info'
+			| 'cache';
 		size?: number;
 	}
 
@@ -152,6 +158,25 @@
 		<circle cx="5" cy="11" r="2.5" />
 		<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
 		<path d="M2 2l12 12" />
+	{:else if name === 'sun'}
+		<circle cx="8" cy="8" r="2.8" />
+		<path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />
+	{:else if name === 'moon'}
+		<path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1z" />
+	{:else if name === 'monitor'}
+		<rect x="1.8" y="2.5" width="12.4" height="8.4" rx="1.3" />
+		<path d="M5.5 13.5h5M8 10.9v2.6" />
+	{:else if name === 'palette'}
+		<path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.5-.8 1.1-1.6-.5-1 .1-1.9 1.2-1.9h1.4a2.5 2.5 0 0 0 2.5-2.5C14.2 4.6 11.5 1.8 8 1.8z" />
+		<circle cx="5" cy="7.4" r=".7" />
+		<circle cx="7.6" cy="4.8" r=".7" />
+		<circle cx="10.8" cy="5.8" r=".7" />
+	{:else if name === 'info'}
+		<circle cx="8" cy="8" r="6" />
+		<path d="M8 7.2V11M8 5v.1" />
+	{:else if name === 'cache'}
+		<ellipse cx="8" cy="4" rx="5" ry="2" />
+		<path d="M3 4v4c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8v4c0 1.1 2.2 2 5 2s5-.9 5-2V8" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}
