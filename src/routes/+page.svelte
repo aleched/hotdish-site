@@ -41,6 +41,16 @@
 		error = null;
 	}
 
+	let hintKind = $derived.by<ForgeKind | ''>(() => {
+		if (kind) return kind;
+		if (!input.trim()) return 'github';
+		try {
+			return knownForgeKind(new URL(input.trim()).host) ?? '';
+		} catch {
+			return '';
+		}
+	});
+
 	function startCreate() {
 		isCreating = true;
 		editingId = null;
@@ -277,7 +287,7 @@
 					<div class="grid profile-fields">
 						<div class="input-icon" title="Name">
 							<Icon name="repos" />
-							<input id="name" type="text" aria-label="Name" bind:value={name} placeholder="Name (My recipes)" />
+							<input id="name" type="text" aria-label="Name" bind:value={name} placeholder="Name" />
 						</div>
 						<div class="input-icon" title="Branch">
 							<Icon name="branch" />
@@ -285,7 +295,7 @@
 						</div>
 						<div class="input-icon" title="Sub-folder">
 							<Icon name="folder" />
-							<input id="base" type="text" aria-label="Sub-folder" bind:value={basePath} placeholder="recipes" />
+							<input id="base" type="text" aria-label="Sub-folder" bind:value={basePath} placeholder="/" />
 						</div>
 					</div>
 
@@ -308,7 +318,7 @@
 							type="password"
 							aria-label="Access token"
 							bind:value={token}
-							placeholder={kind ? TOKEN_GUIDANCE[kind] : 'Optional. Needed for private repositories and saving changes'}
+							placeholder={hintKind ? TOKEN_GUIDANCE[hintKind] : 'Optional. Needed for private repositories and saving changes'}
 							autocomplete="off"
 							spellcheck="false"
 						/>

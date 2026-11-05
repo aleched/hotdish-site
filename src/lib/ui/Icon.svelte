@@ -47,7 +47,8 @@
 			| 'check'
 			| 'message'
 			| 'confirm'
-			| 'empty';
+			| 'empty'
+			| 'dice';
 		size?: number;
 	}
 
@@ -207,6 +208,13 @@
 	{:else if name === 'empty'}
 		<circle cx="8" cy="8" r="6" stroke-dasharray="2 2.4" />
 		<path d="M4.5 11.5l7-7" />
+	{:else if name === 'dice'}
+		<rect x="2" y="2" width="12" height="12" rx="2.5" />
+		<g fill="currentColor" stroke="none">
+			<circle cx="5.5" cy="5.5" r="1" /><circle cx="10.5" cy="5.5" r="1" />
+			<circle cx="8" cy="8" r="1" />
+			<circle cx="5.5" cy="10.5" r="1" /><circle cx="10.5" cy="10.5" r="1" />
+		</g>
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

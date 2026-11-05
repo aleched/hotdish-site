@@ -19,6 +19,7 @@ class EditorPrefs {
 	defaultMode = $state<EditorMode>('form');
 	spellcheck = $state(true);
 	fractions = $state(true);
+	randomButton = $state(true);
 
 	constructor() {
 		if (!browser) return;
@@ -27,9 +28,11 @@ class EditorPrefs {
 				fractions?: boolean;
 				defaultMode?: string;
 				spellcheck?: boolean;
+				randomButton?: boolean;
 			};
 			if (typeof parsed.fractions === 'boolean') this.fractions = parsed.fractions;
 			if (typeof parsed.spellcheck === 'boolean') this.spellcheck = parsed.spellcheck;
+			if (typeof parsed.randomButton === 'boolean') this.randomButton = parsed.randomButton;
 			const mode = EDITOR_MODES.find((item) => item.value === parsed.defaultMode);
 			if (mode) this.defaultMode = mode.value;
 		} catch {
@@ -52,6 +55,11 @@ class EditorPrefs {
 		this.persist();
 	}
 
+	setRandomButton(enabled: boolean): void {
+		this.randomButton = enabled;
+		this.persist();
+	}
+
 	private persist(): void {
 		try {
 			localStorage.setItem(
@@ -59,7 +67,8 @@ class EditorPrefs {
 				JSON.stringify({
 					fractions: this.fractions,
 					defaultMode: this.defaultMode,
-					spellcheck: this.spellcheck
+					spellcheck: this.spellcheck,
+					randomButton: this.randomButton
 				})
 			);
 		} catch {

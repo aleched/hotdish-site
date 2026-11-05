@@ -80,10 +80,10 @@
 				/>
 			</span>
 		</div>
-		<label class="setting switch" title="Browser spellcheck in the form, rich text and markdown editors">
+		<div class="setting switch" title="Browser spellcheck in the form, rich text and markdown editors">
 			<span>Spellcheck</span>
 			<span class="control">
-				<span class="toggle">
+				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
@@ -92,13 +92,13 @@
 						onchange={(event) => editorPrefs.setSpellcheck(event.currentTarget.checked)}
 					/>
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
-				</span>
+				</label>
 			</span>
-		</label>
-		<label class="setting switch" title="Replace typed fractions with symbols">
+		</div>
+		<div class="setting switch" title="Replace typed fractions with symbols">
 			<span>Auto fractions</span>
 			<span class="control">
-				<span class="toggle">
+				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
@@ -107,14 +107,30 @@
 						onchange={(event) => editorPrefs.setFractions(event.currentTarget.checked)}
 					/>
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
-				</span>
+				</label>
 				<ul class="fraction-preview" aria-label="Fraction preview">
 					{#each PREVIEW_FRACTIONS as typed (typed)}
 						<li>{editorPrefs.fractions ? FRACTIONS[typed] : typed}</li>
 					{/each}
 				</ul>
 			</span>
-		</label>
+		</div>
+		<div class="setting switch" title="Show the random recipe button next to search">
+			<span>Random button</span>
+			<span class="control">
+				<label class="toggle">
+					<input
+						type="checkbox"
+						role="switch"
+						aria-label="Show the random recipe button"
+						checked={editorPrefs.randomButton}
+						onchange={(event) => editorPrefs.setRandomButton(event.currentTarget.checked)}
+					/>
+					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
+				</label>
+				<span class="dice-preview" class:off={!editorPrefs.randomButton} aria-hidden="true"><Icon name="dice" /></span>
+			</span>
+		</div>
 	</div>
 
 	<hr />
@@ -197,6 +213,7 @@
 	.toggle {
 		position: relative;
 		display: inline-flex;
+		cursor: pointer;
 	}
 	hr {
 		width: 100%;
@@ -245,7 +262,6 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.6rem;
-		cursor: pointer;
 		position: relative;
 		align-self: flex-start;
 	}
@@ -300,6 +316,22 @@
 		align-items: center;
 		justify-self: start;
 		gap: 0.75rem;
+	}
+	.dice-preview {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.3rem;
+		box-sizing: border-box;
+		height: calc(1.9rem + 6px);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		color: var(--text-dim);
+		pointer-events: none;
+	}
+	.dice-preview.off {
+		visibility: hidden;
 	}
 	.fraction-preview {
 		list-style: none;

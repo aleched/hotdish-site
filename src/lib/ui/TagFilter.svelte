@@ -1,5 +1,9 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { toRelative } from '$lib/paths';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 
 	const MAX_COLLAPSED = 12;
@@ -10,6 +14,18 @@
 	let folderQuery = $state('');
 	let root: HTMLDivElement | undefined = $state();
 
+	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean($page.params.src));
+
+	/** Opens a random recipe from the current (filtered) list, avoiding the one already open. */
+	function randomRecipe() {
+		const current = decodeURI($page.params.path ?? '');
+		const pool = repoStore.filtered
+			.map((recipe) => toRelative(recipe.path, repoStore.basePath))
+			.filter((path) => path !== current);
+		if (pool.length === 0) return;
+		const pick = pool[Math.floor(Math.random() * pool.length)];
+		void goto(`/r/${$page.params.src}/${encodeURI(pick)}`);
+	}
 	let tags = $derived(repoStore.allTags);
 	let visible = $derived(showAll ? tags : tags.slice(0, MAX_COLLAPSED));
 	let folders = $derived.by(() => {
@@ -64,6 +80,18 @@
 			<Icon name="filter" />
 			{#if activeCount > 0}<span class="badge">{activeCount}</span>{/if}
 		</button>
+		{#if editorPrefs.randomButton}
+			<button
+				type="button"
+				class="filter-button"
+				aria-label="Random recipe"
+				title="Random recipe"
+				disabled={!canRandom}
+				onclick={randomRecipe}
+			>
+				<Icon name="dice" />
+			</button>
+		{/if}
 	</div>
 
 	{#if open}
