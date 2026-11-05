@@ -46,7 +46,8 @@
 			| 'up'
 			| 'check'
 			| 'message'
-			| 'confirm';
+			| 'confirm'
+			| 'empty';
 		size?: number;
 	}
 
@@ -203,6 +204,9 @@
 		<path d="M8 2L14.5 13.5h-13z" />
 		<path d="M6.9 7.3a1.2 1.2 0 1 1 1.6 1.1c-.4.2-.5.5-.5.9" />
 		<path d="M8 11.4v.1" />
+	{:else if name === 'empty'}
+		<circle cx="8" cy="8" r="6" stroke-dasharray="2 2.4" />
+		<path d="M4.5 11.5l7-7" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}

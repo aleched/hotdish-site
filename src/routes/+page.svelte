@@ -431,7 +431,7 @@
 		{/each}
 	</ul>
 	{#if !isCreating && !profileStore.profiles.length}
-		<EmptyState icon="repos" label="No saved repositories yet. Use the + button to add one." />
+		<EmptyState icon="empty" label="No saved repositories yet. Use the + button to add one." />
 	{/if}
 </section>
 

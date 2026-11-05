@@ -3,6 +3,7 @@
 	import '@milkdown/crepe/theme/common/style.css';
 	import '@milkdown/crepe/theme/frame.css';
 	import { fractionBefore } from '$lib/editor/fractions';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Loading from '$lib/ui/Loading.svelte';
 
 	interface CrepeLike {
@@ -100,7 +101,7 @@
 	</p>
 {/if}
 
-<div class="host" bind:this={container}></div>
+<div class="host" bind:this={container} spellcheck={editorPrefs.spellcheck}></div>
 
 {#if !ready && !error}
 	<Loading label="Starting editor" />

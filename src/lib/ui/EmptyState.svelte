@@ -2,7 +2,7 @@
 	import Icon from './Icon.svelte';
 
 	interface Props {
-		icon: 'repos' | 'folder' | 'clock';
+		icon: 'repos' | 'folder' | 'clock' | 'empty';
 		label: string;
 	}
 

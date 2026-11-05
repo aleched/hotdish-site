@@ -8,6 +8,7 @@
 		TemplateSection
 	} from '$lib/template/schema';
 	import { validateFields } from '$lib/template/schema';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 	import TagInput from '$lib/ui/TagInput.svelte';
@@ -221,7 +222,7 @@
 	}
 </script>
 
-<div class="form stack">
+<div class="form stack" spellcheck={editorPrefs.spellcheck}>
 	<section class="card stack">
 		<input
 			id="field-title"

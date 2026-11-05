@@ -17,7 +17,10 @@
 	import Icon from '$lib/ui/Icon.svelte';
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 
-	type Mode = 'form' | 'rich' | 'source' | 'raw';
+	import ModeToggle from '$lib/ui/ModeToggle.svelte';
+	import { editorPrefs, EDITOR_MODES, type EditorMode } from '$lib/store/editorPrefs.svelte';
+
+	type Mode = EditorMode;
 
 	interface Props {
 		doc: RecipeDoc;
@@ -73,28 +76,9 @@
 	// svelte-ignore state_referenced_locally
 	const rawOnly = Boolean(doc.frontmatterError);
 
-	let mode = $state<Mode>(rawOnly ? 'raw' : 'form');
+	let mode = $state<Mode>(rawOnly ? 'raw' : editorPrefs.defaultMode);
 
-	const ALL_MODES: { value: Mode; label: string; icon: 'form' | 'markdown' | 'rich' | 'file' }[] = [
-		{ value: 'form', label: 'Form', icon: 'form' },
-		{ value: 'rich', label: 'Rich text', icon: 'rich' },
-		{ value: 'source', label: 'Markdown', icon: 'markdown' },
-		{ value: 'raw', label: 'Raw file', icon: 'file' }
-	];
-	const modes = ALL_MODES;
-
-	function onModeKey(event: KeyboardEvent, index: number) {
-		const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
-		if (!step || rawOnly) return;
-		event.preventDefault();
-		const next = (index + step + modes.length) % modes.length;
-		setMode(modes[next].value);
-		const group = event.currentTarget as HTMLElement;
-		// The first child is the sliding highlight, so the radios start at index 1.
-		requestAnimationFrame(() =>
-			(group.parentElement?.children[next + 1] as HTMLElement | undefined)?.focus()
-		);
-	}
+	const modes = EDITOR_MODES;
 	// svelte-ignore state_referenced_locally
 	let fields = $state<Record<string, unknown>>($state.snapshot(doc.fields));
 	// svelte-ignore state_referenced_locally
@@ -323,35 +307,14 @@
 
 <div class="editor stack">
 	<header class="bar">
-		<div
-			class="mode-toggle"
-			role="radiogroup"
-			aria-label="Editing mode"
-			style:--n={modes.length}
-			style:--i={Math.max(0, modes.findIndex((item) => item.value === mode))}
-		>
-			<span class="thumb" aria-hidden="true"></span>
-			{#each modes as item, index (item.value)}
-				{@const unavailable = rawOnly && item.value !== 'raw'}
-				<button
-					type="button"
-					role="radio"
-					aria-checked={mode === item.value}
-					aria-disabled={unavailable}
-					aria-label={item.label}
-					title={unavailable
-						? `${item.label} is unavailable: the frontmatter could not be parsed`
-						: item.label}
-					tabindex={mode === item.value ? 0 : -1}
-					class:on={mode === item.value}
-					class:unavailable
-					onclick={() => !unavailable && setMode(item.value)}
-					onkeydown={(event) => onModeKey(event, index)}
-				>
-					<Icon name={item.icon} size={17} />
-				</button>
-			{/each}
-		</div>
+		<ModeToggle
+			items={modes}
+			value={mode}
+			label="Editing mode"
+			onselect={setMode}
+			unavailable={(value) =>
+				rawOnly && value !== 'raw' ? 'the frontmatter could not be parsed' : null}
+		/>
 
 		<div class="split">
 			{#if dirty}
@@ -453,7 +416,7 @@
 				rows={3}
 				fit
 				minDigits={sourceDigits}
-				spellcheck={false}
+				spellcheck={editorPrefs.spellcheck}
 				bind:value={body}
 				aria-label="Markdown source"
 			/>
@@ -526,59 +489,6 @@
 		background: var(--bg);
 		padding: 0.5rem 0;
 		z-index: 10;
-	}
-
-	.mode-toggle {
-		position: relative;
-		display: inline-grid;
-		grid-template-columns: repeat(var(--n), 2.6rem);
-		border: 1px solid var(--border);
-		border-radius: 999px;
-		background: var(--surface-2);
-		padding: 2px;
-	}
-	.mode-toggle .thumb {
-		position: absolute;
-		top: 2px;
-		bottom: 2px;
-		left: 2px;
-		width: 2.6rem;
-		border-radius: 999px;
-		background: var(--accent);
-		transform: translateX(calc(var(--i) * 2.6rem));
-		transition: transform 0.18s ease;
-	}
-	.mode-toggle button {
-		position: relative;
-		width: 2.6rem;
-		height: 1.9rem;
-		padding: 0;
-		border: none;
-		border-radius: 999px;
-		background: transparent;
-		color: var(--text-dim);
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.mode-toggle button:hover {
-		background: transparent;
-		color: var(--text);
-	}
-	.mode-toggle button.on {
-		color: #fff;
-	}
-	.mode-toggle button.unavailable {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-	.mode-toggle button.unavailable:hover {
-		color: var(--text-dim);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.mode-toggle .thumb {
-			transition: none;
-		}
 	}
 
 	.split {

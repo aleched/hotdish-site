@@ -2,9 +2,12 @@
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
+	import { editorPrefs, EDITOR_MODES } from '$lib/store/editorPrefs.svelte';
+	import ModeToggle from '$lib/ui/ModeToggle.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import { FRACTIONS } from '$lib/editor/fractions';
+
+	const PREVIEW_FRACTIONS = ['1/2', '2/3', '3/4'];
 
 	const MODE_ICONS = { system: 'monitor', light: 'sun', dark: 'moon' } as const;
 
@@ -26,9 +29,8 @@
 
 <h1 class="visually-hidden">Settings</h1>
 
-<section class="panel">
-	<h2 title="Theme"><Icon name="palette" size={20} /><span class="visually-hidden">Theme</span></h2>
-	<div class="card theme">
+<section class="card stack panel">
+	<div class="theme">
 		<div class="split" role="radiogroup" aria-label="Appearance">
 			{#each THEME_MODES as mode (mode)}
 				<button
@@ -63,33 +65,61 @@
 			{/each}
 		</div>
 	</div>
-</section>
 
-<section class="panel">
-	<h2 title="Editor"><Icon name="edit" size={20} /><span class="visually-hidden">Editor</span></h2>
-	<div class="card stack">
-		<label class="switch" title="Replace typed fractions with symbols">
-			<input
-				type="checkbox"
-				role="switch"
-				aria-label="Replace typed fractions with symbols"
-				checked={editorPrefs.fractions}
-				onchange={(event) => editorPrefs.setFractions(event.currentTarget.checked)}
-			/>
-			<span class="track" aria-hidden="true"><span class="thumb"></span></span>
-			<span>3/4 → ¾</span>
+	<hr />
+
+	<div class="settings">
+		<div class="setting">
+			<span>Default editor</span>
+			<span class="control">
+				<ModeToggle
+					items={EDITOR_MODES}
+					value={editorPrefs.defaultMode}
+					label="Default editing mode"
+					onselect={(mode) => editorPrefs.setDefaultMode(mode)}
+				/>
+			</span>
+		</div>
+		<label class="setting switch" title="Browser spellcheck in the form, rich text and markdown editors">
+			<span>Spellcheck</span>
+			<span class="control">
+				<span class="toggle">
+					<input
+						type="checkbox"
+						role="switch"
+						aria-label="Spellcheck"
+						checked={editorPrefs.spellcheck}
+						onchange={(event) => editorPrefs.setSpellcheck(event.currentTarget.checked)}
+					/>
+					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
+				</span>
+			</span>
 		</label>
-		<ul class="fraction-preview" aria-label="Fraction preview">
-			{#each Object.entries(FRACTIONS) as [typed, symbol] (typed)}
-				<li>{editorPrefs.fractions ? symbol : typed}</li>
-			{/each}
-		</ul>
+		<label class="setting switch" title="Replace typed fractions with symbols">
+			<span>Auto fractions</span>
+			<span class="control">
+				<span class="toggle">
+					<input
+						type="checkbox"
+						role="switch"
+						aria-label="Replace typed fractions with symbols"
+						checked={editorPrefs.fractions}
+						onchange={(event) => editorPrefs.setFractions(event.currentTarget.checked)}
+					/>
+					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
+				</span>
+				<ul class="fraction-preview" aria-label="Fraction preview">
+					{#each PREVIEW_FRACTIONS as typed (typed)}
+						<li>{editorPrefs.fractions ? FRACTIONS[typed] : typed}</li>
+					{/each}
+				</ul>
+			</span>
+		</label>
 	</div>
-</section>
 
-<section class="panel">
-	<h2 title="Cache"><Icon name="cache" size={20} /><span class="visually-hidden">Cache</span></h2>
-	<div class="card row cache">
+	<hr />
+
+	<div class="cache">
 		<button
 			type="button"
 			class="clear"
@@ -111,12 +141,12 @@
 	</div>
 </section>
 
-<section class="panel">
-	<h2 title="About"><Icon name="info" size={20} /><span class="visually-hidden">About</span></h2>
-	<div class="card stack">
-		<p class="muted">
-			Recipes from a GitHub, GitLab or Gitea repository, rendered in your browser. No account,
-			server or database.
+<section class="card stack panel">
+	<div class="stack">
+		<p class="muted intro">
+			<span class="corner" title="About"><Icon name="info" size={20} /><span class="visually-hidden">About</span></span>
+			<span>Recipes from a GitHub, GitLab or Gitea repository, rendered in your browser. No account,
+			server or database.</span>
 		</p>
 		<ul class="muted about-list">
 			<li>
@@ -153,11 +183,26 @@
 </section>
 
 <style>
-	h2 {
+	.corner {
+		display: inline-flex;
+		flex: none;
+		color: var(--text-dim);
+	}
+	.intro {
 		display: flex;
-		align-items: center;
-		font-size: 1rem;
-		margin-bottom: 0.5rem;
+		align-items: flex-start;
+		gap: 0.6rem;
+		margin: 0;
+	}
+	.toggle {
+		position: relative;
+		display: inline-flex;
+	}
+	hr {
+		width: 100%;
+		margin: 0.25rem 0;
+		border: none;
+		border-top: 1px solid var(--border);
 	}
 
 	.panel {
@@ -171,7 +216,9 @@
 		gap: 0.75rem 1.5rem;
 	}
 	.cache {
+		display: flex;
 		align-items: center;
+		gap: 0.75rem;
 	}
 	.cache button {
 		display: inline-flex;
@@ -239,13 +286,31 @@
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
 	}
+	.settings {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		align-items: center;
+		gap: 1rem 1rem;
+	}
+	.settings > .setting {
+		display: contents;
+	}
+	.control {
+		display: inline-flex;
+		align-items: center;
+		justify-self: start;
+		gap: 0.75rem;
+	}
 	.fraction-preview {
 		list-style: none;
 		margin: 0;
-		padding: 0.6rem 0.75rem;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, 3.5rem);
-		gap: 0.4rem 0.75rem;
+		padding: 0 0.75rem;
+		box-sizing: border-box;
+		/* Matches the mode toggle: 1.9rem buttons + 2px padding + 1px border on each side. */
+		height: calc(1.9rem + 6px);
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
 		background: var(--surface-2);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);

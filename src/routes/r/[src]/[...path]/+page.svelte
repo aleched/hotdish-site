@@ -488,7 +488,7 @@
 				{/if}
 				{#if folder.children.length === 0}
 					{#if repoStore.status === 'ready' && !repoStore.indexing}
-						<EmptyState icon="folder" label="This folder is empty." />
+						<EmptyState icon="empty" label="This folder is empty." />
 					{/if}
 				{:else}
 					<ul class="cards">
@@ -698,7 +698,13 @@
 		gap: 0.6rem;
 	}
 
+	.cards > li {
+		display: flex;
+	}
+
 	.entry {
+		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
