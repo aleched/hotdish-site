@@ -56,7 +56,7 @@ export interface DeleteArgs {
 export interface MoveArgs {
 	from: string;
 	to: string;
-	/** Current file content; forges that cannot move without re-sending it need this. */
+	/** Content the file has at `to`, so a move can carry edits in the same commit. */
 	content: string;
 	/** Value from `resolveWriteBase` for `from`. */
 	baseSha?: string;
@@ -78,7 +78,7 @@ export interface ForgeProvider {
 	writeFile(args: WriteArgs): Promise<WriteResult>;
 	deleteFile(args: DeleteArgs): Promise<void>;
 	/** Moves or renames a file in a single commit. The content is unchanged. */
-	moveFile(args: MoveArgs): Promise<void>;
+	moveFile(args: MoveArgs): Promise<WriteResult>;
 
 	/**
 	 * Returns the value to send as the write precondition. GitHub and Gitea use the blob sha

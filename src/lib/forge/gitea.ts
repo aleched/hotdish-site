@@ -200,10 +200,10 @@ export class GiteaProvider implements ForgeProvider {
 	}
 
 	/** Uses the multi-file ChangeFiles endpoint, available from Gitea 1.20 / Forgejo 1.20. */
-	async moveFile(args: MoveArgs): Promise<void> {
+	async moveFile(args: MoveArgs): Promise<WriteResult> {
 		this.#requireToken();
 		try {
-			await forgeFetch(
+			const result = await forgeFetchJson<{ files?: { content?: { sha?: string } }[] }>(
 				`${this.#apiBase}/repos/${this.#slug}/contents`,
 				{
 					method: 'POST',
@@ -224,6 +224,7 @@ export class GiteaProvider implements ForgeProvider {
 				},
 				this.#ctx
 			);
+			return { sha: result.files?.[0]?.content?.sha };
 		} catch (error) {
 			if (error instanceof ForgeError && (error.status === 404 || error.status === 405)) {
 				throw new ForgeError('unknown', 'The file could not be moved.', {

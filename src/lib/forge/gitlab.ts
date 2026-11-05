@@ -215,12 +215,13 @@ export class GitLabProvider implements ForgeProvider {
 		);
 	}
 
-	async moveFile(args: MoveArgs): Promise<void> {
+	async moveFile(args: MoveArgs): Promise<WriteResult> {
 		this.#requireToken();
 		const action: Record<string, unknown> = {
 			action: 'move',
 			file_path: args.to,
-			previous_path: args.from
+			previous_path: args.from,
+			content: args.content
 		};
 		if (args.baseSha) action.last_commit_id = args.baseSha;
 
@@ -237,5 +238,6 @@ export class GitLabProvider implements ForgeProvider {
 			},
 			this.#ctx
 		);
+		return {};
 	}
 }

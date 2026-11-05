@@ -205,7 +205,7 @@ export class GitHubProvider implements ForgeProvider {
 	 * The contents API cannot move files, so this builds the commit by hand: a new tree that
 	 * adds the blob at `to` and removes `from`, then a fast-forward-only ref update.
 	 */
-	async moveFile(args: MoveArgs): Promise<void> {
+	async moveFile(args: MoveArgs): Promise<WriteResult> {
 		this.#requireToken();
 		const repoBase = `${this.#apiBase}/repos/${this.#slug}`;
 		const json = { headers: this.#headers({ 'Content-Type': 'application/json' }) };
@@ -234,6 +234,16 @@ export class GitHubProvider implements ForgeProvider {
 			this.#ctx
 		);
 
+		const blob = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/git/blobs`,
+			{
+				...json,
+				method: 'POST',
+				body: JSON.stringify({ content: utf8ToBase64(args.content), encoding: 'base64' })
+			},
+			this.#ctx
+		);
+
 		const tree = await forgeFetchJson<{ sha: string }>(
 			`${repoBase}/git/trees`,
 			{
@@ -242,7 +252,7 @@ export class GitHubProvider implements ForgeProvider {
 				body: JSON.stringify({
 					base_tree: commit.tree.sha,
 					tree: [
-						{ path: args.to, mode: '100644', type: 'blob', sha: current.sha },
+						{ path: args.to, mode: '100644', type: 'blob', sha: blob.sha },
 						{ path: args.from, mode: '100644', type: 'blob', sha: null }
 					]
 				})
@@ -275,6 +285,7 @@ export class GitHubProvider implements ForgeProvider {
 			}
 			throw error;
 		}
+		return { sha: blob.sha };
 	}
 }
 

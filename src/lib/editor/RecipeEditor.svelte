@@ -8,7 +8,9 @@
 	import StructuredForm from '$lib/ui/StructuredForm.svelte';
 	import { diffLines } from '$lib/util/diff';
 	import { ForgeError } from '$lib/forge/errors';
-	import { commitMessages } from '$lib/paths';
+	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '$lib/paths';
+	import { untrack } from 'svelte';
+	import { historyStore } from '$lib/store/history.svelte';
 	import { authStore } from '$lib/store/auth.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
 	import { beforeNavigate } from '$app/navigation';
@@ -19,10 +21,48 @@
 
 	interface Props {
 		doc: RecipeDoc;
-		onclose?: () => void;
+		/** An unsaved draft: saving creates the file, and nothing exists in the repository before. */
+		isNew?: boolean;
+		/** Path the file should have after saving, relative to the base path; differs when renamed. */
+		targetRelative?: string;
+		/** Receives the relative path to show afterwards (the new location when saved or moved). */
+		onclose?: (destination?: string) => void;
 	}
 
-	let { doc, onclose }: Props = $props();
+	let { doc, isNew = false, targetRelative = $bindable(), onclose }: Props = $props();
+
+	// svelte-ignore state_referenced_locally
+	const fromRelative = toRelative(doc.path, repoStore.basePath);
+	let destination = $derived.by(() => {
+		if (targetRelative === undefined) return fromRelative;
+		const value = targetRelative.replace(/\\/g, '/');
+		const folder = parentFolder(value);
+		const name = baseName(value).trim();
+		return joinPath(normalizeFolder(folder), withMarkdownExtension(name));
+	});
+	let moved = $derived(!isNew && destination !== fromRelative);
+	let moveProblem = $derived.by(() => {
+		if (!moved && !isNew) return null;
+		const value = (targetRelative ?? '').replace(/\\/g, '/');
+		const invalid = folderError(parentFolder(value)) ?? fileNameError(baseName(value));
+		if (invalid) return invalid;
+		const full = toFull(destination, repoStore.basePath);
+		return repoStore.entryFor(full) ? `${full} already exists.` : null;
+	});
+
+	// A new recipe's file name follows its title until the name is edited by hand.
+	// svelte-ignore state_referenced_locally
+	let lastAuto = targetRelative;
+	$effect(() => {
+		if (!isNew) return;
+		const title = typeof fields.title === 'string' ? fields.title : '';
+		const current = untrack(() => targetRelative);
+		if (current !== lastAuto) return;
+		const folder = parentFolder((current ?? '').replace(/\\/g, '/'));
+		const next = joinPath(folder, `${slugify(title) || 'new-recipe'}.md`);
+		lastAuto = next;
+		targetRelative = next;
+	});
 
 	/**
 	 * A frontmatter block that YAML could not parse would be silently dropped by any structured
@@ -111,7 +151,7 @@
 	});
 
 	let dirty = $derived(currentRaw.trim() !== doc.raw.trim());
-	let diff = $derived(diffLines(doc.raw, currentRaw));
+	let diff = $derived(diffLines(isNew ? '' : doc.raw, currentRaw));
 
 	let previewHtml = $derived.by(() => {
 		if (mode !== 'source') return '';
@@ -123,7 +163,7 @@
 	});
 
 	function beforeUnload(event: BeforeUnloadEvent) {
-		if (!dirty) return;
+		if (!dirty && !moved) return;
 		event.preventDefault();
 		event.returnValue = '';
 	}
@@ -133,7 +173,11 @@
 		saveError = null;
 		conflict = false;
 		const title = typeof fields.title === 'string' && fields.title.trim() ? fields.title.trim() : doc.title;
-		message = commitMessages.update(title);
+		message = isNew
+			? commitMessages.create(title)
+			: moved
+				? `${commitMessages.move(title, fromRelative, destination)}${dirty ? ' and update' : ''}`
+				: commitMessages.update(title);
 		confirming = true;
 	}
 
@@ -152,21 +196,47 @@
 
 		try {
 			const content = currentRaw.endsWith('\n') ? currentRaw : `${currentRaw}\n`;
-			// Prefer the sha the store knows about: a previous save in this session may have moved it.
-			const knownSha = repoStore.entryFor(doc.path)?.sha ?? doc.sha;
-			const baseSha = await provider.resolveWriteBase(doc.path, branch, knownSha);
+			let baseSha: string | undefined;
+			if (!isNew) {
+				// Prefer the sha the store knows about: a previous save in this session may have moved it.
+				const knownSha = repoStore.entryFor(doc.path)?.sha ?? doc.sha;
+				baseSha = await provider.resolveWriteBase(doc.path, branch, knownSha);
+			}
+
+			if (moved) {
+				const target = toFull(destination, repoStore.basePath);
+				const ref = repoStore.ref;
+				const result = await provider.moveFile({
+					from: doc.path,
+					to: target,
+					content: dirty ? content : doc.raw,
+					baseSha,
+					message: message.trim(),
+					branch
+				});
+				repoStore.renameFile(doc.path, target);
+				if (dirty) repoStore.applySavedDoc(target, content, result.sha);
+				if (ref) void historyStore.rename($state.snapshot(ref), fromRelative, destination);
+				confirming = false;
+				leaving = true;
+				onclose?.(destination);
+				return;
+			}
+
+			const writePath = isNew ? toFull(destination, repoStore.basePath) : doc.path;
 			const result = await provider.writeFile({
-				path: doc.path,
+				path: writePath,
 				content,
 				baseSha,
 				message: message.trim(),
 				branch
 			});
 
-			repoStore.applySavedDoc(doc.path, content, result.sha);
+			if (isNew) repoStore.registerNewFile(writePath, content, result.sha ?? `new:${writePath}`);
+			else repoStore.applySavedDoc(doc.path, content, result.sha);
 			confirming = false;
 			leaving = true;
-			onclose?.();
+			onclose?.(destination);
 		} catch (error) {
 			saveError = error;
 			conflict = error instanceof ForgeError && error.kind === 'conflict';
@@ -192,14 +262,14 @@
 	}
 
 	function cancel() {
-		if (dirty && !window.confirm('Discard your unsaved changes?')) return;
+		if ((dirty || moved) && !window.confirm('Discard your unsaved changes?')) return;
 		leaving = true;
 		onclose?.();
 	}
 
 	// Guards in-app navigation (links, back button); beforeunload covers closing the tab.
 	beforeNavigate((navigation) => {
-		if (leaving || !dirty || navigation.type === 'leave') return;
+		if (leaving || !(dirty || moved) || navigation.type === 'leave') return;
 		if (!window.confirm('Discard your unsaved changes?')) navigation.cancel();
 	});
 </script>
@@ -265,13 +335,17 @@
 				type="button"
 				title="Save"
 				aria-label="Save"
-				disabled={!dirty || saving}
+				disabled={(!dirty && !isNew && !moved) || Boolean(moveProblem) || (isNew && !String(fields.title ?? '').trim()) || saving}
 				onclick={startSave}
 			>
 				<Icon name="save" />
 			</button>
 		</div>
 	</header>
+
+	{#if moveProblem}
+		<p class="banner warn">{moveProblem}</p>
+	{/if}
 
 	{#if rawOnly}
 		<p class="banner warn">
@@ -321,23 +395,28 @@
 
 	{#if confirming}
 		<CommitDialog
-			title="Save changes"
+			title={isNew ? 'Create recipe' : 'Save changes'}
 			bind:message
 			busy={saving}
 			error={saveError}
 			submitLabel="Submit"
 			busyLabel="Saving…"
-			disabled={diff.identical}
+			disabled={diff.identical && !isNew && !moved}
 			wide
 			onsubmit={commit}
 			oncancel={() => (confirming = false)}
 		>
+			{#if moved}
+				<p class="muted small">
+					Moves <code>{doc.path}</code> to <code>{toFull(destination, repoStore.basePath)}</code>
+				</p>
+			{/if}
 			{#if diff.identical}
-				<p class="muted">No changes to save.</p>
+				{#if !moved}<p class="muted">No changes to save.</p>{/if}
 			{:else}
 				<p class="muted small">
 					+{diff.added} line(s), −{diff.removed} line(s) in
-					<code>{doc.path}</code>
+					<code>{isNew ? toFull(destination, repoStore.basePath) : doc.path}</code>
 				</p>
 				<pre class="diff">{#each diff.lines as line, index (index)}<span class={line.kind}
 						>{line.kind === 'added' ? '+' : line.kind === 'removed' ? '-' : ' '}{line.text}</span

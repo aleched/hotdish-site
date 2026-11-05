@@ -16,12 +16,13 @@
 	import { findFolder, type TreeFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
 	import { untrack } from 'svelte';
-	import { parentFolder } from '$lib/paths';
+	import { joinPath, parentFolder, toFull } from '$lib/paths';
+	import { parseRecipe } from '$lib/markdown/recipe';
+	import { scaffoldRecipe } from '$lib/editor/scaffold';
 	import { authStore } from '$lib/store/auth.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import TokenPrompt from '$lib/ui/TokenPrompt.svelte';
 	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
-	import MoveRecipe from '$lib/editor/MoveRecipe.svelte';
 
 	let src = $derived($page.params.src ?? '');
 
@@ -89,9 +90,11 @@
 	let doc = $state<RecipeDoc | null>(null);
 	let docError = $state<string | null>(null);
 	let docLoading = $state(false);
-	/** Folder preselected in the open "New recipe" dialog, or null when it is closed. */
-	let newIn = $state<string | null>(null);
-	let recipeDialog = $state<'move' | 'delete' | null>(null);
+	/** An unsaved new recipe being filled in; it is only committed when the editor saves it. */
+	let draft = $state<{ doc: RecipeDoc } | null>(null);
+	let recipeDialog = $state<'delete' | null>(null);
+	let renaming = $state(false);
+	let renameValue = $state('');
 	// Open state of every folder in the sidebar tree; a missing entry means closed.
 	let open = $state<Record<string, boolean>>({});
 
@@ -164,7 +167,16 @@
 	}
 
 	function openCreate(folderPath: string) {
-		void withToken(() => (newIn = folderPath));
+		void withToken(() => {
+			const relative = joinPath(folderPath, 'new-recipe.md');
+			renameValue = relative;
+			draft = {
+				doc: parseRecipe(
+					{ path: toFull(relative, repoStore.basePath), sha: 'draft' },
+					scaffoldRecipe(repoStore.template)
+				)
+			};
+		});
 	}
 
 	function startEdit(event: MouseEvent) {
@@ -186,8 +198,17 @@
 
 	$effect(() => {
 		void path;
+		void editing;
 		recipeDialog = null;
+		draft = null;
+		renaming = false;
+		renameValue = path;
 	});
+
+	function closeDraft(destination?: string) {
+		draft = null;
+		void goto(`/r/${src}/${encodeURI(destination ?? path)}`);
+	}
 
 	$effect(() => {
 		const target = entry;
@@ -332,7 +353,15 @@
 
 		<section class="content">
 			<div class="head no-print">
-				<Breadcrumbs {src} {path} {rootLabel} />
+				<Breadcrumbs
+					{src}
+					{path}
+					{rootLabel}
+					renamable={Boolean(draft || (entry && editing && canWrite && doc))}
+					forceEdit={Boolean(draft)}
+					bind:renaming
+					bind:value={renameValue}
+				/>
 				<div class="head-actions">
 					{#if entry && !editing}
 						<div class="split">
@@ -345,16 +374,6 @@
 							>
 								<Icon name="edit" />
 							</a>
-							<button
-								type="button"
-								class="part"
-								title="Move or rename"
-								aria-label="Move or rename"
-								disabled={!doc}
-								onclick={() => withToken(() => (recipeDialog = 'move'))}
-							>
-								<Icon name="move" />
-							</button>
 							<button
 								type="button"
 								class="part danger-hover"
@@ -388,7 +407,22 @@
 				</p>
 			{/if}
 
-			{#if entry}
+			{#if draft}
+				{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
+					<p class="muted">Loading editor…</p>
+				{:then module}
+					{@const Editor = module.default}
+					{#key draft.doc.path}
+						<Editor doc={draft.doc} isNew bind:targetRelative={renameValue} onclose={closeDraft} />
+					{/key}
+				{:catch error}
+					<p class="banner error">
+						The editor could not be loaded ({error instanceof Error
+							? error.message
+							: String(error)}).
+					</p>
+				{/await}
+			{:else if entry}
 				{#if docError}
 					<p class="banner error">{docError}</p>
 				{:else if docLoading && !doc}
@@ -403,7 +437,11 @@
 							{:then module}
 								{@const Editor = module.default}
 								{#key doc.sha}
-									<Editor {doc} onclose={() => goto(`/r/${src}/${encodeURI(path)}`)} />
+									<Editor
+										{doc}
+										targetRelative={renameValue}
+										onclose={(destination) => goto(`/r/${src}/${encodeURI(destination ?? path)}`)}
+									/>
 								{/key}
 							{:catch error}
 								<p class="banner error">
@@ -477,16 +515,7 @@
 		</section>
 	</div>
 
-	{#if newIn !== null}
-		{#await import('$lib/editor/NewRecipe.svelte') then module}
-			{@const NewRecipe = module.default}
-			<NewRecipe folderPath={newIn} {src} onclose={() => (newIn = null)} />
-		{/await}
-	{/if}
-
-	{#if doc && entry && recipeDialog === 'move'}
-		<MoveRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
-	{:else if doc && entry && recipeDialog === 'delete'}
+	{#if doc && entry && recipeDialog === 'delete'}
 		<DeleteRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
 	{/if}
 
