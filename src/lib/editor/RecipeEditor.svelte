@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { parseFrontmatter, serializeFrontmatter } from '$lib/markdown/frontmatter';
+	import { dumpFrontmatter, parseFrontmatter, parseYamlMapping, serializeFrontmatter } from '$lib/markdown/frontmatter';
 	import type { RecipeDoc } from '$lib/markdown/recipe';
 	import { renderMarkdown } from '$lib/markdown/render';
 	import { repoStore } from '$lib/store/repo.svelte';
@@ -16,8 +16,9 @@
 	import { beforeNavigate } from '$app/navigation';
 	import Milkdown from './Milkdown.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 
-	type Mode = 'form' | 'rich' | 'source';
+	type Mode = 'form' | 'rich' | 'source' | 'raw';
 
 	interface Props {
 		doc: RecipeDoc;
@@ -73,12 +74,13 @@
 	// svelte-ignore state_referenced_locally
 	const rawOnly = Boolean(doc.frontmatterError);
 
-	let mode = $state<Mode>(rawOnly ? 'source' : 'form');
+	let mode = $state<Mode>(rawOnly ? 'raw' : 'form');
 
-	const ALL_MODES: { value: Mode; label: string; icon: 'form' | 'markdown' | 'rich' }[] = [
+	const ALL_MODES: { value: Mode; label: string; icon: 'form' | 'markdown' | 'rich' | 'file' }[] = [
 		{ value: 'form', label: 'Form', icon: 'form' },
+		{ value: 'rich', label: 'Rich text', icon: 'rich' },
 		{ value: 'source', label: 'Markdown', icon: 'markdown' },
-		{ value: 'rich', label: 'Rich text', icon: 'rich' }
+		{ value: 'raw', label: 'Raw file', icon: 'file' }
 	];
 	const modes = ALL_MODES;
 
@@ -100,7 +102,16 @@
 	let body = $state(doc.body);
 	// svelte-ignore state_referenced_locally
 	let rawText = $state(doc.raw);
+	// svelte-ignore state_referenced_locally
+	let fmText = $state(dumpFrontmatter(doc.fields));
+	let sourceDigits = $derived(
+		Math.max(String(fmText.split('\n').length).length, String(body.split('\n').length).length)
+	);
+	let fmError = $state<string | null>(null);
+	let modeError = $state<string | null>(null);
 	let structured = $state<StructuredDoc | null>(null);
+	// Header-only view of the frontmatter for the rich text editor; edits go straight to `fields`.
+	let richHeader = $derived<StructuredDoc>({ fields, preamble: '', sections: [] });
 	let richEditor = $state<{ getMarkdown(): string | null } | null>(null);
 
 	let saving = $state(false);
@@ -135,13 +146,43 @@
 
 	function setMode(next: Mode) {
 		if (next === mode) return;
+		modeError = null;
+		if (fmError) {
+			modeError = 'Fix the frontmatter before switching modes.';
+			return;
+		}
 		capture();
+		if (mode === 'raw') {
+			const parsed = parseFrontmatter(rawText);
+			if (parsed.error) {
+				modeError = `Fix the frontmatter before switching modes (${parsed.error}).`;
+				return;
+			}
+			fields = parsed.data;
+			body = parsed.body;
+		}
+		if (next === 'raw') rawText = currentRaw;
 		if (next === 'form') structured = toStructured();
+		if (next === 'source' || next === 'rich') {
+			fmText = dumpFrontmatter(fields);
+			fmError = null;
+		}
 		mode = next;
 	}
 
+	function onFrontmatterInput(text: string) {
+		fmText = text;
+		const result = parseYamlMapping(text);
+		if ('error' in result) {
+			fmError = result.error;
+		} else {
+			fmError = null;
+			fields = result.data;
+		}
+	}
+
 	let currentRaw = $derived.by(() => {
-		if (rawOnly) return rawText;
+		if (mode === 'raw') return rawText;
 		// Touch the reactive sources so the preview and dirty state stay live.
 		void structured;
 		void body;
@@ -150,13 +191,15 @@
 		return serializeFrontmatter(fields, body);
 	});
 
+	let rawProblem = $derived(mode === 'raw' && !rawOnly ? (parseFrontmatter(rawText).error ?? null) : null);
+
 	let dirty = $derived(currentRaw.trim() !== doc.raw.trim());
 	let diff = $derived(diffLines(isNew ? '' : doc.raw, currentRaw));
 
 	let previewHtml = $derived.by(() => {
 		if (mode !== 'source') return '';
 		try {
-			return renderMarkdown(rawOnly ? parseFrontmatter(rawText).body : body);
+			return renderMarkdown(body);
 		} catch {
 			return '';
 		}
@@ -172,7 +215,8 @@
 		capture();
 		saveError = null;
 		conflict = false;
-		const title = typeof fields.title === 'string' && fields.title.trim() ? fields.title.trim() : doc.title;
+		const rawTitle = mode === 'raw' ? parseFrontmatter(rawText).data.title : fields.title;
+		const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle.trim() : doc.title;
 		message = isNew
 			? commitMessages.create(title)
 			: moved
@@ -256,6 +300,9 @@
 		fields = $state.snapshot(doc.fields);
 		body = doc.body;
 		rawText = doc.raw;
+		fmText = dumpFrontmatter(fields);
+		fmError = null;
+		modeError = null;
 		if (!rawOnly) structured = toStructured();
 		// Re-mounts the active editor so it picks up the restored content.
 		resetKey++;
@@ -287,7 +334,7 @@
 		>
 			<span class="thumb" aria-hidden="true"></span>
 			{#each modes as item, index (item.value)}
-				{@const unavailable = rawOnly && item.value !== 'source'}
+				{@const unavailable = rawOnly && item.value !== 'raw'}
 				<button
 					type="button"
 					role="radio"
@@ -335,7 +382,7 @@
 				type="button"
 				title="Save"
 				aria-label="Save"
-				disabled={(!dirty && !isNew && !moved) || Boolean(moveProblem) || (isNew && !String(fields.title ?? '').trim()) || saving}
+				disabled={(!dirty && !isNew && !moved) || Boolean(moveProblem) || Boolean(fmError) || (!rawOnly && Boolean(rawProblem)) || (isNew && !String(fields.title ?? '').trim()) || saving}
 				onclick={startSave}
 			>
 				<Icon name="save" />
@@ -360,33 +407,58 @@
 		</p>
 	{/if}
 
+	{#if modeError}
+		<p class="banner warn">{modeError}</p>
+	{/if}
+
+	{#if mode === 'source'}
+		<div class="frontmatter">
+			<LineNumberedTextarea
+				rows={1}
+				fit
+				fractions={false}
+				minDigits={sourceDigits}
+				spellcheck={false}
+				value={fmText}
+				oninput={(event) => onFrontmatterInput(event.currentTarget.value)}
+				placeholder="Frontmatter (YAML)"
+				title="Frontmatter (YAML)"
+				aria-label="Frontmatter (YAML)"
+				aria-invalid={Boolean(fmError)}
+			/>
+			{#if fmError}<p class="banner warn">{fmError}</p>{/if}
+		</div>
+	{/if}
+
 	{#if mode === 'form' && structured}
 		{#key resetKey}
 			<StructuredForm doc={structured} template={repoStore.template} />
 		{/key}
 	{:else if mode === 'rich'}
+		<StructuredForm doc={richHeader} template={repoStore.template} headerOnly />
 		{#key resetKey}
 			<Milkdown bind:this={richEditor} value={body} onchange={(markdown) => (body = markdown)} />
 		{/key}
+	{:else if mode === 'raw'}
+		<LineNumberedTextarea
+			rows={1}
+			fit
+			fractions={false}
+			spellcheck={false}
+			bind:value={rawText}
+			aria-label="Raw file"
+		/>
+		{#if rawProblem}<p class="banner warn">{rawProblem}</p>{/if}
 	{:else}
 		<div class="source">
-			{#if rawOnly}
-				<textarea
-					class="raw"
-					spellcheck="false"
-					rows="24"
-					bind:value={rawText}
-					aria-label="Markdown source"
-				></textarea>
-			{:else}
-				<textarea
-					class="raw"
-					spellcheck="false"
-					rows="24"
-					bind:value={body}
-					aria-label="Markdown source"
-				></textarea>
-			{/if}
+			<LineNumberedTextarea
+				rows={3}
+				fit
+				minDigits={sourceDigits}
+				spellcheck={false}
+				bind:value={body}
+				aria-label="Markdown source"
+			/>
 			{#if previewHtml}
 				<div class="prose preview">{@html previewHtml}</div>
 			{/if}
@@ -551,12 +623,6 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		gap: 1rem;
-	}
-	.raw {
-		font-family: var(--mono);
-		font-size: 0.88rem;
-		resize: vertical;
-		min-height: 420px;
 	}
 	.preview {
 		border-left: 1px solid var(--border);

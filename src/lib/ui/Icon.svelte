@@ -28,7 +28,11 @@
 			| 'repos'
 			| 'link'
 			| 'branch'
-			| 'key';
+			| 'key'
+			| 'servings'
+			| 'prep'
+			| 'cook'
+			| 'file';
 		size?: number;
 	}
 
@@ -82,6 +86,9 @@
 	{:else if name === 'markdown'}
 		<rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
 		<path d="M4 10V6l2 2.5L8 6v4M11 6v4M9.5 8.5l1.5 1.5 1.5-1.5" stroke-width="1.2" />
+	{:else if name === 'file'}
+		<path d="M3.5 1.8h6l3 3v9.4h-9z" />
+		<path d="M9.5 1.8v3h3M6 8.5h4M6 11h4" />
 	{:else if name === 'rich'}
 		<path d="M1.5 12.5l3.2-9 3.2 9M2.7 9.5h4" />
 		<path d="M10 12.5V8.2M10 9.6c.3-1 1-1.4 2-1.4s1.5.6 1.5 1.5v2.8" stroke-width="1.2" />
@@ -123,6 +130,20 @@
 		<circle cx="4.5" cy="12.5" r="1.5" />
 		<circle cx="11.5" cy="5.5" r="1.5" />
 		<path d="M4.5 5v6M11.5 7c0 2.5-3 2.5-7 4" />
+	{:else if name === 'servings'}
+		<circle cx="8" cy="5.2" r="2.4" />
+		<path d="M3 13.5c.4-2.7 2.3-4.2 5-4.2s4.6 1.5 5 4.2z" />
+	{:else if name === 'prep'}
+		<path d="M2 7.6h12c0 3.6-2.4 6.8-6 6.8s-6-3.2-6-6.8z" />
+		<path d="M6 15h4" />
+		<ellipse cx="6.2" cy="10.6" rx="1.4" ry="2.1" transform="rotate(45 6.2 10.6)" />
+		<path d="M7.4 9.4L13.2 3.6" />
+	{:else if name === 'cook'}
+		<path
+			transform="translate(8 7.2) scale(1.2) translate(-8 -7.2)"
+			stroke-width="1.17"
+			d="M8 1.8c.4 2.2 3.8 3.6 3.8 7a3.8 3.8 0 0 1-7.6 0c0-1.6.8-2.6 1.6-3.4.2 1 .6 1.6 1.2 1.9C7 5.6 7.4 3.6 8 1.8z"
+		/>
 	{:else if name === 'key'}
 		<circle cx="5" cy="8" r="2.8" />
 		<path d="M7.8 8H14M11.5 8v2.5M13.5 8v1.5" />

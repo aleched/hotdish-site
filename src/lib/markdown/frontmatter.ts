@@ -21,7 +21,8 @@ export function parseFrontmatter(source: string): Frontmatter {
 	const match = FRONTMATTER_PATTERN.exec(source);
 	if (!match) return { data: {}, body: stripBom(source), present: false };
 
-	const body = source.slice(match[0].length);
+	// The blank line after the closing fence is re-added on save, so it isn't part of the body.
+	const body = source.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '');
 
 	try {
 		const parsed = yaml.load(match[1]);
@@ -40,14 +41,43 @@ export function parseFrontmatter(source: string): Frontmatter {
 	}
 }
 
+/** Keys shown first, in this order. Anything else keeps its original relative order after them. */
+export const FRONTMATTER_ORDER = ['title', 'tags', 'servings', 'prep_time', 'cook_time', 'source'];
+
+function orderFields(data: Record<string, unknown>): Record<string, unknown> {
+	const known = FRONTMATTER_ORDER.filter((key) => key in data);
+	const rest = Object.keys(data).filter((key) => !FRONTMATTER_ORDER.includes(key));
+	return Object.fromEntries([...known, ...rest].map((key) => [key, data[key]]));
+}
+
+/** YAML text for a frontmatter mapping, without the `---` fences. Empty for an empty mapping. */
+export function dumpFrontmatter(data: Record<string, unknown>): string {
+	if (Object.keys(data).length === 0) return '';
+	return yaml
+		.dump(orderFields(data), { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false })
+		.trimEnd();
+}
+
+/** Parses standalone YAML text that must be a mapping (or empty). */
+export function parseYamlMapping(text: string): { data: Record<string, unknown> } | { error: string } {
+	try {
+		const parsed = yaml.load(text);
+		if (parsed === undefined || parsed === null) return { data: {} };
+		if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+			return { error: 'Frontmatter must be a set of key: value pairs.' };
+		}
+		return { data: parsed as Record<string, unknown> };
+	} catch (error) {
+		return { error: error instanceof Error ? error.message : String(error) };
+	}
+}
+
 /** Re-attaches frontmatter to a body. An empty mapping omits the block entirely. */
 export function serializeFrontmatter(data: Record<string, unknown>, body: string): string {
 	const keys = Object.keys(data);
 	if (keys.length === 0) return body;
 
-	const yamlText = yaml
-		.dump(data, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false })
-		.trimEnd();
+	const yamlText = dumpFrontmatter(data);
 
 	return `---\n${yamlText}\n---\n\n${body.replace(/^\n+/, '')}`;
 }

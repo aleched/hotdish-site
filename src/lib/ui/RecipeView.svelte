@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { RecipeDoc } from '$lib/markdown/recipe';
 	import { renderMarkdown } from '$lib/markdown/render';
+	import Icon from '$lib/ui/Icon.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 
 	interface Props {
@@ -19,9 +20,24 @@
 		}
 	});
 
+	const META = [
+		{ key: 'servings', label: 'Servings', icon: 'servings' },
+		{ key: 'prep_time', label: 'Prep time', icon: 'prep' },
+		{ key: 'cook_time', label: 'Cook time', icon: 'cook' }
+	] as const;
+	const HANDLED = ['title', 'tags', 'servings', 'prep_time', 'cook_time', 'source'];
+
+	function has(value: unknown): boolean {
+		return value !== null && value !== undefined && String(value).trim() !== '';
+	}
+
+	let metaItems = $derived(META.filter((item) => has(doc.fields[item.key])));
+	let source = $derived(has(doc.fields.source) ? String(doc.fields.source).trim() : '');
+	let isUrl = $derived(/^https?:\/\//i.test(source));
+
 	let extras = $derived(
 		Object.entries(doc.fields).filter(
-			([key, value]) => key !== 'title' && key !== 'tags' && value !== null && value !== undefined
+			([key, value]) => !HANDLED.includes(key) && value !== null && value !== undefined
 		)
 	);
 
@@ -64,6 +80,32 @@
 		</div>
 	{/if}
 
+	{#if metaItems.length > 0}
+		<div class="facts">
+			{#each metaItems as item (item.key)}
+				<span class="fact" title={item.label}>
+					<Icon name={item.icon} size={16} />
+					<span class="visually-hidden">{item.label}:</span>
+					{formatValue(doc.fields[item.key])}
+				</span>
+			{/each}
+		</div>
+	{/if}
+
+	{#if source}
+		<div class="facts">
+			<span class="fact" title="Source">
+				<Icon name="link" size={16} />
+				<span class="visually-hidden">Source:</span>
+				{#if isUrl}
+					<a href={source} target="_blank" rel="noopener noreferrer">{source}</a>
+				{:else}
+					{source}
+				{/if}
+			</span>
+		</div>
+	{/if}
+
 	{#if extras.length > 0}
 		<dl class="meta">
 			{#each extras as [key, value] (key)}
@@ -103,6 +145,22 @@
 	.tags .tag {
 		cursor: pointer;
 		width: auto;
+	}
+
+	.facts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem 1.25rem;
+		margin-bottom: 0.6rem;
+		color: var(--text-dim);
+		font-size: 0.9rem;
+	}
+	.fact {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 
 	.meta {

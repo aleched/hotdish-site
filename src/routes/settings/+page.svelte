@@ -2,6 +2,7 @@
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 
 	let cacheMessage = $state<string | null>(null);
 
@@ -57,6 +58,20 @@
 				{/each}
 			</div>
 		</div>
+	</div>
+</section>
+
+<section class="panel">
+	<h2>Editor</h2>
+	<div class="card stack">
+		<label class="toggle">
+			<input
+				type="checkbox"
+				checked={editorPrefs.fractions}
+				onchange={(event) => editorPrefs.setFractions(event.currentTarget.checked)}
+			/>
+			<span>Replace typed fractions with symbols (3/4 → ¾)</span>
+		</label>
 	</div>
 </section>
 
@@ -129,6 +144,16 @@
 	.label {
 		font-size: 0.85rem;
 		font-weight: 600;
+	}
+	.toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+	}
+	.toggle input {
+		width: auto;
+		margin: 0;
 	}
 
 	.choices {

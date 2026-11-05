@@ -9,14 +9,27 @@
 	} from '$lib/template/schema';
 	import { validateFields } from '$lib/template/schema';
 	import Icon from '$lib/ui/Icon.svelte';
+	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 	import TagInput from '$lib/ui/TagInput.svelte';
 
 	interface Props {
 		doc: StructuredDoc;
 		template: RecipeTemplate | null;
+		/** Show only the title, tags and details card (used above the rich text editor). */
+		headerOnly?: boolean;
 	}
 
-	let { doc, template }: Props = $props();
+	let { doc, template, headerOnly = false }: Props = $props();
+
+	// svelte-ignore state_referenced_locally
+	let introOpen = $state(Boolean(doc.preamble.trim()));
+
+	function openIntro() {
+		introOpen = true;
+		requestAnimationFrame(() =>
+			document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Introduction"]')?.focus()
+		);
+	}
 
 	let issues = $derived(validateFields(template, doc.fields));
 
@@ -57,6 +70,22 @@
 			doc.fields[key] = value;
 		}
 	}
+
+	function setMeta(key: string, value: string) {
+		setField(key, value);
+	}
+
+	const META_FIELDS: {
+		key: string;
+		label: string;
+		icon: 'servings' | 'prep' | 'cook';
+		placeholder: string;
+	}[] = [
+		{ key: 'servings', label: 'Servings', icon: 'servings', placeholder: 'Servings' },
+		{ key: 'prep_time', label: 'Prep time', icon: 'prep', placeholder: 'Prep time' },
+		{ key: 'cook_time', label: 'Cook time', icon: 'cook', placeholder: 'Cook time' }
+	];
+	const META_KEYS = [...META_FIELDS.map((item) => item.key), 'source'];
 
 	function toggleListValue(key: string, option: string) {
 		const current = listValue(key);
@@ -114,13 +143,34 @@
 		{ value: 'ordered', label: 'Numbered' }
 	];
 
+	function setType(section: StructuredSection, type: SectionType) {
+		if (type === 'text' && section.type !== 'text') {
+			// Free text has no list, so fold list items (and surrounding text) into the text itself.
+			for (const block of section.blocks) {
+				const bullets = itemsToLines(block.items);
+				block.leadingText = [block.leadingText.trim(), bullets, block.trailingText.trim()]
+					.filter(Boolean)
+					.join('\n');
+				block.items = [];
+				block.trailingText = '';
+			}
+		} else if (type !== 'text' && section.type === 'text') {
+			// Free text becomes list items, one per line.
+			for (const block of section.blocks) {
+				block.items = [...linesToItems(block.leadingText), ...block.items];
+				block.leadingText = '';
+			}
+		}
+		section.type = type;
+	}
+
 	function onTypeKey(event: KeyboardEvent, section: StructuredSection) {
 		const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
 		if (!step) return;
 		event.preventDefault();
 		const current = SECTION_TYPES.findIndex((item) => item.value === section.type);
 		const next = (current + step + SECTION_TYPES.length) % SECTION_TYPES.length;
-		section.type = SECTION_TYPES[next].value;
+		setType(section, SECTION_TYPES[next].value);
 		// The first child is the sliding highlight, so the radios start at index 1.
 		const group = event.currentTarget as HTMLElement;
 		requestAnimationFrame(() =>
@@ -169,32 +219,6 @@
 			document.querySelector<HTMLElement>(`[data-section-grip="${index + delta}"]`)?.focus()
 		);
 	}
-
-	/** Sizes a textarea to its content so no inner scrollbar is needed, and keeps it that way. */
-	function autosize(node: HTMLTextAreaElement, _value?: unknown) {
-		let width = 0;
-		const fit = () => {
-			node.style.height = 'auto';
-			// scrollHeight excludes the border, which border-box sizing needs back.
-			node.style.height = `${node.scrollHeight + node.offsetHeight - node.clientHeight}px`;
-		};
-		fit();
-		node.addEventListener('input', fit);
-		// Wrapping changes with the width, so refit when it does.
-		const observer = new ResizeObserver(() => {
-			if (node.clientWidth === width) return;
-			width = node.clientWidth;
-			fit();
-		});
-		observer.observe(node);
-		return {
-			update: fit,
-			destroy() {
-				node.removeEventListener('input', fit);
-				observer.disconnect();
-			}
-		};
-	}
 </script>
 
 <div class="form stack">
@@ -204,13 +228,14 @@
 			type="text"
 			aria-label="Title"
 			title="Title"
+			placeholder="Title"
 			value={textValue('title')}
 			oninput={(event) => setField('title', event.currentTarget.value)}
 		/>
 
 		{#if template}
 			{#each template.fields as field (field.key)}
-				{#if field.key !== 'title'}
+				{#if field.key !== 'title' && !META_KEYS.includes(field.key)}
 					<div class="field" class:with-icon={field.key === 'tags'}>
 						{#if field.key === 'tags'}
 							<span class="field-icon" title="Tags"><Icon name="tag" size={20} /></span>
@@ -304,13 +329,61 @@
 				</div>
 			</div>
 		{/if}
+
+		<div class="meta-row">
+			{#each META_FIELDS as meta (meta.key)}
+				<div class="input-icon">
+					<span class="field-icon" title={meta.label}><Icon name={meta.icon} size={18} /></span>
+					<input
+						type="text"
+						aria-label={meta.label}
+						title={meta.label}
+						placeholder={meta.placeholder}
+						value={textValue(meta.key)}
+						oninput={(event) => setMeta(meta.key, event.currentTarget.value)}
+					/>
+				</div>
+			{/each}
+		</div>
+		<div class="input-icon">
+			<span class="field-icon" title="Source"><Icon name="link" size={18} /></span>
+			<input
+				type="text"
+				aria-label="Source"
+				title="Source"
+				placeholder="Source (URL or person)"
+				value={textValue('source')}
+				oninput={(event) => setField('source', event.currentTarget.value)}
+			/>
+		</div>
 	</section>
 
-	{#if doc.preamble.trim()}
+	{#if !headerOnly}
+	{#if introOpen}
 		<section class="card stack">
-			<h2>Introduction</h2>
-			<textarea rows="3" use:autosize={doc.preamble} bind:value={doc.preamble}></textarea>
+			<LineNumberedTextarea
+				rows={3}
+				fit
+				gutter="dash"
+				bind:value={doc.preamble}
+				aria-label="Introduction"
+				onblur={() => {
+					if (!doc.preamble.trim()) introOpen = false;
+				}}
+				placeholder="Introduction"
+			/>
 		</section>
+	{:else}
+		<button
+			type="button"
+			class="add-intro"
+			title="Add introduction"
+			aria-label="Add introduction"
+			onclick={openIntro}
+		>
+			<Icon name="plus" size={12} />
+			<span class="rule"></span>
+		</button>
 	{/if}
 
 	{#each doc.sections as section, sectionIndex (section)}
@@ -359,7 +432,7 @@
 							title={option.label}
 							tabindex={section.type === option.value ? 0 : -1}
 							class:on={section.type === option.value}
-							onclick={() => (section.type = option.value)}
+							onclick={() => setType(section, option.value)}
 							onkeydown={(event) => onTypeKey(event, section)}
 						>
 							<Icon name={option.value} size={15} />
@@ -404,42 +477,46 @@
 					{/if}
 
 					{#if section.type === 'text'}
-						<textarea
-							rows="3"
-							use:autosize={block.leadingText}
+						<LineNumberedTextarea
+							rows={3}
+							fit
+							gutter="dash"
 							placeholder={placeholderFor(section.type)}
 							value={block.leadingText}
 							oninput={(event) => (block.leadingText = event.currentTarget.value)}
-						></textarea>
+						/>
 					{:else}
 						{#if block.leadingText.trim()}
-							<textarea
-								rows="2"
-								class="aside"
-								use:autosize={block.leadingText}
+							<LineNumberedTextarea
+								rows={2}
+								fit
+								gutter="dash"
+								mono={false}
 								aria-label="Text before the list"
 								value={block.leadingText}
 								oninput={(event) => (block.leadingText = event.currentTarget.value)}
-							></textarea>
+							/>
 						{/if}
 
-						<textarea
-							rows="3"
-							use:autosize={block.items}
+						<LineNumberedTextarea
+							rows={3}
+							fit
+							gutter={section.type === 'list' ? 'bullet' : 'number'}
 							placeholder={placeholderFor(section.type)}
 							value={itemsToLines(block.items)}
 							oninput={(event) => (block.items = linesToItems(event.currentTarget.value))}
-						></textarea>
+						/>
 
 						{#if block.trailingText.trim()}
-							<textarea
-								rows="2"
-								class="aside"
-								use:autosize={block.trailingText}
+							<LineNumberedTextarea
+								rows={2}
+								fit
+								gutter="dash"
+								mono={false}
 								aria-label="Text after the list"
 								value={block.trailingText}
 								oninput={(event) => (block.trailingText = event.currentTarget.value)}
-							></textarea>
+							/>
 						{/if}
 					{/if}
 				</div>
@@ -487,6 +564,7 @@
 			<Icon name="plus" size={14} /><Icon name="section" />
 		</button>
 	</div>
+	{/if}
 </div>
 
 <style>
@@ -518,6 +596,26 @@
 		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
 		height: calc(1.6rem + 0.9rem + 2px);
 		color: var(--text-dim);
+	}
+	.meta-row {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.5rem;
+	}
+	.input-icon {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+	.input-icon input {
+		flex: 1;
+		min-width: 0;
+	}
+	@media (max-width: 560px) {
+		.meta-row {
+			grid-template-columns: 1fr;
+		}
 	}
 	.label {
 		font-size: 0.85rem;
@@ -681,13 +779,32 @@
 		border-left: 2px solid var(--border);
 	}
 
-	textarea {
-		font-family: var(--mono);
-		font-size: 0.88rem;
-		resize: vertical;
+	.add-intro {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0;
+		line-height: 1;
+		background: none;
+		border: none;
+		color: var(--text-dim);
+		opacity: 0.6;
 	}
-	textarea.aside {
-		font-family: inherit;
+	.add-intro .rule {
+		flex: 1;
+		height: 1px;
+		background: var(--border);
+	}
+	.add-intro:hover,
+	.add-intro:focus-visible {
+		opacity: 1;
+		color: var(--accent);
+		background: none;
+	}
+	.add-intro:hover .rule,
+	.add-intro:focus-visible .rule {
+		background: var(--accent);
 	}
 
 	.small {
