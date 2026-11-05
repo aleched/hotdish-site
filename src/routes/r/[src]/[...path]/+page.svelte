@@ -232,6 +232,16 @@
 		})
 	);
 
+	const PAGE_SIZE = 12;
+	let recentLimit = $state(PAGE_SIZE);
+	let childLimit = $state(PAGE_SIZE);
+	$effect(() => {
+		void path;
+		void repoStore.isFiltering;
+		recentLimit = PAGE_SIZE;
+		childLimit = PAGE_SIZE;
+	});
+
 	$effect(() => {
 		const ref = decoded.ref;
 		if (ref) void historyStore.load(ref);
@@ -440,36 +450,47 @@
 					{/if}
 				{/if}
 			{:else if folder}
-				{#if showRecent}
+				{#if showRecent && recentItems.length > 0}
 					<h2 class="recent-title" title="Recently viewed">
 						<Icon name="clock" size={20} /><span class="visually-hidden">Recently viewed</span>
 					</h2>
-					{#if recentItems.length > 0}
-						<ul class="cards">
-							{#each recentItems as item (item.path)}
-								<li>
-									<a class="card entry" href={`/r/${src}/${encodeURI(item.path)}`}>
-										<span class="kind">📄</span>
-										<span class="label">{item.title}</span>
-										{#if item.tags.length > 0}
-											<span class="sub tags">
-												{#each item.tags.slice(0, 4) as tag (tag)}
-													<span class="tag">{tag}</span>
-												{/each}
-											</span>
-										{/if}
-									</a>
-								</li>
-							{/each}
-						</ul>
-					{:else if repoStore.status === 'ready' && !repoStore.indexing}
-						<EmptyState icon="clock" label="No recipe view history" />
+					<ul class="cards">
+						{#each recentItems.slice(0, recentLimit) as item (item.path)}
+							<li>
+								<a class="card entry" href={`/r/${src}/${encodeURI(item.path)}`}>
+									<span class="kind">📄</span>
+									<span class="label">{item.title}</span>
+									{#if item.tags.length > 0}
+										<span class="sub tags">
+											{#each item.tags.slice(0, 4) as tag (tag)}
+												<span class="tag">{tag}</span>
+											{/each}
+										</span>
+									{/if}
+								</a>
+							</li>
+						{/each}
+					</ul>
+					{#if recentItems.length > recentLimit}
+						<button
+							type="button"
+							class="icon-button more"
+							title="Show more recent recipes"
+							aria-label="Show more recent recipes"
+							onclick={() => (recentLimit += PAGE_SIZE)}
+						>
+							<Icon name="expand" />
+						</button>
 					{/if}
-				{:else if folder.children.length === 0}
-					<EmptyState icon="folder" label="This folder is empty." />
+					<hr class="divider" />
+				{/if}
+				{#if folder.children.length === 0}
+					{#if repoStore.status === 'ready' && !repoStore.indexing}
+						<EmptyState icon="folder" label="This folder is empty." />
+					{/if}
 				{:else}
 					<ul class="cards">
-						{#each folder.children as child (child.path)}
+						{#each folder.children.slice(0, childLimit) as child (child.path)}
 							<li>
 								<a class="card entry" href={`/r/${src}/${encodeURI(child.path)}`}>
 									<span class="kind">{child.kind === 'folder' ? '📁' : '📄'}</span>
@@ -489,6 +510,17 @@
 							</li>
 						{/each}
 					</ul>
+					{#if folder.children.length > childLimit}
+						<button
+							type="button"
+							class="icon-button more"
+							title="Show more items"
+							aria-label="Show more items"
+							onclick={() => (childLimit += PAGE_SIZE)}
+						>
+							<Icon name="expand" />
+						</button>
+					{/if}
 				{/if}
 			{:else if notFound}
 				<p class="banner warn">Nothing found at <code>{path}</code>.</p>
@@ -544,6 +576,15 @@
 		font-size: 1rem;
 		margin: 0 0 0.6rem;
 		color: var(--text-dim);
+	}
+	.divider {
+		border: 0;
+		border-top: 1px solid var(--border);
+		margin: 1.25rem 0;
+	}
+	.more {
+		display: flex;
+		margin: 0.75rem auto 0;
 	}
 
 	.head {
