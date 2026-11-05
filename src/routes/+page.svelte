@@ -74,6 +74,30 @@
 		error = null;
 	}
 
+	// Clicking away from an untouched form simply closes it.
+	$effect(() => {
+		if (!isCreating && editingId === null) return;
+		const onPointerDown = (event: PointerEvent) => {
+			const target = event.target as Element | null;
+			if (!target || target.closest('.inline-form') || !target.isConnected) return;
+			if (!formDirty && !isDetectingForge) {
+				cancelEdit();
+				// Swallow the click that follows, so a button such as "Add saved repository"
+				// only closes the form instead of reopening it.
+				if (target.closest('button')) {
+					const swallow = (click: Event) => {
+						click.stopPropagation();
+						click.preventDefault();
+					};
+					window.addEventListener('click', swallow, { capture: true, once: true });
+					setTimeout(() => window.removeEventListener('click', swallow, true), 400);
+				}
+			}
+		};
+		document.addEventListener('pointerdown', onPointerDown);
+		return () => document.removeEventListener('pointerdown', onPointerDown);
+	});
+
 	function onInput() {
 		kind = '';
 		needsForgeChoice = false;
@@ -167,11 +191,10 @@
 		overId = null;
 	}
 
-	let confirming = $state<{ id: string; action: 'delete' | 'token' } | null>(null);
+	let confirming = $state<{ id: string } | null>(null);
 
 	function runConfirmed(profile: Profile) {
-		if (confirming?.action === 'delete') profileStore.remove(profile.id);
-		else if (confirming?.action === 'token') profileStore.clearToken(profile.id);
+		profileStore.remove(profile.id);
 		confirming = null;
 	}
 
@@ -261,7 +284,19 @@
 					</div>
 
 					<div class="input-icon" title="Access token">
-						<Icon name="key" />
+						{#if token}
+							<button
+								type="button"
+								class="token-clear"
+								title="Clear token"
+								aria-label="Clear token"
+								onclick={() => (token = '')}
+							>
+								<Icon name="keyoff" />
+							</button>
+						{:else}
+							<Icon name="key" />
+						{/if}
 						<input
 							id="token"
 							type="password"
@@ -333,54 +368,38 @@
 					<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
 						<strong>{profile.name}</strong>
 						<span class="muted path">
-							{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
+							{#if profile.token}<span class="has-token" title="Access token saved"><Icon name="key" size={14} /></span>{/if}{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
 							{#if profile.ref}@{profile.ref}{/if}
 							{#if profile.basePath}· {profile.basePath}{/if}
 						</span>
 					</a>
 					<div class="row actions">
 						{#if confirming?.id === profile.id}
-							<span class="confirm-text">
-								{confirming.action === 'delete' ? 'Delete this repository?' : 'Remove token?'}
-							</span>
-							<button type="button" class="danger" onclick={() => runConfirmed(profile)}>
-								{confirming.action === 'delete' ? 'Delete' : 'Remove'}
-							</button>
+							<span class="confirm-text">Delete this repository?</span>
+							<button type="button" class="danger" onclick={() => runConfirmed(profile)}>Delete</button>
 							<button type="button" onclick={() => (confirming = null)}>Cancel</button>
 						{:else}
-						<button
-							type="button"
-							class="icon-button"
-							title="Edit"
-							aria-label="Edit"
-							disabled={isCreating || editingId !== null}
-							onclick={() => startEdit(profile)}
-						>
-							<Icon name="edit" />
-						</button>
-						<button
-							type="button"
-							class="icon-button danger-hover"
-							title={profile.token ? 'Remove token' : 'No token'}
-							aria-label={profile.token ? 'Remove token' : 'No token'}
-							disabled={!profile.token}
-							onclick={() => (confirming = { id: profile.id, action: 'token' })}
-						>
-							<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-								<circle cx="5" cy="11" r="2.5" />
-								<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
-								<path d="M2 2l12 12" />
-							</svg>
-						</button>
-						<button
-							type="button"
-							class="icon-button danger-hover"
-							title="Delete"
-							aria-label="Delete"
-							onclick={() => (confirming = { id: profile.id, action: 'delete' })}
-						>
-							<Icon name="trash" />
-						</button>
+							<div class="split">
+								<button
+									type="button"
+									class="part"
+									title="Edit"
+									aria-label="Edit"
+									disabled={isCreating || editingId !== null}
+									onclick={() => startEdit(profile)}
+								>
+									<Icon name="edit" />
+								</button>
+								<button
+									type="button"
+									class="part danger-hover"
+									title="Delete"
+									aria-label="Delete"
+									onclick={() => (confirming = { id: profile.id })}
+								>
+									<Icon name="trash" />
+								</button>
+							</div>
 						{/if}
 					</div>
 				{/if}
@@ -433,6 +452,35 @@
 	}
 	.split > .part + .part {
 		margin-left: -1px;
+	}
+	.part.danger-hover:hover:not(:disabled) {
+		border-color: var(--danger);
+		color: var(--danger);
+	}
+	.has-token {
+		display: inline-flex;
+		vertical-align: -0.2em;
+		margin-right: 0.35rem;
+	}
+	.input-icon .token-clear {
+		position: absolute;
+		left: 0.25rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.25rem;
+		border: none;
+		background: none;
+		color: var(--text-dim);
+		cursor: pointer;
+		line-height: 0;
+	}
+	.input-icon .token-clear:hover {
+		color: var(--danger);
+	}
+	.input-icon .token-clear :global(svg) {
+		position: static;
+		color: inherit;
 	}
 
 	h2 {

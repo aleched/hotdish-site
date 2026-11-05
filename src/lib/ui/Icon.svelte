@@ -29,6 +29,7 @@
 			| 'link'
 			| 'branch'
 			| 'key'
+			| 'keyoff'
 			| 'servings'
 			| 'prep'
 			| 'cook'
@@ -147,6 +148,10 @@
 	{:else if name === 'key'}
 		<circle cx="5" cy="8" r="2.8" />
 		<path d="M7.8 8H14M11.5 8v2.5M13.5 8v1.5" />
+	{:else if name === 'keyoff'}
+		<circle cx="5" cy="11" r="2.5" />
+		<path d="M6.8 9.2L13 3M11 5l1.5 1.5M9.5 6.5L11 8" />
+		<path d="M2 2l12 12" />
 	{:else if name === 'filter'}
 		<path d="M2 3.5h12L9.5 9v4l-3 1.5V9z" />
 	{:else if name === 'grip'}
