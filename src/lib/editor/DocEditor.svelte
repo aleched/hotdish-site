@@ -9,7 +9,12 @@
 	import { diffLines } from '$lib/util/diff';
 	import { ForgeError } from '$lib/forge/errors';
 	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '$lib/paths';
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { deleteDraft, draftKey, readDraft, writeDraft, type Draft } from '$lib/cache/drafts';
+	import { snapshotKey } from '$lib/cache/repoCache';
+	import { connectionStore } from '$lib/store/connection.svelte';
+	import { editorOpened } from '$lib/pwa/update';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { historyStore } from '$lib/store/history.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
 	import { beforeNavigate } from '$app/navigation';
@@ -193,6 +198,89 @@
 		}
 	});
 
+	// Work in progress is kept on the device, so a lost connection, reload or closed app never
+	// loses it. A new document has one pending draft per repository.
+	// svelte-ignore state_referenced_locally
+	const draftId = repoStore.ref ? draftKey(snapshotKey(repoStore.ref), isNew ? null : doc.path) : null;
+	// svelte-ignore state_referenced_locally
+	const initialTarget = targetRelative;
+	let draftChecked = $state(false);
+	let restored = $state<{ savedAt: number; changed: boolean } | null>(null);
+
+	function loadContent(raw: string) {
+		const parsed = parseFrontmatter(raw);
+		rawText = raw;
+		if (rawOnly || parsed.error) {
+			mode = 'raw';
+		} else {
+			fields = parsed.data;
+			body = parsed.body;
+			fmText = dumpFrontmatter(fields);
+			structured = toStructured();
+		}
+		fmError = null;
+		modeError = null;
+		resetKey++;
+	}
+
+	function restoreDraft(saved: Draft) {
+		loadContent(saved.raw);
+		if (isNew && saved.targetRelative) {
+			const title = typeof fields.title === 'string' ? fields.title : '';
+			const auto = joinPath(parentFolder(saved.targetRelative), `${slugify(title) || 'new-doc'}.md`);
+			// Keep the name following the title only if it did so when the draft was saved.
+			lastAuto = saved.targetRelative === auto ? auto : undefined;
+			targetRelative = saved.targetRelative;
+		}
+		restored = { savedAt: saved.savedAt, changed: saved.baseSha !== doc.sha };
+	}
+
+	function forgetDraft() {
+		if (draftId) void deleteDraft(draftId);
+	}
+
+	function discardDraft() {
+		forgetDraft();
+		restored = null;
+		loadContent(doc.raw);
+		if (isNew) {
+			lastAuto = initialTarget;
+			targetRelative = initialTarget;
+		}
+	}
+
+	onMount(() => {
+		const release = editorOpened();
+		void (async () => {
+			const saved = draftId ? await readDraft(draftId) : undefined;
+			if (!leaving && saved && saved.raw.trim() !== doc.raw.trim()) restoreDraft(saved);
+			draftChecked = true;
+		})();
+		return release;
+	});
+
+	$effect(() => {
+		if (!draftChecked || !draftId) return;
+		const raw = currentRaw;
+		const keep = dirty || (isNew && targetRelative !== initialTarget);
+		const target = targetRelative;
+		const timer = setTimeout(() => {
+			if (leaving) return;
+			if (keep) {
+				void writeDraft(draftId, {
+					raw,
+					mode,
+					targetRelative: isNew ? target : undefined,
+					baseSha: doc.sha,
+					savedAt: Date.now()
+				});
+			} else {
+				forgetDraft();
+			}
+		}, 800);
+		return () => clearTimeout(timer);
+	});
+
 	function beforeUnload(event: BeforeUnloadEvent) {
 		if (!dirty && !moved) return;
 		event.preventDefault();
@@ -250,6 +338,7 @@
 				if (ref) void historyStore.rename($state.snapshot(ref), fromRelative, destination);
 				confirming = false;
 				leaving = true;
+				forgetDraft();
 				onclose?.(destination);
 				return;
 			}
@@ -267,6 +356,7 @@
 			else repoStore.applySavedDoc(doc.path, content, result.sha);
 			confirming = false;
 			leaving = true;
+			forgetDraft();
 			onclose?.(destination);
 		} catch (error) {
 			saveError = error;
@@ -293,11 +383,14 @@
 		if (!rawOnly) structured = toStructured();
 		// Re-mounts the active editor so it picks up the restored content.
 		resetKey++;
+		restored = null;
+		forgetDraft();
 	}
 
 	function cancel() {
 		if ((dirty || moved) && !window.confirm(m.confirm_discard())) return;
 		leaving = true;
+		forgetDraft();
 		onclose?.();
 	}
 
@@ -305,6 +398,7 @@
 	beforeNavigate((navigation) => {
 		if (leaving || !(dirty || moved) || navigation.type === 'leave') return;
 		if (!window.confirm(m.confirm_discard())) navigation.cancel();
+		else forgetDraft();
 	});
 </script>
 
@@ -346,15 +440,25 @@
 			<button
 				class="part save"
 				type="button"
-				title={m.common_save()}
+				title={connectionStore.online ? m.common_save() : m.offline_unavailable()}
 				aria-label={m.common_save()}
-				disabled={(!dirty && !isNew && !moved) || Boolean(moveProblem) || Boolean(fmError) || (!rawOnly && Boolean(rawProblem)) || (isNew && !String(fields.title ?? '').trim()) || saving}
+				disabled={!connectionStore.online || (!dirty && !isNew && !moved) || Boolean(moveProblem) || Boolean(fmError) || (!rawOnly && Boolean(rawProblem)) || (isNew && !String(fields.title ?? '').trim()) || saving}
 				onclick={startSave}
 			>
 				<Icon name="save" />
 			</button>
 		</div>
 	</header>
+
+	{#if restored}
+		<p class="banner draft" class:warn={restored.changed}>
+			<span>
+				{m.draft_restored({ time: new Date(restored.savedAt).toLocaleString(getLocale()) })}
+				{#if restored.changed}{m.draft_changed()}{/if}
+			</span>
+			<button type="button" class="ghost" onclick={discardDraft}>{m.draft_discard()}</button>
+		</p>
+	{/if}
 
 	{#if moveProblem}
 		<p class="banner warn">{moveProblem}</p>
@@ -478,6 +582,18 @@
 </div>
 
 <style>
+	.banner.draft {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+	.banner.draft button {
+		flex-shrink: 0;
+		color: inherit;
+	}
+
 	.bar {
 		display: flex;
 		justify-content: space-between;

@@ -5,6 +5,7 @@
 	import type { RepoRef } from '$lib/forge/types';
 	import type { Doc } from '$lib/markdown/doc';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { connectionStore } from '$lib/store/connection.svelte';
 	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
 	import { historyStore } from '$lib/store/history.svelte';
@@ -383,20 +384,32 @@
 					{/if}
 					{#if entry && !editing}
 						<div class="split">
-							<a
-								class="part"
-								href={`/r/${src}/${encodeURI(path)}?edit`}
-								title={m.common_edit()}
-								aria-label={m.common_edit()}
-							>
-								<Icon name="edit" />
-							</a>
+							{#if connectionStore.online}
+								<a
+									class="part"
+									href={`/r/${src}/${encodeURI(path)}?edit`}
+									title={m.common_edit()}
+									aria-label={m.common_edit()}
+								>
+									<Icon name="edit" />
+								</a>
+							{:else}
+								<button
+									type="button"
+									class="part"
+									title={m.offline_unavailable()}
+									aria-label={m.common_edit()}
+									disabled
+								>
+									<Icon name="edit" />
+								</button>
+							{/if}
 							<button
 								type="button"
 								class="part danger-hover"
-								title={m.common_delete()}
+								title={connectionStore.online ? m.common_delete() : m.offline_unavailable()}
 								aria-label={m.common_delete()}
-								disabled={!doc}
+								disabled={!doc || !connectionStore.online}
 								onclick={() => (docDialog = 'delete')}
 							>
 								<Icon name="trash" />
@@ -406,8 +419,9 @@
 						<button
 							type="button"
 							class="icon-button"
-							title={m.repo_new_doc()}
+							title={connectionStore.online ? m.repo_new_doc() : m.offline_unavailable()}
 							aria-label={m.repo_new_doc()}
+							disabled={!connectionStore.online}
 							onclick={() => openCreate(path)}
 						>
 							<Icon name="plus" />

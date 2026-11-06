@@ -55,6 +55,7 @@
 	"about_template": "Voeg <code>.hotdish/template.yml</code> toe voor gestructureerd bewerken en vaste tags. Voorbeeldsjablonen om mee te beginnen: {links}.",
 	"about_icons": "Pictogramnamen voor sjablonen (tik om te kopiëren)",
 	"about_rate_limit": "Forges beperken API-verzoeken per uur (GitHub: ongeveer 60 zonder token, 5.000 met token). Voeg een token toe als je limietfouten ziet.",
+	"about_offline": "Opgeslagen repositories worden op dit apparaat gecachet en zijn offline leesbaar. Bewerken vereist een verbinding, maar niet-opgeslagen wijzigingen blijven bewaard.",
 	"token_guidance_github": "Fijnmazig toegangstoken, alleen deze repository, Contents: lezen (schrijven om te bewerken).",
 	"token_guidance_gitlab": "Projecttoken, read_repository (write_repository om te bewerken).",
 	"token_guidance_gitea": "Token met leestoegang tot de repository (schrijftoegang om te bewerken).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Subsectie toevoegen",
 	"form_add_a_section": "Een sectie toevoegen",
 	"form_add_section": "Sectie toevoegen",
-	"form_new_section": "Nieuwe sectie"
+	"form_new_section": "Nieuwe sectie",
+	"conn_live": "Live — tik om te vernieuwen",
+	"conn_syncing": "Synchroniseren…",
+	"conn_offline": "Offline — opgeslagen kopie wordt getoond. Tik om opnieuw te proberen",
+	"conn_last_synced": "Laatst gesynchroniseerd {time}",
+	"offline_unavailable": "Niet beschikbaar offline",
+	"offline_doc_missing": "Dit document is nog niet opgeslagen voor offline gebruik.",
+	"draft_restored": "Niet-opgeslagen wijzigingen van {time} hersteld.",
+	"draft_changed": "Het bestand is gewijzigd sinds dit concept is opgeslagen — controleer het voordat je opslaat.",
+	"draft_discard": "Concept verwijderen"
 }

@@ -55,6 +55,7 @@
 	"about_template": "構造化された編集と固定タグのために <code>.hotdish/template.yml</code> を追加します。まずはサンプルテンプレートから: {links}。",
 	"about_icons": "テンプレート用のアイコン名（タップでコピー）",
 	"about_rate_limit": "forge は 1 時間あたりの API リクエスト数を制限しています(GitHub: トークンなしで約 60 回、トークンありで 5,000 回)。制限エラーが出る場合はトークンを追加してください。",
+	"about_offline": "保存したリポジトリはこの端末にキャッシュされ、オフラインでも閲覧できます。編集には接続が必要ですが、未保存の変更は保持されます。",
 	"token_guidance_github": "きめ細かいアクセストークン、このリポジトリのみ、Contents: 読み取り(編集には書き込み)。",
 	"token_guidance_gitlab": "プロジェクトトークン、read_repository(編集には write_repository)。",
 	"token_guidance_gitea": "リポジトリの読み取り権限を持つトークン(編集には書き込み権限)。",
@@ -264,5 +265,14 @@
 	"form_add_subsection": "サブセクションを追加",
 	"form_add_a_section": "セクションを追加",
 	"form_add_section": "セクションを追加",
-	"form_new_section": "新しいセクション"
+	"form_new_section": "新しいセクション",
+	"conn_live": "ライブ — タップして更新",
+	"conn_syncing": "同期中…",
+	"conn_offline": "オフライン — 保存済みのコピーを表示中。タップして再試行",
+	"conn_last_synced": "最終同期 {time}",
+	"offline_unavailable": "オフラインでは利用できません",
+	"offline_doc_missing": "このドキュメントはまだオフライン用に保存されていません。",
+	"draft_restored": "{time} の未保存の変更を復元しました。",
+	"draft_changed": "この下書きの保存後にファイルが変更されました — 保存前に確認してください。",
+	"draft_discard": "下書きを破棄"
 }

@@ -55,6 +55,7 @@
 	"about_template": "Idagdag ang <code>.hotdish/template.yml</code> para sa structured na pag-edit at mga nakapirming tag. Mga halimbawang template na mapagsisimulan: {links}.",
 	"about_icons": "Mga pangalan ng icon para sa template (i-tap para kopyahin)",
 	"about_rate_limit": "Nililimitahan ng mga forge ang mga API request kada oras (GitHub: humigit-kumulang 60 na walang token, 5,000 na may token). Magdagdag ng token kung may makita kang rate-limit na error.",
+	"about_offline": "Ang mga naka-save na repository ay naka-cache sa device na ito at nababasa offline. Kailangan ng koneksyon para mag-edit, pero itinatago ang mga hindi na-save na pagbabago.",
 	"token_guidance_github": "Fine-grained na token, repo na ito lang, Contents: read (write para mag-edit).",
 	"token_guidance_gitlab": "Project token, read_repository (write_repository para mag-edit).",
 	"token_guidance_gitea": "Token na may repository read (write para mag-edit).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Magdagdag ng subseksyon",
 	"form_add_a_section": "Magdagdag ng seksyon",
 	"form_add_section": "Magdagdag ng seksyon",
-	"form_new_section": "Bagong seksyon"
+	"form_new_section": "Bagong seksyon",
+	"conn_live": "Live — i-tap para i-refresh",
+	"conn_syncing": "Nagsi-sync…",
+	"conn_offline": "Offline — ipinapakita ang naka-save na kopya. I-tap para subukang muli",
+	"conn_last_synced": "Huling na-sync {time}",
+	"offline_unavailable": "Hindi available offline",
+	"offline_doc_missing": "Hindi pa naka-save ang dokumentong ito para sa offline na paggamit.",
+	"draft_restored": "Naibalik ang mga hindi na-save na pagbabago mula {time}.",
+	"draft_changed": "Nagbago ang file mula nang ma-save ang draft na ito — suriin bago i-save.",
+	"draft_discard": "Itapon ang draft"
 }

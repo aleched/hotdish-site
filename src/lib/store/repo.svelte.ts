@@ -1,11 +1,13 @@
 import { readBlob, writeBlob } from '$lib/cache/blobCache';
+import { readSnapshot, relevantEntries, sameEntries, splitEntries, writeSnapshot } from '$lib/cache/repoCache';
+import { connectionStore } from '$lib/store/connection.svelte';
 import { m } from '$lib/paraglide/messages.js';
 import { createProvider } from '$lib/forge/factory';
-import { describeForgeError } from '$lib/forge/errors';
+import { ForgeError, describeForgeError } from '$lib/forge/errors';
 import type { BlobEntry, ForgeProvider, RepoRef } from '$lib/forge/types';
-import { isMarkdownPath, parseDoc, toSummary } from '$lib/markdown/doc';
+import { parseDoc, toSummary } from '$lib/markdown/doc';
 import type { Doc, DocSummary } from '$lib/markdown/doc';
-import { TEMPLATE_PATH, parseTemplate, type DocTemplate } from '$lib/template/schema';
+import { parseTemplate, type DocTemplate } from '$lib/template/schema';
 import { getDefaultTemplate } from '$lib/template/default';
 import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 import { buildTree, type TreeFolder } from '$lib/tree';
@@ -56,6 +58,12 @@ class RepoStore {
 	#token: string | undefined;
 	#docs = new Map<string, Doc>();
 	#loadToken = 0;
+	#templateEntry: BlobEntry | undefined;
+	/** When the listing was last fetched from the forge. */
+	#savedAt = 0;
+	/** True once the listing came from the forge in this load, not only from the cache. */
+	#fetched = false;
+	#indexGen = 0;
 	#visibility: Promise<boolean | null> | null = null;
 
 	/** The repository's template, or the built-in default chosen in settings when it has none. */
@@ -176,46 +184,107 @@ class RepoStore {
 		this.#customTemplate = null;
 		this.#usesDefault = false;
 		this.templateError = null;
+		this.#templateEntry = undefined;
+		this.#savedAt = 0;
+		this.#fetched = false;
 		this.#docs.clear();
 		this.#visibility = null;
 
 		const provider = createProvider(ref, token);
 		this.#provider = provider;
 
-		try {
-			const gitRef = ref.ref || (await provider.resolveDefaultBranch());
-			if (loadToken !== this.#loadToken) return;
-			this.resolvedRef = gitRef;
-
-			const { entries, truncated } = await provider.listTree(gitRef);
-			if (loadToken !== this.#loadToken) return;
-
-			this.truncated = truncated;
-
-			const prefix = ref.basePath ? `${ref.basePath.replace(/\/+$/, '')}/` : '';
-			const markdown = entries.filter(
-				(entry) =>
-					isMarkdownPath(entry.path) &&
-					!entry.path.startsWith('.') &&
-					!entry.path.includes('/.') &&
-					(!prefix || entry.path.startsWith(prefix))
-			);
-
-			this.entries = markdown;
-			this.status = 'ready';
-
-			void this.#loadTemplate(entries, gitRef, loadToken);
-			void this.#buildIndex(markdown, gitRef, loadToken);
-		} catch (error) {
-			if (loadToken !== this.#loadToken) return;
-			this.status = 'error';
-			this.error = describeForgeError(error);
+		// Show the last known listing straight away, then bring it up to date.
+		const snapshot = await readSnapshot(ref);
+		if (loadToken !== this.#loadToken) return;
+		if (snapshot) {
+			connectionStore.noteSnapshot(snapshot.savedAt);
+			this.#savedAt = snapshot.savedAt;
+			this.#apply(snapshot.resolvedRef, snapshot.entries, snapshot.truncated, loadToken, false);
 		}
+
+		await this.#revalidate(loadToken);
 	}
 
 	async reload(): Promise<void> {
 		if (!this.ref) return;
 		await this.load(this.ref, this.#token, { force: true });
+	}
+
+	/** Fetches the latest listing in the background, keeping what is on screen if that fails. */
+	async refresh(): Promise<void> {
+		if (!this.ref) return;
+		if (this.status === 'loading') return;
+		if (this.status !== 'ready') return this.reload();
+		await this.#revalidate(this.#loadToken);
+	}
+
+	async #revalidate(loadToken: number): Promise<void> {
+		const ref = this.ref;
+		const provider = this.#provider;
+		if (!ref || !provider) return;
+
+		connectionStore.begin();
+		try {
+			const gitRef = ref.ref || (await provider.resolveDefaultBranch());
+			if (loadToken !== this.#loadToken) return;
+			const { entries, truncated } = await provider.listTree(gitRef);
+			if (loadToken !== this.#loadToken) return;
+
+			const relevant = relevantEntries(entries, ref.basePath);
+			const current = this.#templateEntry ? [...this.entries, this.#templateEntry] : this.entries;
+			const shown = this.status === 'ready';
+			if (!shown || gitRef !== this.resolvedRef || !sameEntries(relevant, current)) {
+				this.#apply(gitRef, relevant, truncated, loadToken, shown);
+			}
+			this.truncated = truncated;
+			this.#savedAt = Date.now();
+			this.#fetched = true;
+			void this.#persist();
+			connectionStore.markLive();
+		} catch (error) {
+			if (loadToken !== this.#loadToken) return;
+			const described = describeForgeError(error);
+			connectionStore.markOffline(described.message);
+			// Any failure falls back to the cached listing when there is one.
+			if (this.status !== 'ready') {
+				this.status = 'error';
+				this.error = described;
+			}
+		} finally {
+			connectionStore.end();
+		}
+	}
+
+	/**
+	 * Shows a listing. When one is already on screen, the index is rebuilt quietly and swapped in
+	 * at the end, so the page does not flicker through a partial list.
+	 */
+	#apply(gitRef: string, relevant: BlobEntry[], truncated: boolean, loadToken: number, quiet: boolean): void {
+		const { markdown, template } = splitEntries(relevant);
+		this.resolvedRef = gitRef;
+		this.truncated = truncated;
+		this.#templateEntry = template;
+		this.entries = markdown;
+		this.status = 'ready';
+		this.error = null;
+
+		void this.#loadTemplate(template, loadToken);
+		void this.#buildIndex(markdown, loadToken, quiet);
+	}
+
+	/** Saves the listing as currently known, so local saves are reflected offline too. */
+	async #persist(): Promise<void> {
+		const ref = this.ref;
+		const gitRef = this.resolvedRef;
+		if (!ref || !gitRef || this.status !== 'ready') return;
+		const entries = $state.snapshot(this.entries) as BlobEntry[];
+		if (this.#templateEntry) entries.push({ ...this.#templateEntry });
+		await writeSnapshot(ref, {
+			resolvedRef: gitRef,
+			entries,
+			truncated: this.truncated,
+			savedAt: this.#savedAt || Date.now()
+		});
 	}
 
 	/**
@@ -226,7 +295,7 @@ class RepoStore {
 		const provider = this.#provider;
 		if (!provider) return Promise.resolve(null);
 		// Loading without a token already proves the repository is public.
-		if (!provider.authenticated && this.status === 'ready') return Promise.resolve(true);
+		if (!provider.authenticated && this.#fetched) return Promise.resolve(true);
 		this.#visibility ??= provider.isPublic().catch(() => {
 			this.#visibility = null;
 			return null;
@@ -266,6 +335,7 @@ class RepoStore {
 		const index = this.docs.findIndex((item) => item.path === path);
 		if (index === -1) this.docs = [...this.docs, summary];
 		else this.docs[index] = summary;
+		void this.#persist();
 	}
 
 	registerNewFile(path: string, raw: string, sha: string): void {
@@ -274,11 +344,13 @@ class RepoStore {
 		const doc = parseDoc(entry, raw);
 		this.#docs.set(sha, doc);
 		this.docs = [...this.docs, toSummary(doc)];
+		void this.#persist();
 	}
 
 	removeFile(path: string): void {
 		this.entries = this.entries.filter((entry) => entry.path !== path);
 		this.docs = this.docs.filter((doc) => doc.path !== path);
+		void this.#persist();
 	}
 
 	/** Moves are content-preserving, so the blob sha (and cached raw text) carry over. */
@@ -298,6 +370,7 @@ class RepoStore {
 				item.path === from ? { ...item, path: to } : item
 			);
 		}
+		void this.#persist();
 	}
 
 	/**
@@ -318,21 +391,33 @@ class RepoStore {
 		const provider = this.#provider;
 		if (!provider || !this.resolvedRef) throw new Error(m.error_repo_not_loaded());
 
-		const raw = await provider.readFile(entry.path, this.resolvedRef);
+		let raw: string;
+		try {
+			raw = await provider.readFile(entry.path, this.resolvedRef);
+		} catch (error) {
+			if (error instanceof ForgeError && error.kind === 'network') connectionStore.markOffline(error.message);
+			if (!connectionStore.online) throw new Error(m.offline_doc_missing());
+			throw error;
+		}
 		await writeBlob(entry.sha, raw);
 		return raw;
 	}
 
-	async #buildIndex(entries: BlobEntry[], _gitRef: string, loadToken: number): Promise<void> {
-		this.indexing = true;
-		this.indexTotal = entries.length;
-		this.indexed = 0;
+	async #buildIndex(entries: BlobEntry[], loadToken: number, quiet = false): Promise<void> {
+		// Only the newest build publishes, so a slower stale one can't overwrite fresher results.
+		const gen = ++this.#indexGen;
+		const current = () => loadToken === this.#loadToken && gen === this.#indexGen;
+		if (!quiet) {
+			this.indexing = true;
+			this.indexTotal = entries.length;
+			this.indexed = 0;
+		}
 
 		const summaries: DocSummary[] = [];
 		const skipped: string[] = [];
 
 		await mapWithConcurrency(entries, PREFETCH_CONCURRENCY, async (entry) => {
-			if (loadToken !== this.#loadToken) return;
+			if (!current()) return;
 			try {
 				const raw = await this.#readEntry(entry);
 				const doc = parseDoc(entry, raw);
@@ -342,7 +427,7 @@ class RepoStore {
 				// One unreadable file must not abort the whole index.
 				skipped.push(entry.path);
 			} finally {
-				if (loadToken === this.#loadToken) {
+				if (current() && !quiet) {
 					this.indexed++;
 					// Publish incrementally so results appear while indexing continues.
 					if (this.indexed % 10 === 0) this.docs = [...summaries];
@@ -350,15 +435,16 @@ class RepoStore {
 			}
 		});
 
-		if (loadToken !== this.#loadToken) return;
+		if (!current()) return;
 		this.docs = summaries;
 		this.skipped = skipped;
 		this.indexing = false;
 	}
 
-	async #loadTemplate(allEntries: BlobEntry[], gitRef: string, loadToken: number): Promise<void> {
-		const entry = allEntries.find((item) => item.path === TEMPLATE_PATH);
+	async #loadTemplate(entry: BlobEntry | undefined, loadToken: number): Promise<void> {
 		if (!entry) {
+			this.#customTemplate = null;
+			this.templateError = null;
 			this.#usesDefault = true;
 			return;
 		}
@@ -366,8 +452,13 @@ class RepoStore {
 		try {
 			const raw = await this.#readEntry(entry);
 			if (loadToken !== this.#loadToken) return;
+			this.#usesDefault = false;
 			// An empty template file is a deliberate opt-out: plain markdown, no warning.
-			if (!raw.trim()) return;
+			if (!raw.trim()) {
+				this.#customTemplate = null;
+				this.templateError = null;
+				return;
+			}
 			const result = parseTemplate(raw);
 			this.#customTemplate = result.template;
 			this.templateError = result.error ?? null;
@@ -376,7 +467,6 @@ class RepoStore {
 			// A template problem must never block browsing; documents still render generically.
 			this.templateError = error instanceof Error ? error.message : String(error);
 		}
-		void gitRef;
 	}
 }
 

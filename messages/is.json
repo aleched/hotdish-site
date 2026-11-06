@@ -55,6 +55,7 @@
 	"about_template": "Bættu við <code>.hotdish/template.yml</code> fyrir skipulagða vinnslu og föst merki. Dæmi um sniðmát til að byrja á: {links}.",
 	"about_icons": "Táknheiti fyrir sniðmát (ýttu til að afrita)",
 	"about_rate_limit": "Forge-ar takmarka API-beiðnir á klukkustund (GitHub: um 60 án tóka, 5.000 með tóka). Bættu við tóka ef þú sérð villur vegna takmarkana.",
+	"about_offline": "Vistaðar geymslur eru geymdar í skyndiminni á þessu tæki og læsilegar án tengingar. Breytingar krefjast tengingar en óvistaðar breytingar eru varðveittar.",
 	"token_guidance_github": "Fínstilltur tóki, aðeins þessi geymsla, Contents: lesa (skrifa til að breyta).",
 	"token_guidance_gitlab": "Verkefnistóki, read_repository (write_repository til að breyta).",
 	"token_guidance_gitea": "Tóki með lesaðgang að geymslu (skrifaðgang til að breyta).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Bæta við undirhluta",
 	"form_add_a_section": "Bæta við hluta",
 	"form_add_section": "Bæta við hluta",
-	"form_new_section": "Nýr hluti"
+	"form_new_section": "Nýr hluti",
+	"conn_live": "Í beinni — ýttu til að endurnýja",
+	"conn_syncing": "Samstillir…",
+	"conn_offline": "Ótengt — vistað afrit birt. Ýttu til að reyna aftur",
+	"conn_last_synced": "Síðast samstillt {time}",
+	"offline_unavailable": "Ekki tiltækt án tengingar",
+	"offline_doc_missing": "Þetta skjal hefur ekki enn verið vistað til notkunar án tengingar.",
+	"draft_restored": "Óvistaðar breytingar frá {time} endurheimtar.",
+	"draft_changed": "Skráin hefur breyst síðan þessi drög voru vistuð — farðu yfir áður en þú vistar.",
+	"draft_discard": "Henda drögum"
 }

@@ -55,6 +55,7 @@
 	"about_template": "Ku dar <code>.hotdish/template.yml</code> tafatirka habaysan iyo summadaha go'an. Qaababka tusaalaha ah ee laga bilaabi karo: {links}.",
 	"about_icons": "Magacyada astaanta qaababka (taabo si aad u koobiyayso)",
 	"about_rate_limit": "Forge-yadu waxay xadaysaa dalabyada API saacaddiiba (GitHub: ku dhawaad 60 token la'aan, 5,000 token la). Ku dar token haddii aad aragto khaladaadka xadka.",
+	"about_offline": "Kaydadka la keydiyay waxaa lagu kaydiyaa qalabkan waxaana la akhrin karaa iyadoo khadka laga maqan yahay. Wax ka beddelku wuxuu u baahan yahay xiriir, laakiin isbeddellada aan la keydin waa la hayaa.",
 	"token_guidance_github": "Token gelitaan oo gaar ah, kaydkan oo keliya, Contents: akhris (qor si aad wax uga beddesho).",
 	"token_guidance_gitlab": "Token mashruuc, read_repository (write_repository si aad wax uga beddesho).",
 	"token_guidance_gitea": "Token leh akhrinta kaydka (qorista si aad wax uga beddesho).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Ku dar qayb hoose",
 	"form_add_a_section": "Ku dar qayb",
 	"form_add_section": "Ku dar qayb",
-	"form_new_section": "Qayb cusub"
+	"form_new_section": "Qayb cusub",
+	"conn_live": "Toos — taabo si aad u cusboonaysiiso",
+	"conn_syncing": "Waa la isku dhex waafajinayaa…",
+	"conn_offline": "Khadka ka baxsan — waxaa la muujinayaa nuqul la keydiyay. Taabo si aad mar kale isku daydo",
+	"conn_last_synced": "Isku-waafajintii ugu dambeysay {time}",
+	"offline_unavailable": "Lagama heli karo khadka la'aan",
+	"offline_doc_missing": "Dukumeentigan weli looma keydin isticmaalka khadka la'aan.",
+	"draft_restored": "Isbeddellada aan la keydin ee {time} waa la soo celiyay.",
+	"draft_changed": "Faylku wuu isbeddelay tan iyo markii qabyo-qoraalkan la keydiyay — dib u eeg ka hor intaadan keydin.",
+	"draft_discard": "Tuur qabyo-qoraalka"
 }

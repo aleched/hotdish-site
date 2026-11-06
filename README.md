@@ -185,8 +185,31 @@ Important properties of templates:
 Section order in the file is canonical — the template lists which sections exist, not the order
 they must appear in, so a document can place its own boxes.
 
-## Safety
+## Offline and installing on a phone
 
+Hotdish is a progressive web app. Open it in the phone's browser and choose **Add to Home
+Screen** (Safari) or **Install app** (Chrome) to run it full screen like a native app.
+
+- The app itself is cached by a service worker (`src/service-worker.ts`), so it starts with no
+  connection at all.
+- Each repository's file listing is saved on the device. A repository opens instantly from that
+  copy while a fresh listing loads in the background; if the forge can't be reached, the saved
+  copy stays on screen.
+- A few seconds after the site opens, every saved repository is downloaded in the background
+  (listing and markdown, at most once an hour each), so all of them can be read offline.
+- The cloud icon in the header shows whether what you see is live. Tap it to refresh. A crossed-out
+  cloud means you're looking at the saved copy; its tooltip shows when it was last synced.
+- Editing, creating, renaming and deleting need a connection and are disabled while offline.
+  Work in an open editor is saved on the device as you type, so losing the connection, reloading
+  or closing the app never loses it; the editor restores it next time and warns if the file
+  changed in the meantime.
+- New versions are applied quietly on the next page change, never while an editor is open.
+
+The service worker only runs in a production build (`pnpm build && pnpm preview`, or the
+deployed site), not under `pnpm dev`. Clearing the cache in Settings removes saved listings and
+documents but keeps unsaved editor drafts.
+
+## Safety
 The site rewrites files you own, so content loss is treated as the worst possible bug:
 
 - Every save shows a line diff and a commit message before anything is written. Create, move and
@@ -207,7 +230,8 @@ src/lib/forge/      GitHub / GitLab / Gitea providers behind one interface
 src/lib/markdown/   frontmatter, rendering, document parsing
 src/lib/template/   template schema, document structuring, serialization
 src/lib/store/      repository state and saved profiles (Svelte 5 runes)
-src/lib/cache/      content-addressed blob cache
+src/lib/cache/      blob cache, saved repository listings, offline prefetch, editor drafts
+src/lib/pwa/        safe service worker updates
 src/lib/editor/     lazily loaded Milkdown/Crepe editor; new / move / delete dialogs
 src/lib/ui/         presentation components
 src/routes/         home (saved repos), /settings (theme, cache, about), /r/[src]/[...path] browser

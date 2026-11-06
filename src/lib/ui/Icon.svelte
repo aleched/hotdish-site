@@ -144,6 +144,18 @@
 	{:else if name === 'refresh'}
 		<path d="M13.5 3v3.5H10" />
 		<path d="M13.2 6.5A5.5 5.5 0 1 0 13.5 9" />
+	{:else if name === 'cloud'}
+		<path d="M4.5 12.5h7a2.8 2.8 0 0 0 .3-5.6A4 4 0 0 0 4.1 6.4 3.1 3.1 0 0 0 4.5 12.5z" />
+	{:else if name === 'cloud-off'}
+		<path d="M4.5 12.5h7a2.8 2.8 0 0 0 .3-5.6A4 4 0 0 0 4.1 6.4 3.1 3.1 0 0 0 4.5 12.5z" />
+		<path d="M2.5 2.5l11 11" />
+	{:else if name === 'cloud-sync'}
+		<path d="M4.5 12.5h7a2.8 2.8 0 0 0 .3-5.6A4 4 0 0 0 4.1 6.4 3.1 3.1 0 0 0 4.5 12.5z" />
+		<g class="sync-dots" fill="currentColor" stroke="none">
+			<circle cx="5.6" cy="9.6" r=".85" />
+			<circle cx="8.1" cy="9.6" r=".85" />
+			<circle cx="10.6" cy="9.6" r=".85" />
+		</g>
 	{:else if name === 'spinner'}
 		<path d="M8 2a6 6 0 1 0 6 6" />
 	{:else if name === 'home'}
@@ -252,9 +264,41 @@
 			transform: rotate(360deg);
 		}
 	}
+	/* One dot at a time is faded, and the faded spot travels left to right. */
+	.sync-dots circle {
+		animation: sync-dot 1.2s linear infinite;
+	}
+	.sync-dots circle:nth-child(2) {
+		animation-delay: -0.8s;
+	}
+	.sync-dots circle:nth-child(3) {
+		animation-delay: -0.4s;
+	}
+	@keyframes sync-dot {
+		0%,
+		25% {
+			opacity: 0.25;
+		}
+		33.3%,
+		91.7% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0.25;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.spin {
 			animation-duration: 2.4s;
+		}
+		.sync-dots circle {
+			animation-duration: 3.6s;
+		}
+		.sync-dots circle:nth-child(2) {
+			animation-delay: -2.4s;
+		}
+		.sync-dots circle:nth-child(3) {
+			animation-delay: -1.2s;
 		}
 	}
 </style>

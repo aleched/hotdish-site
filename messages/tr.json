@@ -55,6 +55,7 @@
 	"about_template": "Yapılandırılmış düzenleme ve sabit etiketler için <code>.hotdish/template.yml</code> ekleyin. Başlamak için örnek şablonlar: {links}.",
 	"about_icons": "Şablonlar için simge adları (kopyalamak için dokunun)",
 	"about_rate_limit": "Forge'lar saatlik API isteklerini sınırlar (GitHub: belirteçsiz yaklaşık 60, belirteçle 5.000). Hız sınırı hataları görürseniz bir belirteç ekleyin.",
+	"about_offline": "Kayıtlı depolar bu cihazda önbelleğe alınır ve çevrimdışı okunabilir. Düzenleme bağlantı gerektirir, ancak kaydedilmemiş değişiklikler korunur.",
 	"token_guidance_github": "Ayrıntılı yetkili belirteç, yalnızca bu depo, Contents: okuma (düzenlemek için yazma).",
 	"token_guidance_gitlab": "Proje belirteci, read_repository (düzenlemek için write_repository).",
 	"token_guidance_gitea": "Depo okuma yetkili belirteç (düzenlemek için yazma).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Alt bölüm ekle",
 	"form_add_a_section": "Bölüm ekle",
 	"form_add_section": "Bölüm ekle",
-	"form_new_section": "Yeni bölüm"
+	"form_new_section": "Yeni bölüm",
+	"conn_live": "Canlı — yenilemek için dokunun",
+	"conn_syncing": "Eşitleniyor…",
+	"conn_offline": "Çevrimdışı — kayıtlı kopya gösteriliyor. Yeniden denemek için dokunun",
+	"conn_last_synced": "Son eşitleme {time}",
+	"offline_unavailable": "Çevrimdışı kullanılamaz",
+	"offline_doc_missing": "Bu belge henüz çevrimdışı kullanım için kaydedilmedi.",
+	"draft_restored": "{time} tarihli kaydedilmemiş değişiklikler geri yüklendi.",
+	"draft_changed": "Bu taslak kaydedildikten sonra dosya değişti — kaydetmeden önce gözden geçirin.",
+	"draft_discard": "Taslağı at"
 }

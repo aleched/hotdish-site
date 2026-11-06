@@ -55,6 +55,7 @@
 	"about_template": "Añade <code>.hotdish/template.yml</code> para la edición estructurada y las etiquetas fijas. Plantillas de ejemplo para empezar: {links}.",
 	"about_icons": "Nombres de iconos para plantillas (toca para copiar)",
 	"about_rate_limit": "Las forjas limitan las solicitudes a la API por hora (GitHub: unas 60 sin token, 5000 con uno). Añade un token si ves errores de límite.",
+	"about_offline": "Los repositorios guardados se almacenan en caché en este dispositivo y se pueden leer sin conexión. Editar requiere conexión, pero los cambios sin guardar se conservan.",
 	"token_guidance_github": "Token de acceso detallado, solo este repositorio, Contents: lectura (escritura para editar).",
 	"token_guidance_gitlab": "Token de proyecto, read_repository (write_repository para editar).",
 	"token_guidance_gitea": "Token con lectura de repositorio (escritura para editar).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Añadir subsección",
 	"form_add_a_section": "Añadir una sección",
 	"form_add_section": "Añadir sección",
-	"form_new_section": "Nueva sección"
+	"form_new_section": "Nueva sección",
+	"conn_live": "En vivo — toca para actualizar",
+	"conn_syncing": "Sincronizando…",
+	"conn_offline": "Sin conexión — se muestra la copia guardada. Toca para reintentar",
+	"conn_last_synced": "Última sincronización {time}",
+	"offline_unavailable": "No disponible sin conexión",
+	"offline_doc_missing": "Este documento aún no está guardado para usarlo sin conexión.",
+	"draft_restored": "Se restauraron cambios sin guardar de {time}.",
+	"draft_changed": "El archivo cambió desde que se guardó este borrador — revísalo antes de guardar.",
+	"draft_discard": "Descartar borrador"
 }

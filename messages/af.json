@@ -55,6 +55,7 @@
 	"about_template": "Voeg <code>.hotdish/template.yml</code> by vir gestruktureerde redigering en vaste etikette. Voorbeeldsjablone om mee te begin: {links}.",
 	"about_icons": "Ikoonname vir sjablone (tik om te kopieer)",
 	"about_rate_limit": "Forges beperk API-versoeke per uur (GitHub: ongeveer 60 sonder teken, 5 000 met teken). Voeg 'n teken by as jy koersbeperkingsfoute sien.",
+	"about_offline": "Gestoorde bewaarplekke word op hierdie toestel gekas en is vanlyn leesbaar. Redigering benodig 'n verbinding, maar ongestoorde veranderinge word behou.",
 	"token_guidance_github": "Fyn-korrelrige teken, net hierdie repo, Contents: lees (skryf om te redigeer).",
 	"token_guidance_gitlab": "Projekteken, read_repository (write_repository om te redigeer).",
 	"token_guidance_gitea": "Teken met bewaarplek-leestoestemming (skryf om te redigeer).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Voeg onderafdeling by",
 	"form_add_a_section": "Voeg 'n afdeling by",
 	"form_add_section": "Voeg afdeling by",
-	"form_new_section": "Nuwe afdeling"
+	"form_new_section": "Nuwe afdeling",
+	"conn_live": "Lewendig — tik om te verfris",
+	"conn_syncing": "Sinkroniseer…",
+	"conn_offline": "Vanlyn — wys gestoorde kopie. Tik om weer te probeer",
+	"conn_last_synced": "Laas gesinkroniseer {time}",
+	"offline_unavailable": "Nie vanlyn beskikbaar nie",
+	"offline_doc_missing": "Hierdie dokument is nog nie vir vanlyn gebruik gestoor nie.",
+	"draft_restored": "Ongestoorde veranderinge van {time} herstel.",
+	"draft_changed": "Die lêer het verander sedert hierdie konsep gestoor is — hersien voor jy stoor.",
+	"draft_discard": "Gooi konsep weg"
 }

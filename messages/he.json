@@ -55,6 +55,7 @@
 	"about_template": "הוסף <code>.hotdish/template.yml</code> לעריכה מובנית ולתגיות קבועות. תבניות לדוגמה להתחלה: {links}.",
 	"about_icons": "שמות סמלים לתבניות (הקש להעתקה)",
 	"about_rate_limit": "ה-forge מגבילים בקשות API לשעה (GitHub: כ-60 ללא אסימון, 5,000 עם אסימון). הוסיפו אסימון אם אתם רואים שגיאות מגבלה.",
+	"about_offline": "מאגרים שמורים נשמרים במטמון במכשיר זה וניתנים לקריאה במצב לא מקוון. עריכה דורשת חיבור, אך שינויים שלא נשמרו נשמרים.",
 	"token_guidance_github": "אסימון מפורט, המאגר הזה בלבד, Contents: קריאה (כתיבה לעריכה).",
 	"token_guidance_gitlab": "אסימון פרויקט, read_repository (write_repository לעריכה).",
 	"token_guidance_gitea": "אסימון עם הרשאת קריאה למאגר (כתיבה לעריכה).",
@@ -266,5 +267,14 @@
 	"form_add_subsection": "הוספת תת-מקטע",
 	"form_add_a_section": "הוספת מקטע",
 	"form_add_section": "הוספת מקטע",
-	"form_new_section": "מקטע חדש"
+	"form_new_section": "מקטע חדש",
+	"conn_live": "חי — הקישו לרענון",
+	"conn_syncing": "מסנכרן…",
+	"conn_offline": "לא מקוון — מוצג עותק שמור. הקישו כדי לנסות שוב",
+	"conn_last_synced": "סונכרן לאחרונה {time}",
+	"offline_unavailable": "לא זמין במצב לא מקוון",
+	"offline_doc_missing": "מסמך זה עדיין לא נשמר לשימוש לא מקוון.",
+	"draft_restored": "שוחזרו שינויים שלא נשמרו מ־{time}.",
+	"draft_changed": "הקובץ השתנה מאז שטיוטה זו נשמרה — יש לבדוק לפני השמירה.",
+	"draft_discard": "מחיקת הטיוטה"
 }

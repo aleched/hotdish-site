@@ -341,6 +341,10 @@
 				<span>{m.about_rate_limit()}</span>
 			</li>
 			<li>
+				<Icon name="cloud" />
+				<span>{m.about_offline()}</span>
+			</li>
+			<li>
 				<Icon name="form" />
 				<span>{@html m.about_template({ links: EXAMPLE_TEMPLATES.map(([name, href]) => `<a href="${href}" target="_blank" rel="noopener">${name}</a>`).join(', ') })}</span>
 			</li>

@@ -55,6 +55,7 @@
 	"about_template": "Tambahkan <code>.hotdish/template.yml</code> untuk penyuntingan terstruktur dan tag tetap. Templat contoh untuk memulai: {links}.",
 	"about_icons": "Nama ikon untuk templat (ketuk untuk menyalin)",
 	"about_rate_limit": "Forge membatasi permintaan API per jam (GitHub: sekitar 60 tanpa token, 5.000 dengan token). Tambahkan token jika Anda melihat error batas permintaan.",
+	"about_offline": "Repositori tersimpan di-cache di perangkat ini dan dapat dibaca secara luring. Penyuntingan memerlukan koneksi, tetapi perubahan yang belum disimpan tetap disimpan.",
 	"token_guidance_github": "Token fine-grained, hanya repo ini, Contents: baca (tulis untuk mengedit).",
 	"token_guidance_gitlab": "Token proyek, read_repository (write_repository untuk mengedit).",
 	"token_guidance_gitea": "Token dengan akses baca repositori (tulis untuk mengedit).",
@@ -264,5 +265,14 @@
 	"form_add_subsection": "Tambah sub-bagian",
 	"form_add_a_section": "Tambah bagian",
 	"form_add_section": "Tambah bagian",
-	"form_new_section": "Bagian baru"
+	"form_new_section": "Bagian baru",
+	"conn_live": "Langsung — ketuk untuk menyegarkan",
+	"conn_syncing": "Menyinkronkan…",
+	"conn_offline": "Luring — menampilkan salinan tersimpan. Ketuk untuk mencoba lagi",
+	"conn_last_synced": "Terakhir disinkronkan {time}",
+	"offline_unavailable": "Tidak tersedia secara luring",
+	"offline_doc_missing": "Dokumen ini belum disimpan untuk penggunaan luring.",
+	"draft_restored": "Perubahan yang belum disimpan dari {time} dipulihkan.",
+	"draft_changed": "Berkas telah berubah sejak draf ini disimpan — tinjau sebelum menyimpan.",
+	"draft_discard": "Buang draf"
 }

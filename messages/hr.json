@@ -55,6 +55,7 @@
 	"about_template": "Dodajte <code>.hotdish/template.yml</code> za strukturirano uređivanje i fiksne oznake. Primjeri predložaka za početak: {links}.",
 	"about_icons": "Nazivi ikona za predloške (dodirnite za kopiranje)",
 	"about_rate_limit": "Forgeovi ograničavaju API zahtjeve po satu (GitHub: oko 60 bez tokena, 5000 s tokenom). Dodajte token ako vidite pogreške zbog ograničenja.",
+	"about_offline": "Spremljeni repozitoriji pohranjuju se u predmemoriju ovog uređaja i mogu se čitati izvan mreže. Uređivanje zahtijeva vezu, ali nespremljene promjene se čuvaju.",
 	"token_guidance_github": "Token s preciznim dopuštenjima, samo ovaj repo, Contents: čitanje (pisanje za uređivanje).",
 	"token_guidance_gitlab": "Projektni token, read_repository (write_repository za uređivanje).",
 	"token_guidance_gitea": "Token s dopuštenjem čitanja repozitorija (pisanje za uređivanje).",
@@ -266,5 +267,14 @@
 	"form_add_subsection": "Dodaj pododjeljak",
 	"form_add_a_section": "Dodaj odjeljak",
 	"form_add_section": "Dodaj odjeljak",
-	"form_new_section": "Novi odjeljak"
+	"form_new_section": "Novi odjeljak",
+	"conn_live": "Uživo — dodirnite za osvježavanje",
+	"conn_syncing": "Sinkronizacija…",
+	"conn_offline": "Izvan mreže — prikazuje se spremljena kopija. Dodirnite za ponovni pokušaj",
+	"conn_last_synced": "Zadnja sinkronizacija {time}",
+	"offline_unavailable": "Nedostupno izvan mreže",
+	"offline_doc_missing": "Ovaj dokument još nije spremljen za korištenje izvan mreže.",
+	"draft_restored": "Vraćene su nespremljene promjene od {time}.",
+	"draft_changed": "Datoteka se promijenila otkad je ovaj nacrt spremljen — pregledajte prije spremanja.",
+	"draft_discard": "Odbaci nacrt"
 }

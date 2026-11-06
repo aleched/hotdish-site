@@ -55,6 +55,7 @@
 	"about_template": "Legg til <code>.hotdish/template.yml</code> for strukturert redigering og faste tagger. Eksempelmaler å starte fra: {links}.",
 	"about_icons": "Ikonnavn for maler (trykk for å kopiere)",
 	"about_rate_limit": "Forger begrenser API-forespørsler per time (GitHub: omtrent 60 uten token, 5 000 med token). Legg til et token hvis du ser grensefeil.",
+	"about_offline": "Lagrede repositorier bufres på denne enheten og kan leses frakoblet. Redigering krever tilkobling, men ulagrede endringer beholdes.",
 	"token_guidance_github": "Finkornet tilgangstoken, kun dette depotet, Contents: lese (skrive for å redigere).",
 	"token_guidance_gitlab": "Prosjekttoken, read_repository (write_repository for å redigere).",
 	"token_guidance_gitea": "Token med lesetilgang til depotet (skrivetilgang for å redigere).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Legg til underseksjon",
 	"form_add_a_section": "Legg til en seksjon",
 	"form_add_section": "Legg til seksjon",
-	"form_new_section": "Ny seksjon"
+	"form_new_section": "Ny seksjon",
+	"conn_live": "Direkte — trykk for å oppdatere",
+	"conn_syncing": "Synkroniserer…",
+	"conn_offline": "Frakoblet — viser lagret kopi. Trykk for å prøve igjen",
+	"conn_last_synced": "Sist synkronisert {time}",
+	"offline_unavailable": "Ikke tilgjengelig frakoblet",
+	"offline_doc_missing": "Dette dokumentet er ennå ikke lagret for frakoblet bruk.",
+	"draft_restored": "Gjenopprettet ulagrede endringer fra {time}.",
+	"draft_changed": "Filen er endret siden dette utkastet ble lagret — se gjennom før du lagrer.",
+	"draft_discard": "Forkast utkast"
 }

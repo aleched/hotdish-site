@@ -55,6 +55,7 @@
 	"about_template": "Ongeza <code>.hotdish/template.yml</code> kwa uhariri uliopangwa na lebo zisizobadilika. Violezo vya mfano vya kuanzia: {links}.",
 	"about_icons": "Majina ya aikoni kwa violezo (gusa ili kunakili)",
 	"about_rate_limit": "Forge hupunguza maombi ya API kwa saa (GitHub: takriban 60 bila tokeni, 5,000 na tokeni). Ongeza tokeni ukiona hitilafu za kikomo.",
+	"about_offline": "Hazina zilizohifadhiwa huwekwa kwenye akiba ya kifaa hiki na zinaweza kusomwa nje ya mtandao. Kuhariri kunahitaji muunganisho, lakini mabadiliko ambayo hayajahifadhiwa hubaki.",
 	"token_guidance_github": "Tokeni ya ruhusa za kina, hazina hii pekee, Contents: kusoma (kuandika ili kuhariri).",
 	"token_guidance_gitlab": "Tokeni ya mradi, read_repository (write_repository ili kuhariri).",
 	"token_guidance_gitea": "Tokeni yenye ruhusa ya kusoma hazina (kuandika ili kuhariri).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Ongeza kipengele kidogo",
 	"form_add_a_section": "Ongeza kipengele",
 	"form_add_section": "Ongeza kipengele",
-	"form_new_section": "Kipengele kipya"
+	"form_new_section": "Kipengele kipya",
+	"conn_live": "Moja kwa moja — gusa ili kuonyesha upya",
+	"conn_syncing": "Inasawazisha…",
+	"conn_offline": "Nje ya mtandao — inaonyesha nakala iliyohifadhiwa. Gusa ili kujaribu tena",
+	"conn_last_synced": "Ilisawazishwa mwisho {time}",
+	"offline_unavailable": "Haipatikani nje ya mtandao",
+	"offline_doc_missing": "Hati hii bado haijahifadhiwa kwa matumizi nje ya mtandao.",
+	"draft_restored": "Mabadiliko ambayo hayajahifadhiwa kutoka {time} yamerejeshwa.",
+	"draft_changed": "Faili imebadilika tangu rasimu hii ihifadhiwe — kagua kabla ya kuhifadhi.",
+	"draft_discard": "Tupa rasimu"
 }

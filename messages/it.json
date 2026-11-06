@@ -55,6 +55,7 @@
 	"about_template": "Aggiungi <code>.hotdish/template.yml</code> per la modifica strutturata e i tag fissi. Modelli di esempio da cui iniziare: {links}.",
 	"about_icons": "Nomi delle icone per i modelli (tocca per copiare)",
 	"about_rate_limit": "Le forge limitano le richieste API all'ora (GitHub: circa 60 senza token, 5.000 con token). Aggiungi un token se vedi errori di limite.",
+	"about_offline": "I repository salvati sono memorizzati nella cache di questo dispositivo e leggibili offline. La modifica richiede una connessione, ma le modifiche non salvate vengono conservate.",
 	"token_guidance_github": "Token a granularità fine, solo questo repository, Contents: lettura (scrittura per modificare).",
 	"token_guidance_gitlab": "Token di progetto, read_repository (write_repository per modificare).",
 	"token_guidance_gitea": "Token con lettura del repository (scrittura per modificare).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Aggiungi sottosezione",
 	"form_add_a_section": "Aggiungi una sezione",
 	"form_add_section": "Aggiungi sezione",
-	"form_new_section": "Nuova sezione"
+	"form_new_section": "Nuova sezione",
+	"conn_live": "In diretta — tocca per aggiornare",
+	"conn_syncing": "Sincronizzazione…",
+	"conn_offline": "Offline — viene mostrata la copia salvata. Tocca per riprovare",
+	"conn_last_synced": "Ultima sincronizzazione {time}",
+	"offline_unavailable": "Non disponibile offline",
+	"offline_doc_missing": "Questo documento non è ancora salvato per l'uso offline.",
+	"draft_restored": "Ripristinate le modifiche non salvate del {time}.",
+	"draft_changed": "Il file è cambiato da quando questa bozza è stata salvata — controlla prima di salvare.",
+	"draft_discard": "Scarta bozza"
 }

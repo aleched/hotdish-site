@@ -55,6 +55,7 @@
 	"about_template": "Tilføj <code>.hotdish/template.yml</code> for struktureret redigering og faste tags. Eksempelskabeloner at starte fra: {links}.",
 	"about_icons": "Ikonnavne til skabeloner (tryk for at kopiere)",
 	"about_rate_limit": "Forges begrænser API-forespørgsler pr. time (GitHub: ca. 60 uden token, 5.000 med token). Tilføj et token, hvis du ser grænsefejl.",
+	"about_offline": "Gemte repositorier caches på denne enhed og kan læses offline. Redigering kræver forbindelse, men ikke-gemte ændringer bevares.",
 	"token_guidance_github": "Finkornet adgangstoken, kun dette lager, Contents: læse (skrive for at redigere).",
 	"token_guidance_gitlab": "Projekttoken, read_repository (write_repository for at redigere).",
 	"token_guidance_gitea": "Token med læseadgang til lageret (skriveadgang for at redigere).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Tilføj underafsnit",
 	"form_add_a_section": "Tilføj et afsnit",
 	"form_add_section": "Tilføj afsnit",
-	"form_new_section": "Nyt afsnit"
+	"form_new_section": "Nyt afsnit",
+	"conn_live": "Live — tryk for at opdatere",
+	"conn_syncing": "Synkroniserer…",
+	"conn_offline": "Offline — viser gemt kopi. Tryk for at prøve igen",
+	"conn_last_synced": "Sidst synkroniseret {time}",
+	"offline_unavailable": "Ikke tilgængelig offline",
+	"offline_doc_missing": "Dette dokument er endnu ikke gemt til offlinebrug.",
+	"draft_restored": "Gendannede ikke-gemte ændringer fra {time}.",
+	"draft_changed": "Filen er ændret, siden denne kladde blev gemt — gennemgå den, før du gemmer.",
+	"draft_discard": "Kassér kladde"
 }

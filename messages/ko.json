@@ -55,6 +55,7 @@
 	"about_template": "구조화된 편집과 고정 태그를 위해 <code>.hotdish/template.yml</code>을(를) 추가하세요. 시작용 예시 템플릿: {links}.",
 	"about_icons": "템플릿용 아이콘 이름 (탭하여 복사)",
 	"about_rate_limit": "forge는 시간당 API 요청 수를 제한합니다(GitHub: 토큰 없이 약 60회, 토큰 사용 시 5,000회). 제한 오류가 보이면 토큰을 추가하세요.",
+	"about_offline": "저장된 저장소는 이 기기에 캐시되어 오프라인에서도 읽을 수 있습니다. 편집하려면 연결이 필요하지만 저장하지 않은 변경 사항은 유지됩니다.",
 	"token_guidance_github": "세분화된 액세스 토큰, 이 저장소만, Contents: 읽기(편집하려면 쓰기).",
 	"token_guidance_gitlab": "프로젝트 토큰, read_repository(편집하려면 write_repository).",
 	"token_guidance_gitea": "저장소 읽기 권한이 있는 토큰(편집하려면 쓰기 권한).",
@@ -264,5 +265,14 @@
 	"form_add_subsection": "하위 섹션 추가",
 	"form_add_a_section": "섹션 추가",
 	"form_add_section": "섹션 추가",
-	"form_new_section": "새 섹션"
+	"form_new_section": "새 섹션",
+	"conn_live": "실시간 — 탭하여 새로 고침",
+	"conn_syncing": "동기화 중…",
+	"conn_offline": "오프라인 — 저장된 사본 표시 중. 탭하여 다시 시도",
+	"conn_last_synced": "마지막 동기화 {time}",
+	"offline_unavailable": "오프라인에서 사용할 수 없음",
+	"offline_doc_missing": "이 문서는 아직 오프라인용으로 저장되지 않았습니다.",
+	"draft_restored": "{time}의 저장되지 않은 변경 사항을 복원했습니다.",
+	"draft_changed": "이 초안을 저장한 후 파일이 변경되었습니다 — 저장하기 전에 검토하세요.",
+	"draft_discard": "초안 삭제"
 }

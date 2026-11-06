@@ -1,6 +1,11 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
+	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { connectionStore } from '$lib/store/connection.svelte';
+	import { prefetchSaved, syncNow } from '$lib/cache/prefetch';
+	import { applyUpdate, initUpdates, shouldApplyUpdate } from '$lib/pwa/update';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
@@ -23,6 +28,44 @@
 			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || `${repoStore.ref.owner}/${repoStore.ref.repo}`)
 			: null
 	);
+	let connLabel = $derived(
+		connectionStore.state === 'syncing'
+			? m.conn_syncing()
+			: connectionStore.state === 'live'
+				? m.conn_live()
+				: m.conn_offline()
+	);
+	let connTitle = $derived(
+		connectionStore.lastSyncedAt
+			? `${connLabel}\n${m.conn_last_synced({ time: new Date(connectionStore.lastSyncedAt).toLocaleString(getLocale()) })}`
+			: connLabel
+	);
+
+	onMount(() => {
+		initUpdates();
+		// Let the page itself load first, then fill the offline copy of the other saved repos.
+		const timer = setTimeout(() => void prefetchSaved().catch(() => {}), 3000);
+		const reconnect = () => void syncNow();
+		window.addEventListener('online', reconnect);
+		return () => {
+			clearTimeout(timer);
+			window.removeEventListener('online', reconnect);
+		};
+	});
+
+	beforeNavigate((navigation) => {
+		const to = navigation.to?.url;
+		if (!to || navigation.willUnload || to.origin !== location.origin) return;
+		if (navigation.from?.url.searchParams.has('edit') || to.searchParams.has('edit')) return;
+		if (!shouldApplyUpdate()) return;
+		navigation.cancel();
+		applyUpdate(to.href);
+	});
+
+	function retry() {
+		if (connectionStore.state !== 'syncing') void syncNow({ force: true });
+	}
+
 	let isUnsaved = $derived(!!repoStore.ref && !profileStore.profileFor(repoStore.ref));
 
 	function saveRepo() {
@@ -87,6 +130,19 @@
 			{/if}
 
 			<div class="spacer"></div>
+			<button
+				type="button"
+				class="icon-button conn {connectionStore.state}"
+				title={connTitle}
+				aria-label={connTitle}
+				aria-busy={connectionStore.state === 'syncing'}
+				onclick={retry}
+			>
+				<Icon
+					name={connectionStore.state === 'syncing' ? 'cloud-sync' : connectionStore.state === 'live' ? 'cloud' : 'cloud-off'}
+					size={20}
+				/>
+			</button>
 			<a class="nav settings" href="/settings" title={m.nav_settings()} aria-label={m.nav_settings()}>
 				<Icon name="settings" size={20} />
 			</a>
@@ -162,6 +218,23 @@
 
 	.spacer {
 		flex: 1;
+	}
+
+	.conn {
+		flex-shrink: 0;
+		padding: 0.4rem;
+		border: none;
+		background: none;
+		color: var(--text-dim);
+	}
+	.conn:hover {
+		color: var(--accent);
+	}
+	.conn.syncing {
+		cursor: progress;
+	}
+	.conn.offline {
+		color: var(--warn);
 	}
 
 	.nav {

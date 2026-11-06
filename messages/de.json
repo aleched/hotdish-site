@@ -55,6 +55,7 @@
 	"about_template": "Füge <code>.hotdish/template.yml</code> für strukturierte Bearbeitung und feste Tags hinzu. Beispielvorlagen für den Einstieg: {links}.",
 	"about_icons": "Symbolnamen für Vorlagen (zum Kopieren tippen)",
 	"about_rate_limit": "Forges begrenzen API-Anfragen pro Stunde (GitHub: etwa 60 ohne Token, 5.000 mit Token). Füge ein Token hinzu, wenn Ratenlimit-Fehler auftreten.",
+	"about_offline": "Gespeicherte Repositorys werden auf diesem Gerät zwischengespeichert und sind offline lesbar. Bearbeiten braucht eine Verbindung, ungespeicherte Änderungen bleiben aber erhalten.",
 	"token_guidance_github": "Fein abgestuftes Token, nur dieses Repository, Contents: Lesen (Schreiben zum Bearbeiten).",
 	"token_guidance_gitlab": "Projekt-Token, read_repository (write_repository zum Bearbeiten).",
 	"token_guidance_gitea": "Token mit Lesezugriff auf das Repository (Schreiben zum Bearbeiten).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Unterabschnitt hinzufügen",
 	"form_add_a_section": "Abschnitt hinzufügen",
 	"form_add_section": "Abschnitt hinzufügen",
-	"form_new_section": "Neuer Abschnitt"
+	"form_new_section": "Neuer Abschnitt",
+	"conn_live": "Live — tippen zum Aktualisieren",
+	"conn_syncing": "Synchronisiere…",
+	"conn_offline": "Offline — gespeicherte Kopie wird angezeigt. Tippen für neuen Versuch",
+	"conn_last_synced": "Zuletzt synchronisiert {time}",
+	"offline_unavailable": "Offline nicht verfügbar",
+	"offline_doc_missing": "Dieses Dokument ist noch nicht für die Offline-Nutzung gespeichert.",
+	"draft_restored": "Ungespeicherte Änderungen vom {time} wiederhergestellt.",
+	"draft_changed": "Die Datei hat sich seit dem Speichern dieses Entwurfs geändert — vor dem Speichern prüfen.",
+	"draft_discard": "Entwurf verwerfen"
 }

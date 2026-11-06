@@ -55,6 +55,7 @@
 	"about_template": "Tambah <code>.hotdish/template.yml</code> untuk penyuntingan berstruktur dan teg tetap. Templat contoh untuk bermula: {links}.",
 	"about_icons": "Nama ikon untuk templat (ketik untuk salin)",
 	"about_rate_limit": "Forge menghadkan permintaan API setiap jam (GitHub: kira-kira 60 tanpa token, 5,000 dengan token). Tambah token jika anda melihat ralat had kadar.",
+	"about_offline": "Repositori yang disimpan dicache pada peranti ini dan boleh dibaca di luar talian. Penyuntingan memerlukan sambungan, tetapi perubahan yang belum disimpan dikekalkan.",
 	"token_guidance_github": "Token berbutir halus, repo ini sahaja, Contents: baca (tulis untuk menyunting).",
 	"token_guidance_gitlab": "Token projek, read_repository (write_repository untuk menyunting).",
 	"token_guidance_gitea": "Token dengan kebenaran baca repositori (tulis untuk menyunting).",
@@ -264,5 +265,14 @@
 	"form_add_subsection": "Tambah subbahagian",
 	"form_add_a_section": "Tambah bahagian",
 	"form_add_section": "Tambah bahagian",
-	"form_new_section": "Bahagian baharu"
+	"form_new_section": "Bahagian baharu",
+	"conn_live": "Langsung — ketik untuk muat semula",
+	"conn_syncing": "Menyegerakkan…",
+	"conn_offline": "Luar talian — memaparkan salinan tersimpan. Ketik untuk cuba lagi",
+	"conn_last_synced": "Terakhir disegerakkan {time}",
+	"offline_unavailable": "Tidak tersedia di luar talian",
+	"offline_doc_missing": "Dokumen ini belum disimpan untuk kegunaan luar talian.",
+	"draft_restored": "Perubahan yang belum disimpan dari {time} dipulihkan.",
+	"draft_changed": "Fail telah berubah sejak draf ini disimpan — semak sebelum menyimpan.",
+	"draft_discard": "Buang draf"
 }

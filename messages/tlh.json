@@ -55,6 +55,7 @@
 	"about_template": "<code>.hotdish/template.yml</code> yIchel 'ej nuq mIw tlhaQ 'ej tagmey chen. cha' mIwmey wa'DIch: {links}.",
 	"about_icons": "HaDwI' ghItlh mIw (yIpoS 'ej yIQoy)",
 	"about_rate_limit": "forge-mey API request-mey rep DeSDu' (GitHub: 60 token pagh, 5,000 token). token chel rate limit Qagh yIlegh.",
+	"about_offline": "De'wI' Daqvam pollu'pu'bogh De' pa'mey polta' 'ej SIrgh Hutlh laDlu'laH. choHmeH SIrgh poQlu', 'ach pollu'be'bogh choHmey pollu'.",
 	"token_guidance_github": "Qub token, Hol rap neH, Contents: laD (ghItlh choH).",
 	"token_guidance_gitlab": "Qu' token, read_repository (write_repository choH).",
 	"token_guidance_gitea": "Hol laD ngeH token (ghItlh choH).",
@@ -264,5 +265,14 @@
 	"form_add_subsection": "subsection chel",
 	"form_add_a_section": "section chel",
 	"form_add_section": "section chel",
-	"form_new_section": "section chu'"
+	"form_new_section": "section chu'",
+	"conn_live": "DaHjaj — chu'qa'meH yIHot",
+	"conn_syncing": "rap'eghmoH…",
+	"conn_offline": "SIrgh Hutlh — pollu'pu'bogh velqa' 'ang. nIDqa'meH yIHot",
+	"conn_last_synced": "Qav rap'eghmoH {time}",
+	"offline_unavailable": "SIrgh Hutlh lo'laHbe'",
+	"offline_doc_missing": "SIrgh Hutlh lo'meH ghItlhvam pollu'pu'be'.",
+	"draft_restored": "{time} choHmeyvaD pollu'be'bogh lI'qa'lu'.",
+	"draft_changed": "ghItlh wa'DIch pollu'DI' De'wI' teywI' choHlu'pu' — pollu'pa' yIbej.",
+	"draft_discard": "ghItlh wa'DIch yIwoD"
 }

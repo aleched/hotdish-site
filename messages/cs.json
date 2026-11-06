@@ -55,6 +55,7 @@
 	"about_template": "Přidejte <code>.hotdish/template.yml</code> pro strukturované úpravy a pevné štítky. Ukázkové šablony pro začátek: {links}.",
 	"about_icons": "Názvy ikon pro šablony (klepnutím zkopírujete)",
 	"about_rate_limit": "Forge omezují počet API požadavků za hodinu (GitHub: asi 60 bez tokenu, 5 000 s tokenem). Pokud vidíte chyby limitu, přidejte token.",
+	"about_offline": "Uložené repozitáře se ukládají do mezipaměti tohoto zařízení a lze je číst offline. Úpravy vyžadují připojení, ale neuložené změny se zachovají.",
 	"token_guidance_github": "Token s jemným nastavením, jen tento repozitář, Contents: čtení (zápis pro úpravy).",
 	"token_guidance_gitlab": "Token projektu, read_repository (write_repository pro úpravy).",
 	"token_guidance_gitea": "Token s právem čtení repozitáře (zápis pro úpravy).",
@@ -267,5 +268,14 @@
 	"form_add_subsection": "Přidat podsekci",
 	"form_add_a_section": "Přidat sekci",
 	"form_add_section": "Přidat sekci",
-	"form_new_section": "Nová sekce"
+	"form_new_section": "Nová sekce",
+	"conn_live": "Živě — klepnutím obnovíte",
+	"conn_syncing": "Synchronizace…",
+	"conn_offline": "Offline — zobrazuje se uložená kopie. Klepnutím to zkusíte znovu",
+	"conn_last_synced": "Naposledy synchronizováno {time}",
+	"offline_unavailable": "Offline nedostupné",
+	"offline_doc_missing": "Tento dokument zatím není uložen pro použití offline.",
+	"draft_restored": "Obnoveny neuložené změny z {time}.",
+	"draft_changed": "Soubor se od uložení tohoto konceptu změnil — před uložením jej zkontrolujte.",
+	"draft_discard": "Zahodit koncept"
 }

@@ -55,6 +55,7 @@
 	"about_template": "Adăugați <code>.hotdish/template.yml</code> pentru editare structurată și etichete fixe. Șabloane exemplu cu care să începeți: {links}.",
 	"about_icons": "Nume de pictograme pentru șabloane (atingeți pentru a copia)",
 	"about_rate_limit": "Forge-urile limitează cererile API pe oră (GitHub: aproximativ 60 fără token, 5.000 cu token). Adaugă un token dacă vezi erori de limită.",
+	"about_offline": "Depozitele salvate sunt memorate în cache pe acest dispozitiv și pot fi citite offline. Editarea necesită conexiune, dar modificările nesalvate sunt păstrate.",
 	"token_guidance_github": "Token cu permisiuni detaliate, doar acest depozit, Contents: citire (scriere pentru editare).",
 	"token_guidance_gitlab": "Token de proiect, read_repository (write_repository pentru editare).",
 	"token_guidance_gitea": "Token cu citire a depozitului (scriere pentru editare).",
@@ -266,5 +267,14 @@
 	"form_add_subsection": "Adaugă subsecțiune",
 	"form_add_a_section": "Adaugă o secțiune",
 	"form_add_section": "Adaugă secțiune",
-	"form_new_section": "Secțiune nouă"
+	"form_new_section": "Secțiune nouă",
+	"conn_live": "Live — atinge pentru reîmprospătare",
+	"conn_syncing": "Se sincronizează…",
+	"conn_offline": "Offline — se afișează copia salvată. Atinge pentru a reîncerca",
+	"conn_last_synced": "Ultima sincronizare {time}",
+	"offline_unavailable": "Indisponibil offline",
+	"offline_doc_missing": "Acest document nu este încă salvat pentru utilizare offline.",
+	"draft_restored": "Au fost restaurate modificările nesalvate din {time}.",
+	"draft_changed": "Fișierul s-a modificat de la salvarea acestei ciorne — verifică înainte de a salva.",
+	"draft_discard": "Renunță la ciornă"
 }

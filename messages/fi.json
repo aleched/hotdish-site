@@ -55,6 +55,7 @@
 	"about_template": "Lisää <code>.hotdish/template.yml</code> rakenteista muokkausta ja kiinteitä tunnisteita varten. Esimerkkimallit aloitukseen: {links}.",
 	"about_icons": "Mallien kuvakenimet (kopioi napauttamalla)",
 	"about_rate_limit": "Forget rajoittavat API-pyyntöjä tunnissa (GitHub: noin 60 ilman tunnistetta, 5 000 tunnisteella). Lisää tunniste, jos näet nopeusrajoitusvirheitä.",
+	"about_offline": "Tallennetut repot välimuistitetaan tälle laitteelle ja ovat luettavissa offline-tilassa. Muokkaaminen vaatii yhteyden, mutta tallentamattomat muutokset säilyvät.",
 	"token_guidance_github": "Hienojakoinen tunniste, vain tämä repo, Contents: luku (kirjoitus muokkaamiseen).",
 	"token_guidance_gitlab": "Projektitunniste, read_repository (write_repository muokkaamiseen).",
 	"token_guidance_gitea": "Tunniste repositorion lukuoikeudella (kirjoitus muokkaamiseen).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Lisää alaosio",
 	"form_add_a_section": "Lisää osio",
 	"form_add_section": "Lisää osio",
-	"form_new_section": "Uusi osio"
+	"form_new_section": "Uusi osio",
+	"conn_live": "Ajantasainen — päivitä napauttamalla",
+	"conn_syncing": "Synkronoidaan…",
+	"conn_offline": "Offline — näytetään tallennettu kopio. Yritä uudelleen napauttamalla",
+	"conn_last_synced": "Viimeksi synkronoitu {time}",
+	"offline_unavailable": "Ei käytettävissä offline-tilassa",
+	"offline_doc_missing": "Tätä asiakirjaa ei ole vielä tallennettu offline-käyttöön.",
+	"draft_restored": "Palautettiin tallentamattomat muutokset ajalta {time}.",
+	"draft_changed": "Tiedosto on muuttunut tämän luonnoksen tallentamisen jälkeen — tarkista ennen tallentamista.",
+	"draft_discard": "Hylkää luonnos"
 }

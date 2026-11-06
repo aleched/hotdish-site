@@ -55,6 +55,7 @@
 	"about_template": "Afegeix <code>.hotdish/template.yml</code> per a l'edició estructurada i les etiquetes fixes. Plantilles d'exemple per començar: {links}.",
 	"about_icons": "Noms d'icones per a plantilles (toca per copiar)",
 	"about_rate_limit": "Els forges limiten les sol·licituds d'API per hora (GitHub: unes 60 sense testimoni, 5.000 amb testimoni). Afegeix un testimoni si veus errors de límit.",
+	"about_offline": "Els repositoris desats es guarden a la memòria cau d'aquest dispositiu i es poden llegir fora de línia. Editar requereix connexió, però els canvis no desats es conserven.",
 	"token_guidance_github": "Testimoni de permisos específics, només aquest repo, Contents: lectura (escriptura per editar).",
 	"token_guidance_gitlab": "Testimoni de projecte, read_repository (write_repository per editar).",
 	"token_guidance_gitea": "Testimoni amb lectura del repositori (escriptura per editar).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Afegeix una subsecció",
 	"form_add_a_section": "Afegeix una secció",
 	"form_add_section": "Afegeix una secció",
-	"form_new_section": "Secció nova"
+	"form_new_section": "Secció nova",
+	"conn_live": "En directe — toca per actualitzar",
+	"conn_syncing": "Sincronitzant…",
+	"conn_offline": "Fora de línia — es mostra la còpia desada. Toca per tornar-ho a provar",
+	"conn_last_synced": "Darrera sincronització {time}",
+	"offline_unavailable": "No disponible fora de línia",
+	"offline_doc_missing": "Aquest document encara no s'ha desat per a ús fora de línia.",
+	"draft_restored": "S'han restaurat els canvis no desats de {time}.",
+	"draft_changed": "El fitxer ha canviat des que es va desar aquest esborrany — revisa'l abans de desar.",
+	"draft_discard": "Descarta l'esborrany"
 }

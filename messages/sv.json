@@ -55,6 +55,7 @@
 	"about_template": "Lägg till <code>.hotdish/template.yml</code> för strukturerad redigering och fasta taggar. Exempelmallar att börja från: {links}.",
 	"about_icons": "Ikonnamn för mallar (tryck för att kopiera)",
 	"about_rate_limit": "Forgar begränsar API-förfrågningar per timme (GitHub: cirka 60 utan token, 5 000 med token). Lägg till en token om du ser gränsfel.",
+	"about_offline": "Sparade repon cachas på den här enheten och kan läsas offline. Redigering kräver anslutning, men osparade ändringar behålls.",
 	"token_guidance_github": "Finkornig åtkomsttoken, endast det här förrådet, Contents: läsa (skriva för att redigera).",
 	"token_guidance_gitlab": "Projekttoken, read_repository (write_repository för att redigera).",
 	"token_guidance_gitea": "Token med läsbehörighet till förrådet (skrivbehörighet för att redigera).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Lägg till underavsnitt",
 	"form_add_a_section": "Lägg till ett avsnitt",
 	"form_add_section": "Lägg till avsnitt",
-	"form_new_section": "Nytt avsnitt"
+	"form_new_section": "Nytt avsnitt",
+	"conn_live": "Live — tryck för att uppdatera",
+	"conn_syncing": "Synkroniserar…",
+	"conn_offline": "Offline — visar sparad kopia. Tryck för att försöka igen",
+	"conn_last_synced": "Senast synkroniserad {time}",
+	"offline_unavailable": "Inte tillgängligt offline",
+	"offline_doc_missing": "Det här dokumentet är ännu inte sparat för offlineanvändning.",
+	"draft_restored": "Återställde osparade ändringar från {time}.",
+	"draft_changed": "Filen har ändrats sedan utkastet sparades — granska innan du sparar.",
+	"draft_discard": "Släng utkast"
 }

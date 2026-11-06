@@ -55,6 +55,7 @@
 	"about_template": "添加 <code>.hotdish/template.yml</code> 以启用结构化编辑和固定标签。可从示例模板开始：{links}。",
 	"about_icons": "模板图标名称（点按复制）",
 	"about_rate_limit": "代码托管平台会限制每小时的 API 请求数（GitHub：无令牌约 60 次，有令牌 5,000 次）。如果看到限流错误，请添加令牌。",
+	"about_offline": "已保存的仓库会缓存在此设备上，可离线阅读。编辑需要联网，但未保存的更改会被保留。",
 	"token_guidance_github": "细粒度访问令牌，仅限此仓库，Contents：读取（编辑需写入）。",
 	"token_guidance_gitlab": "项目访问令牌，read_repository（编辑需 write_repository）。",
 	"token_guidance_gitea": "具有仓库读取权限的令牌（编辑需写入）。",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "添加子章节",
 	"form_add_a_section": "添加章节",
 	"form_add_section": "添加章节",
-	"form_new_section": "新章节"
+	"form_new_section": "新章节",
+	"conn_live": "实时 — 点按以刷新",
+	"conn_syncing": "正在同步…",
+	"conn_offline": "离线 — 正在显示已保存的副本。点按重试",
+	"conn_last_synced": "上次同步 {time}",
+	"offline_unavailable": "离线时不可用",
+	"offline_doc_missing": "此文档尚未保存以供离线使用。",
+	"draft_restored": "已恢复 {time} 的未保存更改。",
+	"draft_changed": "保存此草稿后文件已更改 — 保存前请检查。",
+	"draft_discard": "放弃草稿"
 }

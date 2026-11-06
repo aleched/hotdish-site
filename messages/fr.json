@@ -55,6 +55,7 @@
 	"about_template": "Ajoutez <code>.hotdish/template.yml</code> pour une édition structurée et des étiquettes fixes. Modèles d'exemple pour commencer : {links}.",
 	"about_icons": "Noms d'icônes pour les modèles (touchez pour copier)",
 	"about_rate_limit": "Les forges limitent les requêtes API par heure (GitHub : environ 60 sans jeton, 5 000 avec). Ajoutez un jeton si vous voyez des erreurs de limite.",
+	"about_offline": "Les dépôts enregistrés sont mis en cache sur cet appareil et lisibles hors ligne. La modification nécessite une connexion, mais les changements non enregistrés sont conservés.",
 	"token_guidance_github": "Jeton à granularité fine, ce dépôt uniquement, Contents : lecture (écriture pour modifier).",
 	"token_guidance_gitlab": "Jeton de projet, read_repository (write_repository pour modifier).",
 	"token_guidance_gitea": "Jeton avec lecture du dépôt (écriture pour modifier).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Ajouter une sous-section",
 	"form_add_a_section": "Ajouter une section",
 	"form_add_section": "Ajouter une section",
-	"form_new_section": "Nouvelle section"
+	"form_new_section": "Nouvelle section",
+	"conn_live": "En direct — touchez pour actualiser",
+	"conn_syncing": "Synchronisation…",
+	"conn_offline": "Hors ligne — copie enregistrée affichée. Touchez pour réessayer",
+	"conn_last_synced": "Dernière synchronisation {time}",
+	"offline_unavailable": "Indisponible hors ligne",
+	"offline_doc_missing": "Ce document n'est pas encore enregistré pour une utilisation hors ligne.",
+	"draft_restored": "Modifications non enregistrées du {time} restaurées.",
+	"draft_changed": "Le fichier a changé depuis l'enregistrement de ce brouillon — vérifiez avant d'enregistrer.",
+	"draft_discard": "Abandonner le brouillon"
 }

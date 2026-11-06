@@ -55,6 +55,7 @@
 	"about_template": "Adja hozzá a(z) <code>.hotdish/template.yml</code> fájlt a strukturált szerkesztéshez és a rögzített címkékhez. Példasablonok az induláshoz: {links}.",
 	"about_icons": "Ikonnevek sablonokhoz (koppintson a másoláshoz)",
 	"about_rate_limit": "A forge-ok óránként korlátozzák az API-kéréseket (GitHub: kb. 60 token nélkül, 5000 tokennel). Adjon hozzá tokent, ha korlátozási hibákat lát.",
+	"about_offline": "A mentett tárolók gyorsítótárba kerülnek ezen az eszközön, és offline is olvashatók. A szerkesztéshez kapcsolat kell, de a nem mentett módosítások megmaradnak.",
 	"token_guidance_github": "Finomhangolt token, csak ez a tároló, Contents: olvasás (írás a szerkesztéshez).",
 	"token_guidance_gitlab": "Projekttoken, read_repository (write_repository a szerkesztéshez).",
 	"token_guidance_gitea": "Tároló-olvasási jogosultságú token (írás a szerkesztéshez).",
@@ -265,5 +266,14 @@
 	"form_add_subsection": "Alszakasz hozzáadása",
 	"form_add_a_section": "Szakasz hozzáadása",
 	"form_add_section": "Szakasz hozzáadása",
-	"form_new_section": "Új szakasz"
+	"form_new_section": "Új szakasz",
+	"conn_live": "Élő — koppintson a frissítéshez",
+	"conn_syncing": "Szinkronizálás…",
+	"conn_offline": "Offline — a mentett példány látható. Koppintson az újrapróbáláshoz",
+	"conn_last_synced": "Utolsó szinkronizálás: {time}",
+	"offline_unavailable": "Offline nem érhető el",
+	"offline_doc_missing": "Ez a dokumentum még nincs mentve offline használatra.",
+	"draft_restored": "Visszaállítva a nem mentett módosítások ({time}).",
+	"draft_changed": "A fájl megváltozott a piszkozat mentése óta — mentés előtt ellenőrizze.",
+	"draft_discard": "Piszkozat elvetése"
 }

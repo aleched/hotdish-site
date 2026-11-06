@@ -55,6 +55,7 @@
 	"about_template": "Dodaj <code>.hotdish/template.yml</code>, aby włączyć edycję ustrukturyzowaną i stałe tagi. Przykładowe szablony na początek: {links}.",
 	"about_icons": "Nazwy ikon dla szablonów (stuknij, aby skopiować)",
 	"about_rate_limit": "Forge ograniczają liczbę zapytań API na godzinę (GitHub: około 60 bez tokenu, 5000 z tokenem). Dodaj token, jeśli widzisz błędy limitu zapytań.",
+	"about_offline": "Zapisane repozytoria są buforowane na tym urządzeniu i można je czytać offline. Edycja wymaga połączenia, ale niezapisane zmiany są zachowywane.",
 	"token_guidance_github": "Token o precyzyjnych uprawnieniach, tylko to repozytorium, Contents: odczyt (zapis do edycji).",
 	"token_guidance_gitlab": "Token projektu, read_repository (write_repository do edycji).",
 	"token_guidance_gitea": "Token z odczytem repozytorium (zapis do edycji).",
@@ -267,5 +268,14 @@
 	"form_add_subsection": "Dodaj podsekcję",
 	"form_add_a_section": "Dodaj sekcję",
 	"form_add_section": "Dodaj sekcję",
-	"form_new_section": "Nowa sekcja"
+	"form_new_section": "Nowa sekcja",
+	"conn_live": "Na żywo — dotknij, aby odświeżyć",
+	"conn_syncing": "Synchronizacja…",
+	"conn_offline": "Offline — wyświetlana jest zapisana kopia. Dotknij, aby spróbować ponownie",
+	"conn_last_synced": "Ostatnia synchronizacja {time}",
+	"offline_unavailable": "Niedostępne offline",
+	"offline_doc_missing": "Ten dokument nie został jeszcze zapisany do użytku offline.",
+	"draft_restored": "Przywrócono niezapisane zmiany z {time}.",
+	"draft_changed": "Plik zmienił się od zapisania tej wersji roboczej — sprawdź przed zapisaniem.",
+	"draft_discard": "Odrzuć wersję roboczą"
 }
