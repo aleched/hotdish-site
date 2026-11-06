@@ -1,0 +1,49 @@
+# Example Hotdish template: a workout log.
+# Save as `.hotdish/template.yml` in your repository to use it. See recipe.yml for
+# every field option.
+
+version: 1
+name: Fitness
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: true
+    options:
+      - strength
+      - cardio
+      - mobility
+      - recovery
+
+  - group:
+      - key: date
+        label: Date
+        type: date
+        icon: calendar
+
+      - key: duration
+        label: Duration
+        type: text
+        icon: timer
+
+      - key: intensity
+        label: Intensity
+        type: enum
+        icon: flame
+        options:
+          - easy
+          - moderate
+          - hard
+
+sections:
+  - id: exercises
+    heading: Exercises
+    type: list
+    repeatable: true
+    subheadingLabel: Block
+
+  - id: notes
+    heading: Notes
+    type: text
+    optional: true

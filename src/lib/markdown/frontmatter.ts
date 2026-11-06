@@ -12,6 +12,8 @@ export interface Frontmatter {
 	error?: string;
 }
 
+// The core schema has no timestamp type, so `date: 2026-11-06` stays the string it was written
+// as instead of becoming a Date that is later re-saved as a full ISO timestamp.
 const FRONTMATTER_PATTERN = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
 
 /**
@@ -26,7 +28,7 @@ export function parseFrontmatter(source: string): Frontmatter {
 	const body = source.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '');
 
 	try {
-		const parsed = yaml.load(match[1]);
+		const parsed = yaml.load(match[1], { schema: yaml.CORE_SCHEMA });
 		const data =
 			parsed && typeof parsed === 'object' && !Array.isArray(parsed)
 				? (parsed as Record<string, unknown>)
@@ -55,14 +57,20 @@ function orderFields(data: Record<string, unknown>): Record<string, unknown> {
 export function dumpFrontmatter(data: Record<string, unknown>): string {
 	if (Object.keys(data).length === 0) return '';
 	return yaml
-		.dump(orderFields(data), { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false })
+		.dump(orderFields(data), {
+			lineWidth: -1,
+			noRefs: true,
+			quotingType: '"',
+			forceQuotes: false,
+			schema: yaml.CORE_SCHEMA
+		})
 		.trimEnd();
 }
 
 /** Parses standalone YAML text that must be a mapping (or empty). */
 export function parseYamlMapping(text: string): { data: Record<string, unknown> } | { error: string } {
 	try {
-		const parsed = yaml.load(text);
+		const parsed = yaml.load(text, { schema: yaml.CORE_SCHEMA });
 		if (parsed === undefined || parsed === null) return { data: {} };
 		if (typeof parsed !== 'object' || Array.isArray(parsed)) {
 			return { error: m.frontmatter_error_pairs() };

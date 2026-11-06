@@ -16,6 +16,18 @@ export const EDITOR_MODES: readonly {
 	{ value: 'raw', label: m.mode_raw(), icon: 'file' }
 ];
 
+export type DefaultTemplateChoice = 'recipe' | 'note' | 'none';
+
+export const DEFAULT_TEMPLATES: readonly {
+	value: DefaultTemplateChoice;
+	label: string;
+	icon: 'fork-knife' | 'text' | 'empty';
+}[] = [
+	{ value: 'recipe', label: m.template_recipe(), icon: 'fork-knife' },
+	{ value: 'note', label: m.template_note(), icon: 'text' },
+	{ value: 'none', label: m.template_none(), icon: 'empty' }
+];
+
 export const MAX_RECENT_DAYS = 365;
 
 /** null means no limit; 0 hides the recent section. */
@@ -33,6 +45,7 @@ class EditorPrefs {
 	randomButton = $state(true);
 	strikeLists = $state(true);
 	recentDays = $state<RecentDays>(7);
+	defaultTemplate = $state<DefaultTemplateChoice>('recipe');
 
 	constructor() {
 		if (!browser) return;
@@ -44,6 +57,7 @@ class EditorPrefs {
 				randomButton?: boolean;
 				strikeLists?: boolean;
 				recentDays?: number | null;
+				defaultTemplate?: string;
 			};
 			if (typeof parsed.fractions === 'boolean') this.fractions = parsed.fractions;
 			if (typeof parsed.spellcheck === 'boolean') this.spellcheck = parsed.spellcheck;
@@ -53,6 +67,8 @@ class EditorPrefs {
 			else if (typeof parsed.recentDays === 'number') this.recentDays = clampDays(parsed.recentDays);
 			const mode = EDITOR_MODES.find((item) => item.value === parsed.defaultMode);
 			if (mode) this.defaultMode = mode.value;
+			const template = DEFAULT_TEMPLATES.find((item) => item.value === parsed.defaultTemplate);
+			if (template) this.defaultTemplate = template.value;
 		} catch {
 			// Ignore unreadable preferences.
 		}
@@ -65,6 +81,11 @@ class EditorPrefs {
 
 	setDefaultMode(mode: EditorMode): void {
 		this.defaultMode = mode;
+		this.persist();
+	}
+
+	setDefaultTemplate(choice: DefaultTemplateChoice): void {
+		this.defaultTemplate = choice;
 		this.persist();
 	}
 
@@ -99,7 +120,8 @@ class EditorPrefs {
 					spellcheck: this.spellcheck,
 					randomButton: this.randomButton,
 					strikeLists: this.strikeLists,
-					recentDays: this.recentDays
+					recentDays: this.recentDays,
+					defaultTemplate: this.defaultTemplate
 				})
 			);
 		} catch {

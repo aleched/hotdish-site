@@ -233,6 +233,9 @@
 		<path d="M.8 12.5c.2-1.8 1.2-2.8 2.5-2.8" />
 		<circle cx="13" cy="6.5" r="1.4" />
 		<path d="M15.2 12.5c-.2-1.8-1.2-2.8-2.5-2.8" />
+	{:else if name === 'fork-knife'}
+		<path d="M4 2v3.5c0 1.2.8 2 1.5 2S7 6.7 7 5.5V2M5.5 2v12" />
+		<path d="M11.5 14V2C9.9 3.2 9.2 5.6 9.2 9h2.3" />
 	{:else if name === 'unstrike'}
 		<path d="M2.5 5h11M2.5 11h6" />
 		<path d="M10.5 11h3" opacity=".4" />

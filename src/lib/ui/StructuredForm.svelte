@@ -80,7 +80,7 @@
 
 	/** Single-line fields with an icon drop the visible label and use it as the placeholder instead. */
 	function compact(field: TemplateField): boolean {
-		return field.key === 'tags' || (!!field.icon && ['text', 'number', 'url'].includes(field.type));
+		return field.key === 'tags' || (!!field.icon && ['text', 'number', 'url', 'date', 'enum'].includes(field.type));
 	}
 
 	function toggleListValue(key: string, option: string) {
@@ -267,10 +267,12 @@
 						{:else if field.type === 'enum'}
 							<select
 								id={fieldInputId(field)}
+								title={compact(field) ? field.label : undefined}
+								aria-label={compact(field) ? field.label : undefined}
 								value={textValue(field.key)}
 								onchange={(event) => setField(field.key, event.currentTarget.value)}
 							>
-								<option value="">—</option>
+								<option value="">{compact(field) ? field.label : '—'}</option>
 								{#each field.options as option (option)}
 									<option value={option}>{option}</option>
 								{/each}
@@ -283,6 +285,15 @@
 								checked={doc.fields[field.key] === true}
 								onchange={(event) =>
 									setField(field.key, event.currentTarget.checked ? true : '')}
+							/>
+						{:else if field.type === 'date'}
+							<input
+								id={fieldInputId(field)}
+								type="date"
+								title={compact(field) ? field.label : undefined}
+								aria-label={compact(field) ? field.label : undefined}
+								value={textValue(field.key)}
+								oninput={(event) => setField(field.key, event.currentTarget.value)}
 							/>
 						{:else if field.type === 'number'}
 							<input

@@ -7,6 +7,7 @@ import { isMarkdownPath, parseDoc, toSummary } from '$lib/markdown/doc';
 import type { Doc, DocSummary } from '$lib/markdown/doc';
 import { TEMPLATE_PATH, parseTemplate, type DocTemplate } from '$lib/template/schema';
 import { getDefaultTemplate } from '$lib/template/default';
+import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 import { buildTree, type TreeFolder } from '$lib/tree';
 import { mapWithConcurrency } from '$lib/util/concurrency';
 
@@ -40,8 +41,10 @@ class RepoStore {
 	indexTotal = $state(0);
 	skipped = $state<string[]>([]);
 
-	template = $state<DocTemplate | null>(null);
-	templateIsDefault = $state(false);
+	/** The repository's own template, if it has one. */
+	#customTemplate = $state<DocTemplate | null>(null);
+	/** True when the repository has no template file, so the built-in default applies. */
+	#usesDefault = $state(false);
 	templateError = $state<string | null>(null);
 
 	query = $state('');
@@ -54,6 +57,17 @@ class RepoStore {
 	#docs = new Map<string, Doc>();
 	#loadToken = 0;
 	#visibility: Promise<boolean | null> | null = null;
+
+	/** The repository's template, or the built-in default chosen in settings when it has none. */
+	get template(): DocTemplate | null {
+		if (!this.#usesDefault) return this.#customTemplate;
+		const choice = editorPrefs.defaultTemplate;
+		return choice === 'none' ? null : getDefaultTemplate(choice);
+	}
+
+	get templateIsDefault(): boolean {
+		return this.#usesDefault && this.template !== null;
+	}
 
 	get provider(): ForgeProvider | null {
 		return this.#provider;
@@ -159,8 +173,8 @@ class RepoStore {
 		this.truncated = false;
 		this.indexed = 0;
 		this.indexTotal = 0;
-		this.template = null;
-		this.templateIsDefault = false;
+		this.#customTemplate = null;
+		this.#usesDefault = false;
 		this.templateError = null;
 		this.#docs.clear();
 		this.#visibility = null;
@@ -345,8 +359,7 @@ class RepoStore {
 	async #loadTemplate(allEntries: BlobEntry[], gitRef: string, loadToken: number): Promise<void> {
 		const entry = allEntries.find((item) => item.path === TEMPLATE_PATH);
 		if (!entry) {
-			this.template = getDefaultTemplate();
-			this.templateIsDefault = this.template !== null;
+			this.#usesDefault = true;
 			return;
 		}
 
@@ -356,7 +369,7 @@ class RepoStore {
 			// An empty template file is a deliberate opt-out: plain markdown, no warning.
 			if (!raw.trim()) return;
 			const result = parseTemplate(raw);
-			this.template = result.template;
+			this.#customTemplate = result.template;
 			this.templateError = result.error ?? null;
 		} catch (error) {
 			if (loadToken !== this.#loadToken) return;

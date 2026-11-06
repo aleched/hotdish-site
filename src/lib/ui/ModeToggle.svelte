@@ -1,11 +1,12 @@
 <script lang="ts" generics="T extends string">
 	import Icon from '$lib/ui/Icon.svelte';
+	import type { IconName } from '$lib/ui/icon-names';
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Item {
 		value: T;
 		label: string;
-		icon: 'form' | 'markdown' | 'rich' | 'file';
+		icon: IconName;
 	}
 
 	interface Props {

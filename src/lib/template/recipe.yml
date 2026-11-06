@@ -6,7 +6,7 @@
 # never a storage format: documents stay plain markdown, and anything the template does not
 # describe is preserved exactly as written.
 #
-# Field options: key, label, type (text, number, boolean, enum, multi-enum, url), required,
+# Field options: key, label, type (text, number, boolean, enum, multi-enum, url, date), required,
 # options, allowCustom, icon (shown next to the field; see src/lib/ui/icon-names.ts).
 # Wrap fields in group: (a list of fields) to show them on one line.
 

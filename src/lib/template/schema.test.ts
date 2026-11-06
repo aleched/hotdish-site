@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { defaultTemplateYaml, getDefaultTemplate } from './default';
-import { parseTemplate } from './schema';
+import { defaultTemplateYaml, getDefaultTemplate, noteTemplateYaml } from './default';
+import { isIsoDate, parseTemplate, validateFields } from './schema';
 import { structureDocument } from './parse';
 import { scaffoldDoc } from '../editor/scaffold';
 
@@ -19,6 +19,29 @@ describe('template field icons and url type', () => {
 		const result = parseTemplate('fields:\n  - key: a\n    icon: nope\n');
 		expect(result.template?.fields[0].icon).toBeUndefined();
 		expect(result.error).toContain('nope');
+	});
+});
+
+describe('date fields', () => {
+	const template = parseTemplate('fields:\n  - key: when\n    label: When\n    type: date\n    icon: calendar\n').template;
+
+	it('reads the date type', () => {
+		expect(template?.fields[0]).toMatchObject({ type: 'date', icon: 'calendar' });
+	});
+
+	it('accepts real calendar dates only', () => {
+		expect(isIsoDate('2026-11-06')).toBe(true);
+		expect(isIsoDate('2024-02-29')).toBe(true);
+		expect(isIsoDate('2026-02-30')).toBe(false);
+		expect(isIsoDate('2026-13-01')).toBe(false);
+		expect(isIsoDate('11/06/2026')).toBe(false);
+		expect(isIsoDate('2026-1-6')).toBe(false);
+	});
+
+	it('warns about a value that is not a date and ignores an empty one', () => {
+		expect(validateFields(template, { when: 'soon' })).toHaveLength(1);
+		expect(validateFields(template, { when: '2026-11-06' })).toEqual([]);
+		expect(validateFields(template, {})).toEqual([]);
 	});
 });
 
@@ -71,6 +94,16 @@ describe('default template', () => {
 	});
 });
 
+describe('note template', () => {
+	it('parses without warnings and groups date with status', () => {
+		const result = parseTemplate(noteTemplateYaml);
+		expect(result.error).toBeUndefined();
+		expect(result.template?.name).toBe('Note');
+		const rows = getDefaultTemplate('note')!.layout.map((row) => row.map((field) => field.key));
+		expect(rows).toContainEqual(['date', 'status']);
+	});
+});
+
 describe('scaffoldDoc', () => {
 	it('has only a title and tags without a template', () => {
 		expect(scaffoldDoc(null)).not.toContain('##');
@@ -91,9 +124,21 @@ describe('section type inference', () => {
 });
 
 describe('template example copies', () => {
+	const normalize = (text: string) => text.replace(/\r\n/g, '\n');
+	const staticFile = (path: string) =>
+		readFileSync(new URL('../../../static/' + path, import.meta.url), 'utf8');
+
 	it('keeps the downloadable static example identical to the bundled default', () => {
-		const normalize = (text: string) => text.replace(/\r\n/g, '\n');
-		const staticCopy = readFileSync(new URL('../../../static/template.example.yml', import.meta.url), 'utf8');
-		expect(normalize(staticCopy)).toBe(normalize(defaultTemplateYaml));
+		expect(normalize(staticFile('template/recipe.yml'))).toBe(normalize(defaultTemplateYaml));
+	});
+
+	it('keeps the downloadable note template identical to the bundled one', () => {
+		expect(normalize(staticFile('template/note.yml'))).toBe(normalize(noteTemplateYaml));
+	});
+
+	it.each(['project', 'travel', 'fitness', 'journal'])('parses the %s example without warnings', (name) => {
+		const result = parseTemplate(staticFile('template/' + name + '.yml'));
+		expect(result.error).toBeUndefined();
+		expect(result.template).not.toBeNull();
 	});
 });

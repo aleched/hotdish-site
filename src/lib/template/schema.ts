@@ -4,7 +4,7 @@ import { isIconName, type IconName } from '$lib/ui/icon-names';
 
 export const TEMPLATE_PATH = '.hotdish/template.yml';
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'enum' | 'multi-enum' | 'url';
+export type FieldType = 'text' | 'number' | 'boolean' | 'enum' | 'multi-enum' | 'url' | 'date';
 
 export interface TemplateField {
 	key: string;
@@ -44,7 +44,7 @@ export interface TemplateParseResult {
 	error?: string;
 }
 
-const FIELD_TYPES: FieldType[] = ['text', 'number', 'boolean', 'enum', 'multi-enum', 'url'];
+const FIELD_TYPES: FieldType[] = ['text', 'number', 'boolean', 'enum', 'multi-enum', 'url', 'date'];
 const SECTION_TYPES: SectionType[] = ['list', 'ordered', 'text'];
 
 /**
@@ -202,6 +202,10 @@ export function validateFields(
 			issues.push({ key: field.key, message: `${field.label} should be a number.` });
 		}
 
+		if (field.type === 'date' && !isIsoDate(String(value))) {
+			issues.push({ key: field.key, message: ` should be a date (YYYY-MM-DD).` });
+		}
+
 		if ((field.type === 'enum' || field.type === 'multi-enum') && !field.allowCustom) {
 			const values = Array.isArray(value) ? value.map(String) : [String(value)];
 			const allowed = field.options.map((option) => option.toLowerCase());
@@ -217,6 +221,15 @@ export function validateFields(
 	}
 
 	return issues;
+}
+
+/** True for a real calendar date written as YYYY-MM-DD. */
+export function isIsoDate(value: string): boolean {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+	if (!match) return false;
+	const [year, month, day] = match.slice(1).map(Number);
+	const date = new Date(Date.UTC(year, month - 1, day));
+	return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 export function slugify(value: string): string {

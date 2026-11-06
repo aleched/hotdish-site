@@ -1,12 +1,17 @@
-import templateYaml from './template.example.yml?raw';
+import recipeYaml from './recipe.yml?raw';
+import noteYaml from './note.yml?raw';
 import { parseTemplate, type DocTemplate } from './schema';
 
-let cached: DocTemplate | null | undefined;
+export type DefaultTemplateId = 'recipe' | 'note';
 
-/** The shared example file doubles as the default for repositories without a template. Parsed lazily so messages are ready. */
-export function getDefaultTemplate(): DocTemplate | null {
-	if (cached === undefined) cached = parseTemplate(templateYaml).template;
-	return cached;
+const SOURCES: Record<DefaultTemplateId, string> = { recipe: recipeYaml, note: noteYaml };
+
+const cache = new Map<DefaultTemplateId, DocTemplate | null>();
+
+/** The shared example files double as the built-in defaults. Parsed lazily so messages are ready. */
+export function getDefaultTemplate(id: DefaultTemplateId = 'recipe'): DocTemplate | null {
+	if (!cache.has(id)) cache.set(id, parseTemplate(SOURCES[id]).template);
+	return cache.get(id) ?? null;
 }
 
-export { templateYaml as defaultTemplateYaml };
+export { recipeYaml as defaultTemplateYaml, noteYaml as noteTemplateYaml };

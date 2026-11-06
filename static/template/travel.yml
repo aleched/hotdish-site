@@ -1,0 +1,57 @@
+# Example Hotdish template: a trip.
+# Save as `.hotdish/template.yml` in your repository to use it. See recipe.yml for
+# every field option.
+
+version: 1
+name: Travel
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: true
+    options:
+      - beach
+      - city
+      - hiking
+      - road-trip
+      - family
+
+  - group:
+      - key: start
+        label: Start
+        type: date
+        icon: calendar
+
+      - key: end
+        label: End
+        type: date
+        icon: calendar
+
+  - group:
+      - key: location
+        label: Location
+        type: text
+        icon: pin
+
+      - key: budget
+        label: Budget
+        type: number
+        icon: money
+
+sections:
+  - id: itinerary
+    heading: Itinerary
+    type: ordered
+    repeatable: true
+    subheadingLabel: Day
+
+  - id: packing
+    heading: Packing
+    type: list
+    optional: true
+
+  - id: bookings
+    heading: Bookings
+    type: list
+    optional: true

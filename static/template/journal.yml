@@ -1,0 +1,43 @@
+# Example Hotdish template: a daily journal entry.
+# Save as `.hotdish/template.yml` in your repository to use it. See recipe.yml for
+# every field option.
+
+version: 1
+name: Journal
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: true
+    options:
+      - gratitude
+      - work
+      - family
+      - health
+
+  - group:
+      - key: date
+        label: Date
+        type: date
+        icon: calendar
+
+      - key: mood
+        label: Mood
+        type: enum
+        icon: heart
+        options:
+          - great
+          - good
+          - okay
+          - low
+
+sections:
+  - id: highlights
+    heading: Highlights
+    type: list
+
+  - id: reflection
+    heading: Reflection
+    type: text
+    optional: true

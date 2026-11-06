@@ -43,6 +43,15 @@ describe('parseFrontmatter', () => {
 		expect(output).toContain('customKey');
 	});
 
+	it('keeps an unquoted date as the same string through a round trip', () => {
+		const source = '---\ntitle: Trip\ndate: 2026-11-06\n---\n\nBody.\n';
+		const parsed = parseFrontmatter(source);
+		expect(parsed.data.date).toBe('2026-11-06');
+		const output = serializeFrontmatter(parsed.data, parsed.body);
+		expect(output).toContain('date: 2026-11-06\n');
+		expect(output).not.toContain('T00:00');
+	});
+
 	it('omits the block entirely when there are no fields', () => {
 		expect(serializeFrontmatter({}, 'Body.')).toBe('Body.');
 	});

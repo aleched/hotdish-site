@@ -122,7 +122,16 @@ encryption — it exists to keep URLs tidy, not to hide anything.
 ## Templates
 
 Add `.hotdish/template.yml` to your repository to get a structured editing form and a
-fixed vocabulary of tags. See `static/template.example.yml` for a complete example.
+fixed vocabulary of tags. See `static/template/recipe.yml` for a complete example.
+
+More example templates to copy from (each is a ready-to-use `.hotdish/template.yml`), also linked from the
+About section of the settings page:
+
+- [Recipe](static/template/recipe.yml) and [Note](static/template/note.yml), the two built-in defaults
+- [Project](static/template/project.yml)
+- [Journal](static/template/journal.yml)
+- [Travel](static/template/travel.yml)
+- [Fitness](static/template/fitness.yml)
 
 ```yaml
 version: 1
@@ -131,14 +140,14 @@ name: Document
 fields:
   - key: tags
     label: Tags
-    type: multi-enum      # text | number | boolean | enum | multi-enum | url
+    type: multi-enum      # text | number | boolean | enum | multi-enum | url | date
     allowCustom: false    # false restricts values to `options`
     options: [breakfast, dinner, dessert]
 
   - key: source
     label: Source
     type: url             # shown as a link in the viewer when the value is an http(s) URL
-    icon: link            # optional icon shown next to the field (names in src/lib/ui/icon-names.ts)
+    icon: link            # optional icon shown next to the field (browse names under About in settings)
 
   - group:                # fields in a group share one line of the form
       - key: prep_time
@@ -164,9 +173,12 @@ Important properties of templates:
   shown as unmatched. Unknown frontmatter keys survive a round trip.
 - **Violations are warnings, not errors.** A document that breaks the template still renders and
   still saves.
-- **A repository without a template uses the built-in default.** It is the same file as
-  `static/template.example.yml`. To opt out and edit plain markdown only, commit an empty
+- **A repository without a template uses the built-in default.** Settings choose between Recipe
+  (`static/template/recipe.yml`, the default), Note (`static/template/note.yml`) and None. To opt
+  out for a single repository and edit plain markdown only, commit an empty
   `.hotdish/template.yml`. A repository template replaces the default entirely.
+- **Dates are plain strings.** A `date` field is a date picker that stores `YYYY-MM-DD` text, so
+  frontmatter is read without YAML's timestamp type and dates are never rewritten as timestamps.
 - **A broken template degrades gracefully.** Invalid YAML disables the form, not the site: the
   editor falls back to plain markdown with no template.
 

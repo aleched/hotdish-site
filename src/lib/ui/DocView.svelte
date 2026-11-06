@@ -7,6 +7,8 @@
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import { strikeStore } from '$lib/store/strikes.svelte';
 	import { strikeKeys } from '$lib/markdown/strikes';
+	import { isIsoDate } from '$lib/template/schema';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	interface Props {
 		doc: Doc;
@@ -40,7 +42,8 @@
 		factFields
 			.filter((field) => has(doc.fields[field.key]))
 			.map((field) => {
-				const text = formatValue(doc.fields[field.key]).trim();
+				const raw = formatValue(doc.fields[field.key]).trim();
+				const text = field.type === 'date' ? formatDate(raw) : raw;
 				return {
 					key: field.key,
 					label: field.label,
@@ -131,8 +134,16 @@
 		);
 	}
 
+	/** Shows a YYYY-MM-DD date in the reader's locale. Built from parts so no timezone can shift the day. */
+	function formatDate(value: string): string {
+		if (!isIsoDate(value)) return value;
+		const [year, month, day] = value.split('-').map(Number);
+		return new Date(year, month - 1, day).toLocaleDateString(getLocale(), { dateStyle: 'medium' });
+	}
+
 	function formatValue(value: unknown): string {
 		if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
+		if (value instanceof Date) return value.toISOString().slice(0, 10);
 		if (typeof value === 'object') return JSON.stringify(value);
 		return String(value);
 	}

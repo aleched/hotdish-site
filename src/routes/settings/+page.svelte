@@ -3,14 +3,29 @@
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
 	import { strikeStore } from '$lib/store/strikes.svelte';
-	import { editorPrefs, EDITOR_MODES, MAX_RECENT_DAYS } from '$lib/store/editorPrefs.svelte';
+	import { editorPrefs, EDITOR_MODES, DEFAULT_TEMPLATES, MAX_RECENT_DAYS } from '$lib/store/editorPrefs.svelte';
 	import ModeToggle from '$lib/ui/ModeToggle.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import Flag from '$lib/ui/Flag.svelte';
 	import { FRACTIONS } from '$lib/editor/fractions';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, setLocale, languageOptions, nativeName, type Locale } from '$lib/i18n/locales';
+	import { ICON_NAMES } from '$lib/ui/icon-names';
 	import { tick } from 'svelte';
+
+	let copiedIcon = $state<string | null>(null);
+	let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+	async function copyIconName(name: string) {
+		try {
+			await navigator.clipboard.writeText(name);
+		} catch {
+			return;
+		}
+		copiedIcon = name;
+		clearTimeout(copiedTimer);
+		copiedTimer = setTimeout(() => (copiedIcon = null), 1200);
+	}
 
 	const PREVIEW_FRACTIONS = ['1/2', '2/3', '3/4'];
 
@@ -21,6 +36,15 @@
 	let languageQuery = $state('');
 	let languageEl = $state<HTMLElement>();
 	let languageSearchEl = $state<HTMLInputElement>();
+	const EXAMPLE_TEMPLATES: [string, string][] = [
+		['Recipe', '/template/recipe.yml'],
+		['Note', '/template/note.yml'],
+		['Project', '/template/project.yml'],
+		['Journal', '/template/journal.yml'],
+		['Travel', '/template/travel.yml'],
+		['Fitness', '/template/fitness.yml']
+	];
+
 	const languageResults = $derived(languageOptions(getLocale(), languageQuery));
 
 	async function toggleLanguage() {
@@ -223,6 +247,17 @@
 				/>
 			</span>
 		</div>
+		<div class="setting" title={m.settings_default_template_hint()}>
+			<span>{m.settings_default_template()}</span>
+			<span class="control">
+				<ModeToggle
+					items={DEFAULT_TEMPLATES}
+					value={editorPrefs.defaultTemplate}
+					label={m.settings_default_template_label()}
+					onselect={(choice) => editorPrefs.setDefaultTemplate(choice)}
+				/>
+			</span>
+		</div>
 		<div class="setting switch" title={m.settings_fractions_hint()}>
 			<span>{m.settings_fractions()}</span>
 			<span class="control">
@@ -302,14 +337,27 @@
 				<span>{m.about_share()}</span>
 			</li>
 			<li>
-				<Icon name="form" />
-				<span>{@html m.about_template({ link: `<a href="/template.example.yml" target="_blank" rel="noopener">${m.about_template_example()}</a>` })}</span>
-			</li>
-			<li>
 				<Icon name="clock" />
 				<span>{m.about_rate_limit()}</span>
 			</li>
+			<li>
+				<Icon name="form" />
+				<span>{@html m.about_template({ links: EXAMPLE_TEMPLATES.map(([name, href]) => `<a href="${href}" target="_blank" rel="noopener">${name}</a>`).join(', ') })}</span>
+			</li>
 		</ul>
+		<details class="icon-gallery">
+			<summary class="muted">{m.about_icons()}</summary>
+			<ul class="icon-grid">
+				{#each ICON_NAMES as name (name)}
+					<li>
+						<button type="button" class="icon-chip" onclick={() => copyIconName(name)} title={name}>
+							<Icon name={copiedIcon === name ? 'check' : name} size={18} />
+							<code>{name}</code>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</details>
 	</div>
 </section>
 
@@ -622,5 +670,30 @@
 	.about-list li :global(svg) {
 		flex: none;
 		margin-top: 0.25em;
+	}
+	.icon-gallery summary {
+		cursor: pointer;
+		font-size: 0.9rem;
+	}
+	.icon-grid {
+		list-style: none;
+		margin: 0.6rem 0 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+		gap: 0.35rem;
+	}
+	.icon-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.3rem 0.5rem;
+		font-size: 0.8rem;
+		text-align: left;
+	}
+	.icon-chip code {
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>

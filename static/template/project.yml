@@ -1,0 +1,64 @@
+# Example Hotdish template: a project or task note.
+# Save as `.hotdish/template.yml` in your repository to use it. See recipe.yml for
+# every field option.
+
+version: 1
+name: Project
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: true
+    options:
+      - work
+      - personal
+      - planning
+
+  - group:
+      - key: status
+        label: Status
+        type: enum
+        icon: flag
+        options:
+          - idea
+          - planned
+          - in progress
+          - blocked
+          - done
+
+      - key: priority
+        label: Priority
+        type: enum
+        icon: star
+        options:
+          - low
+          - medium
+          - high
+
+  - group:
+      - key: due
+        label: Due
+        type: date
+        icon: calendar
+
+      - key: owner
+        label: Owner
+        type: text
+        icon: user
+
+sections:
+  - id: goals
+    heading: Goals
+    type: list
+
+  - id: tasks
+    heading: Tasks
+    type: list
+    repeatable: true
+    subheadingLabel: Phase
+
+  - id: log
+    heading: Log
+    type: text
+    optional: true

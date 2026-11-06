@@ -1,0 +1,54 @@
+# Hotdish "Note" template, one of the built-in defaults for repositories without a template.
+# Copy to `.hotdish/template.yml` in your repository to customize it. See recipe.yml
+# for every field option.
+
+version: 1
+name: Note
+
+fields:
+  - key: tags
+    label: Tags
+    type: multi-enum
+    allowCustom: true
+    options:
+      - idea
+      - todo
+      - reference
+      - meeting
+      - journal
+
+  - group:
+      - key: date
+        label: Date
+        type: date
+        icon: calendar
+
+      - key: status
+        label: Status
+        type: enum
+        icon: flag
+        options:
+          - draft
+          - active
+          - done
+          - archived
+
+  - key: link
+    label: Link
+    type: url
+    icon: link
+
+sections:
+  - id: notes
+    heading: Notes
+    type: text
+
+  - id: action-items
+    heading: Action items
+    type: list
+    optional: true
+
+  - id: references
+    heading: References
+    type: list
+    optional: true
