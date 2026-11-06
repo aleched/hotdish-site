@@ -233,6 +233,10 @@
 		<path d="M.8 12.5c.2-1.8 1.2-2.8 2.5-2.8" />
 		<circle cx="13" cy="6.5" r="1.4" />
 		<path d="M15.2 12.5c-.2-1.8-1.2-2.8-2.5-2.8" />
+	{:else if name === 'unstrike'}
+		<path d="M2.5 5h11M2.5 11h6" />
+		<path d="M10.5 11h3" opacity=".4" />
+		<path d="M2 14L14 2" />
 	{/if}
 </svg>
 

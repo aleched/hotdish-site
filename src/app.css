@@ -387,6 +387,21 @@ pre {
 .prose li {
 	margin: 0.25em 0;
 }
+.prose li.strikable {
+	-webkit-tap-highlight-color: transparent;
+}
+.prose li.strikable > .strike-item {
+	cursor: pointer;
+}
+.prose li.strikable:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
+}
+.prose .strike-item.struck {
+	text-decoration: line-through;
+	opacity: 0.55;
+}
 .prose img {
 	max-width: 100%;
 	height: auto;

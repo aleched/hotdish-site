@@ -13,6 +13,7 @@
 	import FolderTree from '$lib/ui/FolderTree.svelte';
 	import DocView from '$lib/ui/DocView.svelte';
 	import ShareButton from '$lib/ui/ShareButton.svelte';
+	import { strikeStore } from '$lib/store/strikes.svelte';
 	import TagFilter from '$lib/ui/TagFilter.svelte';
 	import { findFolder, type TreeFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
@@ -368,6 +369,18 @@
 					bind:value={renameValue}
 				/>
 				<div class="head-actions">
+					{#if entry && !editing && doc && editorPrefs.strikeLists}
+						<button
+							type="button"
+							class="icon-button"
+							title={m.doc_clear_strikes()}
+							aria-label={m.doc_clear_strikes()}
+							disabled={strikeStore.keys.length === 0}
+							onclick={() => strikeStore.clear()}
+						>
+							<Icon name="unstrike" />
+						</button>
+					{/if}
 					{#if entry && !editing}
 						<div class="split">
 							<a

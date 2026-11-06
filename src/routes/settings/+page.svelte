@@ -2,6 +2,7 @@
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
+	import { strikeStore } from '$lib/store/strikes.svelte';
 	import { editorPrefs, EDITOR_MODES, MAX_RECENT_DAYS } from '$lib/store/editorPrefs.svelte';
 	import ModeToggle from '$lib/ui/ModeToggle.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
@@ -63,6 +64,7 @@
 		confirmingCache = false;
 		await clearBlobCache();
 		historyStore.reset();
+		strikeStore.reset();
 		cacheMessage = m.settings_cache_cleared();
 		setTimeout(() => (cacheMessage = null), 3000);
 	}
@@ -192,6 +194,22 @@
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
 				</label>
 				<span class="dice-preview" class:off={!editorPrefs.randomButton} aria-hidden="true"><Icon name="dice" /></span>
+			</span>
+		</div>
+		<div class="setting switch" title={m.settings_strike_hint()}>
+			<span>{m.settings_strike()}</span>
+			<span class="control">
+				<label class="toggle">
+					<input
+						type="checkbox"
+						role="switch"
+						aria-label={m.settings_strike_hint()}
+						checked={editorPrefs.strikeLists}
+						onchange={(event) => editorPrefs.setStrikeLists(event.currentTarget.checked)}
+					/>
+					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
+				</label>
+				<span class="strike-preview" class:off={!editorPrefs.strikeLists} aria-hidden="true"><s>abc</s></span>
 			</span>
 		</div>
 		<div class="setting">
@@ -431,6 +449,23 @@
 		pointer-events: none;
 	}
 	.dice-preview.off {
+		visibility: hidden;
+	}
+	.strike-preview {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.3rem;
+		box-sizing: border-box;
+		height: calc(1.9rem + 6px);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		color: var(--text-dim);
+		font-size: 0.85rem;
+		pointer-events: none;
+	}
+	.strike-preview.off {
 		visibility: hidden;
 	}
 	.fraction-preview {

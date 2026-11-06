@@ -31,6 +31,7 @@ class EditorPrefs {
 	spellcheck = $state(true);
 	fractions = $state(true);
 	randomButton = $state(true);
+	strikeLists = $state(true);
 	recentDays = $state<RecentDays>(7);
 
 	constructor() {
@@ -41,11 +42,13 @@ class EditorPrefs {
 				defaultMode?: string;
 				spellcheck?: boolean;
 				randomButton?: boolean;
+				strikeLists?: boolean;
 				recentDays?: number | null;
 			};
 			if (typeof parsed.fractions === 'boolean') this.fractions = parsed.fractions;
 			if (typeof parsed.spellcheck === 'boolean') this.spellcheck = parsed.spellcheck;
 			if (typeof parsed.randomButton === 'boolean') this.randomButton = parsed.randomButton;
+			if (typeof parsed.strikeLists === 'boolean') this.strikeLists = parsed.strikeLists;
 			if (parsed.recentDays === null) this.recentDays = null;
 			else if (typeof parsed.recentDays === 'number') this.recentDays = clampDays(parsed.recentDays);
 			const mode = EDITOR_MODES.find((item) => item.value === parsed.defaultMode);
@@ -75,6 +78,11 @@ class EditorPrefs {
 		this.persist();
 	}
 
+	setStrikeLists(enabled: boolean): void {
+		this.strikeLists = enabled;
+		this.persist();
+	}
+
 	/** An empty or non-numeric value (NaN) clears the limit. */
 	setRecentDays(days: number): void {
 		this.recentDays = clampDays(days);
@@ -90,6 +98,7 @@ class EditorPrefs {
 					defaultMode: this.defaultMode,
 					spellcheck: this.spellcheck,
 					randomButton: this.randomButton,
+					strikeLists: this.strikeLists,
 					recentDays: this.recentDays
 				})
 			);

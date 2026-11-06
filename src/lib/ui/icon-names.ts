@@ -64,7 +64,8 @@ export const ICON_NAMES = [
 	'lightbulb',
 	'warning',
 	'user',
-	'group'
+	'group',
+	'unstrike'
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

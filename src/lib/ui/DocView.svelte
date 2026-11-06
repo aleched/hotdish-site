@@ -4,6 +4,9 @@
 	import Icon from '$lib/ui/Icon.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
+	import { strikeStore } from '$lib/store/strikes.svelte';
+	import { strikeKeys } from '$lib/markdown/strikes';
 
 	interface Props {
 		doc: Doc;
@@ -53,6 +56,66 @@
 			([key, value]) => !handled.includes(key) && value !== null && value !== undefined
 		)
 	);
+
+	let prose = $state<HTMLElement>();
+	let items = $state<{ el: HTMLElement; key: string }[]>([]);
+
+	$effect(() => {
+		if (repoStore.ref) void strikeStore.load(repoStore.ref, doc.path);
+	});
+
+	// Wrap each list item's own content so striking a parent leaves nested items alone.
+	$effect(() => {
+		void html;
+		if (!prose || !editorPrefs.strikeLists) {
+			items = [];
+			return;
+		}
+		const lis = Array.from(prose.querySelectorAll<HTMLLIElement>('li'));
+		const spans = lis.map((li) => {
+			let span = li.querySelector<HTMLElement>(':scope > .strike-item');
+			if (!span) {
+				span = document.createElement('span');
+				span.className = 'strike-item';
+				const nested = Array.from(li.children).find((child) => /^(UL|OL)$/.test(child.tagName));
+				while (li.firstChild && li.firstChild !== nested) span.appendChild(li.firstChild);
+				li.insertBefore(span, li.firstChild);
+			}
+			li.classList.add('strikable');
+			li.tabIndex = 0;
+			return span;
+		});
+		const keys = strikeKeys(spans.map((span) => span.textContent ?? ''));
+		items = spans.map((el, index) => ({ el, key: keys[index] }));
+	});
+
+	$effect(() => {
+		for (const { el, key } of items) el.classList.toggle('struck', strikeStore.keys.includes(key));
+	});
+
+	function itemFor(target: EventTarget | null): { el: HTMLElement; key: string } | undefined {
+		const li = (target as HTMLElement | null)?.closest?.('li.strikable');
+		if (!li) return undefined;
+		return items.find((item) => item.el.parentElement === li);
+	}
+
+	function onProseClick(event: MouseEvent) {
+		if (!editorPrefs.strikeLists) return;
+		if ((event.target as HTMLElement).closest('a')) return;
+		if (window.getSelection()?.toString()) return;
+		// Only the text itself is tappable, not the empty space to its right.
+		const text = (event.target as HTMLElement).closest('.strike-item');
+		const item = items.find((entry) => entry.el === text);
+		if (item) void strikeStore.toggle(item.key);
+	}
+
+	function onProseKeydown(event: KeyboardEvent) {
+		if (!editorPrefs.strikeLists || (event.key !== ' ' && event.key !== 'Enter')) return;
+		if (!(event.target as HTMLElement).matches('li.strikable')) return;
+		event.preventDefault();
+		const item = itemFor(event.target);
+		if (item) void strikeStore.toggle(item.key);
+	}
 
 	/** The heading is rendered from the title, so avoid showing it twice. */
 	function stripLeadingTitle(body: string, title: string): string {
@@ -126,7 +189,8 @@
 		</p>
 	{/if}
 
-	<div class="prose">
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div class="prose" bind:this={prose} onclick={onProseClick} onkeydown={onProseKeydown}>
 		<!-- Sanitized by renderMarkdown; raw HTML in source markdown is dropped. -->
 		{@html html}
 	</div>
