@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { RecipeDoc } from '$lib/markdown/recipe';
+	import type { Doc } from '$lib/markdown/doc';
 	import { renderMarkdown } from '$lib/markdown/render';
 	import Icon from '$lib/ui/Icon.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
-		doc: RecipeDoc;
+		doc: Doc;
 	}
 
 	let { doc }: Props = $props();
@@ -16,7 +16,7 @@
 			return renderMarkdown(stripLeadingTitle(doc.body, doc.title));
 		} catch (error) {
 			return `<p class="banner error">${escapeHtml(
-				m.recipe_render_error({ error: error instanceof Error ? error.message : String(error) })
+				m.doc_render_error({ error: error instanceof Error ? error.message : String(error) })
 			)}</p>`;
 		}
 	});
@@ -73,7 +73,7 @@
 					type="button"
 					class="tag"
 					onclick={() => repoStore.toggleTag(tag)}
-					title={m.recipe_filter_by({ tag })}
+					title={m.doc_filter_by({ tag })}
 				>
 					{tag}
 				</button>
@@ -95,9 +95,9 @@
 
 	{#if source}
 		<div class="facts">
-			<span class="fact" title={m.recipe_source()}>
+			<span class="fact" title={m.doc_source()}>
 				<Icon name="link" size={16} />
-				<span class="visually-hidden">{m.recipe_source()}:</span>
+				<span class="visually-hidden">{m.doc_source()}:</span>
 				{#if isUrl}
 					<a href={source} target="_blank" rel="noopener noreferrer">{source}</a>
 				{:else}
@@ -120,7 +120,7 @@
 
 	{#if doc.frontmatterError}
 		<p class="banner warn">
-			{m.recipe_frontmatter_error({ error: doc.frontmatterError })}
+			{m.doc_frontmatter_error({ error: doc.frontmatterError })}
 		</p>
 	{/if}
 

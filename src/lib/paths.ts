@@ -63,7 +63,7 @@ export function baseName(path: string): string {
 	return path.slice(path.lastIndexOf('/') + 1);
 }
 
-/** Converts a repository path to the path used in recipe URLs (relative to the base path). */
+/** Converts a repository path to the path used in document URLs (relative to the base path). */
 export function toRelative(fullPath: string, basePath: string): string {
 	const base = basePath.replace(/^\/+|\/+$/g, '');
 	if (!base) return fullPath;

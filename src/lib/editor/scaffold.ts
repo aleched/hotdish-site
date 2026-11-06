@@ -1,8 +1,8 @@
 import { serializeFrontmatter } from '$lib/markdown/frontmatter';
-import type { RecipeTemplate } from '$lib/template/schema';
+import type { DocTemplate } from '$lib/template/schema';
 
-/** Starting markdown for a new recipe: empty frontmatter plus the template's required sections. */
-export function scaffoldRecipe(template: RecipeTemplate | null): string {
+/** Starting markdown for a new document: empty frontmatter plus the template's required sections. */
+export function scaffoldDoc(template: DocTemplate | null): string {
 	const fields: Record<string, unknown> = { title: '' };
 	if (!template || template.fields.some((field) => field.key === 'tags')) fields.tags = [];
 

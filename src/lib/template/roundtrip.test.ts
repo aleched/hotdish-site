@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { structureDocument } from './parse';
 import { serializeDocument } from './serialize';
-import { parseTemplate, validateFields, type RecipeTemplate } from './schema';
+import { parseTemplate, validateFields, type DocTemplate } from './schema';
 
 const TEMPLATE_YAML = `
 version: 1
@@ -31,7 +31,7 @@ sections:
     optional: true
 `;
 
-const template = parseTemplate(TEMPLATE_YAML).template as RecipeTemplate;
+const template = parseTemplate(TEMPLATE_YAML).template as DocTemplate;
 
 const RECIPE = `---
 title: Chocolate Cake

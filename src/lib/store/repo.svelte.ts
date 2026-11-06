@@ -3,9 +3,9 @@ import { m } from '$lib/paraglide/messages.js';
 import { createProvider } from '$lib/forge/factory';
 import { describeForgeError } from '$lib/forge/errors';
 import type { BlobEntry, ForgeProvider, RepoRef } from '$lib/forge/types';
-import { isMarkdownPath, parseRecipe, toSummary } from '$lib/markdown/recipe';
-import type { RecipeDoc, RecipeSummary } from '$lib/markdown/recipe';
-import { TEMPLATE_PATH, parseTemplate, type RecipeTemplate } from '$lib/template/schema';
+import { isMarkdownPath, parseDoc, toSummary } from '$lib/markdown/doc';
+import type { Doc, DocSummary } from '$lib/markdown/doc';
+import { TEMPLATE_PATH, parseTemplate, type DocTemplate } from '$lib/template/schema';
 import { buildTree, type TreeFolder } from '$lib/tree';
 import { mapWithConcurrency } from '$lib/util/concurrency';
 
@@ -31,7 +31,7 @@ class RepoStore {
 	error = $state<LoadError | null>(null);
 
 	entries = $state<BlobEntry[]>([]);
-	recipes = $state<RecipeSummary[]>([]);
+	docs = $state<DocSummary[]>([]);
 	truncated = $state(false);
 
 	indexing = $state(false);
@@ -39,7 +39,7 @@ class RepoStore {
 	indexTotal = $state(0);
 	skipped = $state<string[]>([]);
 
-	template = $state<RecipeTemplate | null>(null);
+	template = $state<DocTemplate | null>(null);
 	templateError = $state<string | null>(null);
 
 	query = $state('');
@@ -49,7 +49,7 @@ class RepoStore {
 	#provider = $state<ForgeProvider | null>(null);
 	#key: string | null = null;
 	#token: string | undefined;
-	#docs = new Map<string, RecipeDoc>();
+	#docs = new Map<string, Doc>();
 	#loadToken = 0;
 	#visibility: Promise<boolean | null> | null = null;
 
@@ -63,8 +63,8 @@ class RepoStore {
 
 	allTags = $derived.by(() => {
 		const counts = new Map<string, { label: string; count: number }>();
-		for (const recipe of this.recipes) {
-			for (const tag of recipe.tags) {
+		for (const doc of this.docs) {
+			for (const tag of doc.tags) {
 				const key = tag.toLowerCase();
 				const existing = counts.get(key);
 				if (existing) existing.count++;
@@ -76,12 +76,12 @@ class RepoStore {
 			.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 	});
 
-	/** Directories (relative to basePath) containing recipes, including ancestors, with recursive counts. */
+	/** Directories (relative to basePath) 	containing documents, including ancestors, with recursive counts. */
 	folders = $derived.by(() => {
 		const base = this.basePath.replace(/\/+$/, '');
 		const counts = new Map<string, number>();
-		for (const recipe of this.recipes) {
-			const rel = base && recipe.path.startsWith(`${base}/`) ? recipe.path.slice(base.length + 1) : recipe.path;
+			for (const doc of this.docs) {
+				const rel = base && doc.path.startsWith(`${base}/`) ? doc.path.slice(base.length + 1) : doc.path;
 			const parts = rel.split('/').slice(0, -1);
 			for (let i = 1; i <= parts.length; i++) {
 				const dir = parts.slice(0, i).join('/');
@@ -99,19 +99,19 @@ class RepoStore {
 		const wanted = this.selectedFolders.map((folder) => folder.toLowerCase());
 		const base = this.basePath.replace(/\/+$/, '');
 
-		return this.recipes.filter((recipe) => {
+		return this.docs.filter((doc) => {
 			if (wanted.length > 0) {
 				const rel =
-					base && recipe.path.startsWith(`${base}/`) ? recipe.path.slice(base.length + 1) : recipe.path;
+					base && doc.path.startsWith(`${base}/`) ? doc.path.slice(base.length + 1) : doc.path;
 				const folder = rel.split('/').slice(0, -1).join('/').toLowerCase();
 				// A selected folder includes its subfolders.
 				if (!wanted.some((name) => folder === name || folder.startsWith(`${name}/`))) return false;
 			}
-			if (needle && !recipe.haystack.includes(needle)) return false;
+			if (needle && !doc.haystack.includes(needle)) return false;
 			if (tags.length === 0) return true;
-			const recipeTags = recipe.tags.map((tag) => tag.toLowerCase());
+			const docTags = doc.tags.map((tag) => tag.toLowerCase());
 			// All selected tags must be present, which makes stacking filters narrowing.
-			return tags.every((tag) => recipeTags.includes(tag));
+			return tags.every((tag) => docTags.includes(tag));
 		});
 	});
 
@@ -152,7 +152,7 @@ class RepoStore {
 		this.status = 'loading';
 		this.error = null;
 		this.entries = [];
-		this.recipes = [];
+		this.docs = [];
 		this.skipped = [];
 		this.truncated = false;
 		this.indexed = 0;
@@ -221,16 +221,16 @@ class RepoStore {
 		return this.entries.find((entry) => entry.path === path);
 	}
 
-	/** Reads and parses a single recipe, preferring the content-addressed cache. */
-	async getDoc(path: string): Promise<RecipeDoc> {
+	/** Reads and parses a single document, preferring the content-addressed cache. */
+	async getDoc(path: string): Promise<Doc> {
 		const entry = this.entryFor(path);
-		if (!entry) throw new Error(m.error_recipe_not_found({ path }));
+		if (!entry) throw new Error(m.error_doc_not_found({ path }));
 
 		const cached = this.#docs.get(entry.sha);
 		if (cached) return cached;
 
 		const raw = await this.#readEntry(entry);
-		const doc = parseRecipe(entry, raw);
+		const doc = parseDoc(entry, raw);
 		this.#docs.set(entry.sha, doc);
 		return doc;
 	}
@@ -241,27 +241,27 @@ class RepoStore {
 		if (!entry) return;
 		if (newSha) entry.sha = newSha;
 
-		const doc = parseRecipe({ path, sha: entry.sha }, raw);
+		const doc = parseDoc({ path, sha: entry.sha }, raw);
 		this.#docs.set(entry.sha, doc);
 		void writeBlob(entry.sha, raw);
 
 		const summary = toSummary(doc);
-		const index = this.recipes.findIndex((recipe) => recipe.path === path);
-		if (index === -1) this.recipes = [...this.recipes, summary];
-		else this.recipes[index] = summary;
+		const index = this.docs.findIndex((item) => item.path === path);
+		if (index === -1) this.docs = [...this.docs, summary];
+		else this.docs[index] = summary;
 	}
 
 	registerNewFile(path: string, raw: string, sha: string): void {
 		const entry: BlobEntry = { path, sha };
 		this.entries = [...this.entries, entry];
-		const doc = parseRecipe(entry, raw);
+		const doc = parseDoc(entry, raw);
 		this.#docs.set(sha, doc);
-		this.recipes = [...this.recipes, toSummary(doc)];
+		this.docs = [...this.docs, toSummary(doc)];
 	}
 
 	removeFile(path: string): void {
 		this.entries = this.entries.filter((entry) => entry.path !== path);
-		this.recipes = this.recipes.filter((recipe) => recipe.path !== path);
+		this.docs = this.docs.filter((doc) => doc.path !== path);
 	}
 
 	/** Moves are content-preserving, so the blob sha (and cached raw text) carry over. */
@@ -273,19 +273,19 @@ class RepoStore {
 
 		const cached = this.#docs.get(sha);
 		if (cached) {
-			const doc = parseRecipe({ path: to, sha }, cached.raw);
+			const doc = parseDoc({ path: to, sha }, cached.raw);
 			this.#docs.set(sha, doc);
-			this.recipes = [...this.recipes.filter((recipe) => recipe.path !== from), toSummary(doc)];
+			this.docs = [...this.docs.filter((item) => item.path !== from), toSummary(doc)];
 		} else {
-			this.recipes = this.recipes.map((recipe) =>
-				recipe.path === from ? { ...recipe, path: to } : recipe
+			this.docs = this.docs.map((item) =>
+				item.path === from ? { ...item, path: to } : item
 			);
 		}
 	}
 
 	/**
 	 * Swaps in an authenticated provider without reloading, so adding a token mid-session
-	 * keeps the index and open recipe intact.
+	 * keeps the index and open document intact.
 	 */
 	setToken(token: string): void {
 		if (!this.ref) return;
@@ -311,14 +311,14 @@ class RepoStore {
 		this.indexTotal = entries.length;
 		this.indexed = 0;
 
-		const summaries: RecipeSummary[] = [];
+		const summaries: DocSummary[] = [];
 		const skipped: string[] = [];
 
 		await mapWithConcurrency(entries, PREFETCH_CONCURRENCY, async (entry) => {
 			if (loadToken !== this.#loadToken) return;
 			try {
 				const raw = await this.#readEntry(entry);
-				const doc = parseRecipe(entry, raw);
+				const doc = parseDoc(entry, raw);
 				this.#docs.set(entry.sha, doc);
 				summaries.push(toSummary(doc));
 			} catch {
@@ -328,13 +328,13 @@ class RepoStore {
 				if (loadToken === this.#loadToken) {
 					this.indexed++;
 					// Publish incrementally so results appear while indexing continues.
-					if (this.indexed % 10 === 0) this.recipes = [...summaries];
+					if (this.indexed % 10 === 0) this.docs = [...summaries];
 				}
 			}
 		});
 
 		if (loadToken !== this.#loadToken) return;
-		this.recipes = summaries;
+		this.docs = summaries;
 		this.skipped = skipped;
 		this.indexing = false;
 	}
@@ -351,7 +351,7 @@ class RepoStore {
 			this.templateError = result.error ?? null;
 		} catch (error) {
 			if (loadToken !== this.#loadToken) return;
-			// A template problem must never block browsing; recipes still render generically.
+			// A template problem must never block browsing; documents still render generically.
 			this.templateError = error instanceof Error ? error.message : String(error);
 		}
 		void gitRef;

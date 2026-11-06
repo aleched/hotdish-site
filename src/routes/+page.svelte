@@ -241,7 +241,7 @@
 									aria-label={m.home_url()}
 									aria-required="true"
 									bind:value={input}
-									placeholder="https://github.com/alice/recipes"
+									placeholder="https://github.com/alice/notes"
 									autocomplete="off"
 									spellcheck="false"
 									disabled={isDetectingForge}

@@ -1,7 +1,7 @@
 import type { BlobEntry } from '$lib/forge/types';
 import { parseFrontmatter, readStringList } from './frontmatter';
 
-export interface RecipeDoc {
+export interface Doc {
 	path: string;
 	sha: string;
 	title: string;
@@ -14,7 +14,7 @@ export interface RecipeDoc {
 }
 
 /** Lightweight record used for listings, search and tag filtering. */
-export interface RecipeSummary {
+export interface DocSummary {
 	path: string;
 	sha: string;
 	title: string;
@@ -23,7 +23,7 @@ export interface RecipeSummary {
 	haystack: string;
 }
 
-export function parseRecipe(entry: BlobEntry, raw: string): RecipeDoc {
+export function parseDoc(entry: BlobEntry, raw: string): Doc {
 	const { data, body, error } = parseFrontmatter(raw);
 
 	const title =
@@ -42,7 +42,7 @@ export function parseRecipe(entry: BlobEntry, raw: string): RecipeDoc {
 	};
 }
 
-export function toSummary(doc: RecipeDoc): RecipeSummary {
+export function toSummary(doc: Doc): DocSummary {
 	return {
 		path: doc.path,
 		sha: doc.sha,

@@ -2,7 +2,7 @@
 	import type { StructuredDoc, StructuredSection } from '$lib/template/parse';
 	import { itemsToLines, linesToItems } from '$lib/template/serialize';
 	import type {
-		RecipeTemplate,
+		DocTemplate,
 		SectionType,
 		TemplateField,
 		TemplateSection
@@ -16,7 +16,7 @@
 
 	interface Props {
 		doc: StructuredDoc;
-		template: RecipeTemplate | null;
+		template: DocTemplate | null;
 		/** Show only the title, tags and details card (used above the rich text editor). */
 		headerOnly?: boolean;
 	}
@@ -130,7 +130,7 @@
 	}
 
 	function placeholderFor(type: string): string {
-		if (type === 'ordered') return m.form_one_step();
+		if (type === 'ordered') return m.form_one_item();
 		if (type === 'list') return m.form_one_bullet();
 		return m.form_notes();
 	}
@@ -348,11 +348,11 @@
 			{/each}
 		</div>
 		<div class="input-icon">
-			<span class="field-icon" title={m.recipe_source()}><Icon name="link" size={18} /></span>
+			<span class="field-icon" title={m.doc_source()}><Icon name="link" size={18} /></span>
 			<input
 				type="text"
-				aria-label={m.recipe_source()}
-				title={m.recipe_source()}
+				aria-label={m.doc_source()}
+				title={m.doc_source()}
 				placeholder={m.form_source_placeholder()}
 				value={textValue('source')}
 				oninput={(event) => setField('source', event.currentTarget.value)}

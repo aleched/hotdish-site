@@ -56,7 +56,7 @@
 					class:open={navStore.open}
 					aria-label={m.nav_menu()}
 					aria-expanded={navStore.open}
-					aria-controls="recipe-nav"
+					aria-controls="doc-nav"
 					onclick={() => navStore.toggle()}
 				>
 					<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { RecipeDoc } from '$lib/markdown/recipe';
+	import type { Doc } from '$lib/markdown/doc';
 	import { commitMessages, parentFolder, toRelative } from '$lib/paths';
 	import { historyStore } from '$lib/store/history.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
@@ -8,7 +8,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
-		doc: RecipeDoc;
+		doc: Doc;
 		src: string;
 		onclose: () => void;
 	}

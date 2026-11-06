@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildTree, findFolder, type TreeFolder } from './tree';
-import type { RecipeSummary } from '$lib/markdown/recipe';
+import type { DocSummary } from '$lib/markdown/doc';
 
-function summary(path: string, title = path): RecipeSummary {
+function summary(path: string, title = path): DocSummary {
 	return { path, sha: path, title, tags: [], haystack: title.toLowerCase() };
 }
 
@@ -24,7 +24,7 @@ describe('buildTree', () => {
 		expect(dinner.children.map((child) => child.name)).toEqual(['italian', 'pasta.md']);
 	});
 
-	it('strips the base path so browsing starts at the recipe root', () => {
+	it('strips the base path so browsing starts at the document root', () => {
 		const tree = buildTree([summary('docs/recipes/dinner/pasta.md')], 'docs/recipes');
 		expect(tree.children.map((child) => child.name)).toEqual(['dinner']);
 		expect(tree.count).toBe(1);

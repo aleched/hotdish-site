@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { decodeSrc } from '$lib/share/codec';
 	import type { RepoRef } from '$lib/forge/types';
-	import type { RecipeDoc } from '$lib/markdown/recipe';
+	import type { Doc } from '$lib/markdown/doc';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
@@ -11,19 +11,19 @@
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Breadcrumbs from '$lib/ui/Breadcrumbs.svelte';
 	import FolderTree from '$lib/ui/FolderTree.svelte';
-	import RecipeView from '$lib/ui/RecipeView.svelte';
+	import DocView from '$lib/ui/DocView.svelte';
 	import ShareButton from '$lib/ui/ShareButton.svelte';
 	import TagFilter from '$lib/ui/TagFilter.svelte';
 	import { findFolder, type TreeFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
 	import { untrack } from 'svelte';
 	import { joinPath, parentFolder, toFull } from '$lib/paths';
-	import { parseRecipe } from '$lib/markdown/recipe';
-	import { scaffoldRecipe } from '$lib/editor/scaffold';
+	import { parseDoc } from '$lib/markdown/doc';
+	import { scaffoldDoc } from '$lib/editor/scaffold';
 	import Icon from '$lib/ui/Icon.svelte';
 	import EmptyState from '$lib/ui/EmptyState.svelte';
 	import Loading from '$lib/ui/Loading.svelte';
-	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
+	import DeleteDoc from '$lib/editor/DeleteDoc.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let src = $derived($page.params.src ?? '');
@@ -83,18 +83,18 @@
 		};
 	});
 
-	// Collapse the mobile menu after navigating to another recipe.
+	// Collapse the mobile menu after navigating to another document.
 	$effect(() => {
 		void path;
 		navStore.open = false;
 	});
 
-	let doc = $state<RecipeDoc | null>(null);
+	let doc = $state<Doc | null>(null);
 	let docError = $state<string | null>(null);
 	let docLoading = $state(false);
-	/** An unsaved new recipe being filled in; it is only committed when the editor saves it. */
-	let draft = $state<{ doc: RecipeDoc } | null>(null);
-	let recipeDialog = $state<'delete' | null>(null);
+	/** An unsaved new document being filled in; it is only committed when the editor saves it. */
+	let draft = $state<{ doc: Doc } | null>(null);
+	let docDialog = $state<'delete' | null>(null);
 	let renaming = $state(false);
 	let renameValue = $state('');
 	// Open state of every folder in the sidebar tree; a missing entry means closed.
@@ -163,12 +163,12 @@
 	let currentFolder = $derived(entry ? parentFolder(path) : folder ? path : '');
 
 	function openCreate(folderPath: string) {
-		const relative = joinPath(folderPath, 'new-recipe.md');
+		const relative = joinPath(folderPath, 'new-doc.md');
 		renameValue = relative;
 		draft = {
-			doc: parseRecipe(
+			doc: parseDoc(
 				{ path: toFull(relative, repoStore.basePath), sha: 'draft' },
-				scaffoldRecipe(repoStore.template)
+				scaffoldDoc(repoStore.template)
 			)
 		};
 	}
@@ -176,7 +176,7 @@
 	$effect(() => {
 		void path;
 		void editing;
-		recipeDialog = null;
+		docDialog = null;
 		draft = null;
 		renaming = false;
 		renameValue = path;
@@ -233,8 +233,8 @@
 			const full = repoStore.basePath
 				? `${repoStore.basePath.replace(/\/+$/, '')}/${item.path}`
 				: item.path;
-			const recipe = repoStore.recipes.find((candidate) => candidate.path === full);
-			return recipe ? [{ path: item.path, title: recipe.title, tags: recipe.tags }] : [];
+			const found = repoStore.docs.find((candidate) => candidate.path === full);
+			return found ? [{ path: item.path, title: found.title, tags: found.tags }] : [];
 		})
 	);
 
@@ -294,7 +294,7 @@
 	</div>
 {:else}
 	<div class="layout" class:menu-open={navStore.open}>
-		<aside id="recipe-nav" class="no-print" class:open={navStore.open}>
+		<aside id="doc-nav" class="no-print" class:open={navStore.open}>
 			<TagFilter />
 
 			{#if repoStore.indexing}
@@ -384,7 +384,7 @@
 								title={m.common_delete()}
 								aria-label={m.common_delete()}
 								disabled={!doc}
-								onclick={() => (recipeDialog = 'delete')}
+								onclick={() => (docDialog = 'delete')}
 							>
 								<Icon name="trash" />
 							</button>
@@ -393,8 +393,8 @@
 						<button
 							type="button"
 							class="icon-button"
-							title={m.repo_new_recipe()}
-							aria-label={m.repo_new_recipe()}
+							title={m.repo_new_doc()}
+							aria-label={m.repo_new_doc()}
 							onclick={() => openCreate(path)}
 						>
 							<Icon name="plus" />
@@ -411,7 +411,7 @@
 			{/if}
 
 			{#if draft}
-				{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
+				{#await loadWithTimeout(() => import('$lib/editor/DocEditor.svelte'))}
 					<Loading label={m.repo_loading_editor()} />
 				{:then module}
 					{@const Editor = module.default}
@@ -427,10 +427,10 @@
 				{#if docError}
 					<p class="banner error">{docError}</p>
 				{:else if docLoading && !doc}
-					<Loading label={m.repo_loading_recipe()} />
+					<Loading label={m.repo_loading_doc()} />
 				{:else if doc}
 					{#if editing}
-						{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
+						{#await loadWithTimeout(() => import('$lib/editor/DocEditor.svelte'))}
 							<Loading label={m.repo_loading_editor()} />
 						{:then module}
 							{@const Editor = module.default}
@@ -447,7 +447,7 @@
 							</p>
 						{/await}
 					{:else}
-						<RecipeView {doc} />
+						<DocView {doc} />
 					{/if}
 				{/if}
 			{:else if folder}
@@ -500,22 +500,16 @@
 										<span class="kind">
 											<Icon name={child.kind === 'folder' ? 'folder' : 'file'} size={18} />
 											{#if child.kind === 'folder'}
-												<span
-													class="count"
-													title={m.repo_recipe_count({ count: child.count })}
-													aria-label={m.repo_recipe_count({ count: child.count })}
-												>
-													{child.count}
-												</span>
+												<span class="count">{child.count}</span>
 											{/if}
 										</span>
 										<span class="label">
-											{child.kind === 'folder' ? child.name : child.recipe.title}
+											{child.kind === 'folder' ? child.name : child.doc.title}
 										</span>
 									</span>
-									{#if child.kind !== 'folder' && child.recipe.tags.length > 0}
+									{#if child.kind !== 'folder' && child.doc.tags.length > 0}
 										<span class="sub tags">
-											{#each child.recipe.tags.slice(0, 4) as tag (tag)}
+											{#each child.doc.tags.slice(0, 4) as tag (tag)}
 												<span class="tag">{tag}</span>
 											{/each}
 										</span>
@@ -556,8 +550,8 @@
 		</section>
 	</div>
 
-	{#if doc && entry && recipeDialog === 'delete'}
-		<DeleteRecipe {doc} {src} onclose={() => (recipeDialog = null)} />
+	{#if doc && entry && 	docDialog === 'delete'}
+			<DeleteDoc {doc} {src} onclose={() => (docDialog = null)} />
 	{/if}
 {/if}
 

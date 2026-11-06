@@ -58,7 +58,7 @@
 					class:active={currentPath === child.path}
 					href={`/r/${src}/${encodeURI(child.path)}`}
 				>
-					{child.recipe.title}
+					{child.doc.title}
 				</a>
 			</li>
 		{/if}

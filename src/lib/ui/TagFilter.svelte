@@ -17,11 +17,11 @@
 
 	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean($page.params.src));
 
-	/** Opens a random recipe from the current (filtered) list, avoiding the one already open. */
-	function randomRecipe() {
+	/** Opens a random document from the current (filtered) list, avoiding the one already open. */
+	function randomDoc() {
 		const current = decodeURI($page.params.path ?? '');
 		const pool = repoStore.filtered
-			.map((recipe) => toRelative(recipe.path, repoStore.basePath))
+			.map((doc) => toRelative(doc.path, repoStore.basePath))
 			.filter((path) => path !== current);
 		if (pool.length === 0) return;
 		const pick = pool[Math.floor(Math.random() * pool.length)];
@@ -88,7 +88,7 @@
 				aria-label={m.filter_random()}
 				title={m.filter_random()}
 				disabled={!canRandom}
-				onclick={randomRecipe}
+				onclick={randomDoc}
 			>
 				<Icon name="dice" />
 			</button>
@@ -211,7 +211,7 @@
 
 	{#if repoStore.isFiltering}
 		<p class="status muted">
-			{m.filter_status({ shown: repoStore.filtered.length, total: repoStore.recipes.length })}
+			{m.filter_status({ shown: repoStore.filtered.length, total: repoStore.docs.length })}
 		</p>
 	{/if}
 </div>

@@ -16,7 +16,7 @@ const FRONTMATTER_PATTERN = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)
 
 /**
  * Splits YAML frontmatter from a markdown document. A malformed block is reported rather than
- * thrown so a broken header never prevents a recipe from rendering.
+ * thrown so a broken header never prevents a document from rendering.
  */
 export function parseFrontmatter(source: string): Frontmatter {
 	const match = FRONTMATTER_PATTERN.exec(source);

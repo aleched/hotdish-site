@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dumpFrontmatter, parseFrontmatter, parseYamlMapping, serializeFrontmatter } from '$lib/markdown/frontmatter';
-	import type { RecipeDoc } from '$lib/markdown/recipe';
+	import type { Doc } from '$lib/markdown/doc';
 	import { renderMarkdown } from '$lib/markdown/render';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { structureDocument, type StructuredDoc } from '$lib/template/parse';
@@ -28,7 +28,7 @@
 	}
 
 	interface Props {
-		doc: RecipeDoc;
+		doc: Doc;
 		/** An unsaved draft: saving creates the file, and nothing exists in the repository before. */
 		isNew?: boolean;
 		/** Path the file should have after saving, relative to the base path; differs when renamed. */
@@ -58,7 +58,7 @@
 		return repoStore.entryFor(full) ? m.editor_already_exists({ path: full }) : null;
 	});
 
-	// A new recipe's file name follows its title until the name is edited by hand.
+	// A new document's file name follows its title until the name is edited by hand.
 	// svelte-ignore state_referenced_locally
 	let lastAuto = targetRelative;
 	$effect(() => {
@@ -67,7 +67,7 @@
 		const current = untrack(() => targetRelative);
 		if (current !== lastAuto) return;
 		const folder = parentFolder((current ?? '').replace(/\\/g, '/'));
-		const next = joinPath(folder, `${slugify(title) || 'new-recipe'}.md`);
+		const next = joinPath(folder, `${slugify(title) || 'new-doc'}.md`);
 		lastAuto = next;
 		targetRelative = next;
 	});
@@ -432,7 +432,7 @@
 
 	{#if confirming}
 		<CommitDialog
-			title={isNew ? m.editor_create_recipe() : m.editor_save_changes()}
+			title={isNew ? m.editor_create_doc() : m.editor_save_changes()}
 			bind:message
 			busy={saving}
 			error={saveError}

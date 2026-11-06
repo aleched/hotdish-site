@@ -8,7 +8,7 @@ export interface RepoRef {
 	repo: string;
 	/** Branch, tag or commit. Resolved lazily when omitted. */
 	ref?: string;
-	/** Optional sub-folder within the repo that holds recipes. */
+	/** Optional sub-folder within the repo that holds documents. */
 	basePath?: string;
 }
 

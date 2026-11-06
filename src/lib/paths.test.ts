@@ -66,7 +66,7 @@ describe('path parts', () => {
 });
 
 describe('commitMessages', () => {
-	it('prefills with the recipe title', () => {
+	it('prefills with the document title', () => {
 		expect(commitMessages.create('Pasta')).toBe('Create Pasta');
 		expect(commitMessages.update('Pasta')).toBe('Update Pasta');
 		expect(commitMessages.delete('Pasta')).toBe('Delete Pasta');

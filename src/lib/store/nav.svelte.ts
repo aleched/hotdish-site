@@ -1,5 +1,5 @@
 class NavStore {
-	/** Whether the recipe browser drawer is open on narrow screens. */
+	/** Whether the document browser drawer is open on narrow screens. */
 	open = $state(false);
 
 	toggle() {

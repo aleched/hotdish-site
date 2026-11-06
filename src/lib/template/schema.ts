@@ -27,7 +27,7 @@ export interface TemplateSection {
 	optional: boolean;
 }
 
-export interface RecipeTemplate {
+export interface DocTemplate {
 	version: number;
 	name: string;
 	fields: TemplateField[];
@@ -35,7 +35,7 @@ export interface RecipeTemplate {
 }
 
 export interface TemplateParseResult {
-	template: RecipeTemplate | null;
+	template: DocTemplate | null;
 	/** Populated when the template was unusable or partially invalid. */
 	error?: string;
 }
@@ -114,9 +114,9 @@ export function parseTemplate(raw: string): TemplateParseResult {
 		return { template: null, error: m.template_error_empty() };
 	}
 
-	const template: RecipeTemplate = {
+	const template: DocTemplate = {
 		version: typeof source.version === 'number' ? source.version : 1,
-		name: asString(source.name) ?? 'Recipe',
+		name: asString(source.name) ?? 'Document',
 		fields,
 		sections
 	};
@@ -125,7 +125,7 @@ export function parseTemplate(raw: string): TemplateParseResult {
 }
 
 export function findSectionByHeading(
-	template: RecipeTemplate | null,
+	template: DocTemplate | null,
 	heading: string
 ): TemplateSection | undefined {
 	if (!template) return undefined;
@@ -138,9 +138,9 @@ export interface FieldIssue {
 	message: string;
 }
 
-/** Validation produces warnings only — a recipe that violates the template still renders. */
+/** Validation produces warnings only — a document that violates the template still renders. */
 export function validateFields(
-	template: RecipeTemplate | null,
+	template: DocTemplate | null,
 	fields: Record<string, unknown>
 ): FieldIssue[] {
 	if (!template) return [];

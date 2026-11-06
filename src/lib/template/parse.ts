@@ -1,5 +1,5 @@
 import { parseFrontmatter } from '$lib/markdown/frontmatter';
-import { findSectionByHeading, type RecipeTemplate, type SectionType } from './schema';
+import { findSectionByHeading, type DocTemplate, type SectionType } from './schema';
 
 export interface StructuredBlock {
 	/** `###` sub-heading, e.g. "Cake batter". Absent for a section's leading block. */
@@ -37,7 +37,7 @@ const ORDERED = /^(\s*)\d+[.)]\s+(.*)$/;
  * template section is kept verbatim as an unmatched section rather than dropped — files may be
  * hand-written or produced by other tools, and silent data loss is the worst possible outcome.
  */
-export function structureDocument(raw: string, template: RecipeTemplate | null): StructuredDoc {
+export function structureDocument(raw: string, template: DocTemplate | null): StructuredDoc {
 	const { data, body, error } = parseFrontmatter(raw);
 	const { preamble, parts } = splitByHeading(body, 2);
 

@@ -1,6 +1,6 @@
 # Hotdish
 
-A static site for browsing, searching and editing recipes that live as markdown files in a git
+A static site for browsing, searching and editing notes and documents that live as markdown files in a git
 repository. There are no accounts and no server-side state: you point it at a repository, it
 reads the files directly from the forge's API in your browser, and renders them.
 
@@ -9,7 +9,7 @@ reads the files directly from the forge's API in your browser, and renders them.
 - **Hosting:** Cloudflare Pages (static output, no functions required).
 - **Editing:** a Milkdown/Crepe WYSIWYG, a markdown source view, and an optional template-driven
   form — all writing idiomatic markdown back to your repository.
-- **Managing recipes:** create, delete, and move or rename recipes between folders (new folders are
+- **Managing documents:** create, delete, and move or rename documents between folders (new folders are
   created as needed). Every change is a commit with an editable message.
 
 ## Getting started
@@ -44,14 +44,14 @@ Cloudflare and no secrets ever reach the edge.
 
 - The whole file tree is fetched in as few API calls as the forge allows (one recursive call on
   GitHub and Gitea; paginated on GitLab).
-- Every `.md` / `.markdown` file outside dotted folders becomes a recipe. The folder structure
+- Every `.md` / `.markdown` file outside dotted folders becomes a document. The folder structure
   is mirrored exactly, so the repository stays useful without this site.
 - File content is cached in IndexedDB keyed by its **git blob id**. Because a blob id changes if
   and only if the content changes, the cache never goes stale and never needs a TTL.
 - Frontmatter `tags` populate the tag filter; `title` (or the first `#` heading, or the file
-  name) becomes the recipe title.
+  name)   becomes the document title.
 
-A minimal recipe:
+  A minimal document:
 
 ```markdown
 ---
@@ -75,7 +75,7 @@ servings: 8
 
 A token is only needed for private repositories or for making changes.
 
-- If you create, edit, move or delete a recipe without a token, the site asks for one, checks it
+- If you create, edit, move or delete a document without a token, the site asks for one, checks it
   against the forge, saves it to that repository's profile and then continues with the action.
 - Tokens are stored in `localStorage` under a named profile and sent only to the forge they
   belong to.
@@ -94,7 +94,7 @@ Recommended scopes:
 | GitLab | Project access token with `read_repository` (or `write_repository`) |
 | Gitea | Token limited to repository read (or write) |
 
-Moving a recipe is a single commit. On Gitea / Forgejo this needs version 1.20 or newer.
+Moving a document is a single commit. On Gitea / Forgejo this needs version 1.20 or newer.
 
 Repository URLs are used to determine the host and known forge. For self-hosted instances, the
 site probes public forge version APIs; if a probe is blocked or inconclusive, select the forge
@@ -121,12 +121,12 @@ encryption — it exists to keep URLs tidy, not to hide anything.
 
 ## Templates
 
-Add `.hotdish/template.yml` to your recipe repository to get a structured editing form and a
+Add `.hotdish/template.yml` to your repository to get a structured editing form and a
 fixed vocabulary of tags. See `static/template.example.yml` for a complete example.
 
 ```yaml
 version: 1
-name: Recipe
+name: Document
 
 fields:
   - key: tags
@@ -149,14 +149,14 @@ Important properties of templates:
   are `-` bullets and `ordered` sections are `1.` lists.
 - **Nothing is ever dropped.** Sections the template does not describe are kept verbatim and
   shown as unmatched. Unknown frontmatter keys survive a round trip.
-- **Violations are warnings, not errors.** A recipe that breaks the template still renders and
+- **Violations are warnings, not errors.** A document that breaks the template still renders and
   still saves.
 - **A repository without a template works fine.** The editor falls back to inferring each
   section's style from its existing content.
 - **A broken template degrades gracefully.** Invalid YAML disables the form, not the site.
 
 Section order in the file is canonical — the template lists which sections exist, not the order
-they must appear in, so a recipe can place its own boxes.
+they must appear in, so a document can place its own boxes.
 
 ## Safety
 
@@ -177,7 +177,7 @@ The site rewrites files you own, so content loss is treated as the worst possibl
 
 ```
 src/lib/forge/      GitHub / GitLab / Gitea providers behind one interface
-src/lib/markdown/   frontmatter, rendering, recipe parsing
+src/lib/markdown/   frontmatter, rendering, document parsing
 src/lib/template/   template schema, document structuring, serialization
 src/lib/store/      repository state and saved profiles (Svelte 5 runes)
 src/lib/cache/      content-addressed blob cache

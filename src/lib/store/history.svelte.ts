@@ -3,7 +3,7 @@ import { get, set } from 'idb-keyval';
 import type { RepoRef } from '$lib/forge/types';
 
 export interface HistoryItem {
-	/** Path relative to the repository's base path, as used in recipe URLs. */
+	/** Path relative to the repository's base path, as used in document URLs. */
 	path: string;
 	title: string;
 	openedAt: number;
@@ -15,7 +15,7 @@ function historyKey(ref: RepoRef): string {
 	return ['history', ref.kind, ref.host, ref.owner, ref.repo].join(':');
 }
 
-/** Most-recently-opened recipes for the current repository, persisted in IndexedDB with the cache. */
+/** Most-recently-opened documents for the current repository, persisted in IndexedDB with the cache. */
 class HistoryStore {
 	items = $state<HistoryItem[]>([]);
 	#key: string | null = null;

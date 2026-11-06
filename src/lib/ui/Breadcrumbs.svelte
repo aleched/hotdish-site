@@ -14,7 +14,7 @@
 		/** Shows a pencil that turns the part after the repository name into a text box. */
 		renamable?: boolean;
 		renaming?: boolean;
-		/** Keeps the text box open without a pencil, for a recipe that has no path yet. */
+		/** Keeps the text box open without a pencil, for a document that has no path yet. */
 		forceEdit?: boolean;
 		/** The edited path, relative to the repository base path. */
 		value?: string;
