@@ -67,7 +67,7 @@
 				</button>
 			{/if}
 			<a class="brand" href="/">
-				<span class="mark" aria-hidden="true">🥘</span>
+				<img class="mark" src="/hotdish-logo.png" alt="" width="36" height="36" />
 				<span>Hotdish</span>
 			</a>
 
@@ -137,7 +137,9 @@
 	}
 
 	.mark {
-		font-size: 1.25rem;
+		display: block;
+		width: 36px;
+		height: 36px;
 	}
 
 	.repo {
