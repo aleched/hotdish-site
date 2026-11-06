@@ -501,10 +501,10 @@
 
 	{#if mode === 'form' && structured}
 		{#key resetKey}
-			<StructuredForm doc={structured} template={repoStore.template} />
+			<StructuredForm doc={structured} template={repoStore.template} path={isNew ? null : doc.path} />
 		{/key}
 	{:else if mode === 'rich'}
-		<StructuredForm doc={richHeader} template={repoStore.template} headerOnly />
+		<StructuredForm doc={richHeader} template={repoStore.template} path={isNew ? null : doc.path} headerOnly />
 		{#key resetKey}
 			<Milkdown bind:this={richEditor} value={body} onchange={(markdown) => (body = markdown)} />
 		{/key}

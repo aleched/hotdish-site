@@ -12,17 +12,29 @@
 	import Icon from '$lib/ui/Icon.svelte';
 	import type { IconName } from '$lib/ui/icon-names';
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
-	import TagInput from '$lib/ui/TagInput.svelte';
+	import ChipPicker from '$lib/ui/ChipPicker.svelte';
+	import { repoStore } from '$lib/store/repo.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		doc: StructuredDoc;
 		template: DocTemplate | null;
+		/** Path of the document being edited, or null for a new one. */
+		path?: string | null;
 		/** Show only the title, tags and details card (used above the rich text editor). */
 		headerOnly?: boolean;
 	}
 
-	let { doc, template, headerOnly = false }: Props = $props();
+	let { doc, template, path = null, headerOnly = false }: Props = $props();
+
+	/** Tags used by other documents; this one's saved tags are left out so a deselected tag can drop away. */
+	let repoTags = $derived(
+		repoStore.docs.filter((item) => item.path !== path).flatMap((item) => item.tags)
+	);
+
+	function chipOptions(field: TemplateField): string[] {
+		return field.key === 'tags' ? [...field.options, ...repoTags] : field.options;
+	}
 
 	// svelte-ignore state_referenced_locally
 	let introOpen = $state(Boolean(doc.preamble.trim()));
@@ -81,13 +93,6 @@
 	/** Single-line fields with an icon drop the visible label and use it as the placeholder instead. */
 	function compact(field: TemplateField): boolean {
 		return field.key === 'tags' || (!!field.icon && ['text', 'number', 'url', 'date', 'enum'].includes(field.type));
-	}
-
-	function toggleListValue(key: string, option: string) {
-		const current = listValue(key);
-		const index = current.findIndex((item) => item.toLowerCase() === option.toLowerCase());
-		const next = index === -1 ? [...current, option] : current.filter((_, i) => i !== index);
-		setField(key, next);
 	}
 
 	function addSection(section: TemplateSection) {
@@ -231,7 +236,11 @@
 
 		{#if template}
 			{#snippet fieldBlock(field: TemplateField)}
-					<div class="field" class:with-icon={!!fieldIcon(field) && compact(field)}>
+					<div
+						class="field"
+						class:with-icon={!!fieldIcon(field) && compact(field)}
+						class:chip-field={field.type === 'multi-enum'}
+					>
 						{#if fieldIcon(field) && compact(field)}
 							<span class="field-icon" title={field.key === 'tags' ? m.filter_tags() : field.label}>
 								<Icon name={fieldIcon(field)!} size={field.key === 'tags' ? 20 : 18} />
@@ -243,27 +252,14 @@
 						</label>
 
 						{#if field.type === 'multi-enum'}
-							<div class="options" id={fieldInputId(field)}>
-								{#each field.options as option (option)}
-									<button
-										type="button"
-										class="tag selectable"
-										class:selected={listValue(field.key).some(
-											(item) => item.toLowerCase() === option.toLowerCase()
-										)}
-										onclick={() => toggleListValue(field.key, option)}
-									>
-										{option}
-									</button>
-								{/each}
-							</div>
-							{#if field.allowCustom}
-								<TagInput
-									values={listValue(field.key)}
-									placeholder={m.form_custom_value()}
-									onchange={(values) => setField(field.key, values)}
-								/>
-							{/if}
+							<ChipPicker
+								id={fieldInputId(field)}
+								values={listValue(field.key)}
+								options={chipOptions(field)}
+								allowCustom={field.allowCustom}
+								addLabel={field.key === 'tags' ? m.tag_add() : m.form_custom_value()}
+								onchange={(values) => setField(field.key, values)}
+							/>
 						{:else if field.type === 'enum'}
 							<select
 								id={fieldInputId(field)}
@@ -343,13 +339,15 @@
 		{/if}
 
 		{#if !template || !template.fields.some((field) => field.key === 'tags')}
-			<div class="field with-icon">
+			<div class="field with-icon chip-field">
 				<span class="field-icon" title={m.filter_tags()}><Icon name="tag" size={20} /></span>
 				<div class="field-body">
 					<label class="visually-hidden" for="field-tags">{m.filter_tags()}</label>
-					<TagInput
+					<ChipPicker
 						id="field-tags"
 						values={listValue('tags')}
+						options={repoTags}
+						addLabel={m.tag_add()}
 						onchange={(values) => setField('tags', values)}
 					/>
 				</div>
@@ -620,6 +618,12 @@
 		height: calc(1.6rem + 0.9rem + 2px);
 		color: var(--text-dim);
 	}
+	.field.with-icon.chip-field {
+		align-items: center;
+	}
+	.chip-field .field-icon {
+		height: auto;
+	}
 	.label {
 		font-size: 0.85rem;
 		font-weight: 600;
@@ -631,23 +635,6 @@
 
 	.checkbox {
 		width: auto;
-	}
-
-	.options {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem;
-	}
-	.selectable {
-		cursor: pointer;
-		width: auto;
-		font-size: 0.78rem;
-		padding: 0.12rem 0.55rem;
-	}
-	.selectable.selected {
-		background: var(--accent);
-		border-color: var(--accent);
-		color: #fff;
 	}
 
 	.section-head {

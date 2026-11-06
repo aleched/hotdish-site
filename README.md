@@ -124,6 +124,10 @@ encryption — it exists to keep URLs tidy, not to hide anything.
 Add `.hotdish/template.yml` to your repository to get a structured editing form and a
 fixed vocabulary of tags. See `static/template/recipe.yml` for a complete example.
 
+In the form, `multi-enum` fields show their options as chips in alphabetical order; tap a chip to
+select it, or use the green plus chip to type a new value. The `tags` field also offers every tag
+already used elsewhere in the repository.
+
 More example templates to copy from (each is a ready-to-use `.hotdish/template.yml`), also linked from the
 About section of the settings page:
 

@@ -10,9 +10,11 @@
 	const MAX_COLLAPSED = 12;
 	const popoverId = 'filter-popover';
 
-	let showAll = $state(false);
+	let showAllFolders = $state(false);
+	let showAllTags = $state(false);
 	let open = $state(false);
 	let folderQuery = $state('');
+	let tagQuery = $state('');
 	let root: HTMLDivElement | undefined = $state();
 
 	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean($page.params.src));
@@ -27,14 +29,20 @@
 		const pick = pool[Math.floor(Math.random() * pool.length)];
 		void goto(`/r/${$page.params.src}/${encodeURI(pick)}`);
 	}
-	let tags = $derived(repoStore.allTags);
-	let visible = $derived(showAll ? tags : tags.slice(0, MAX_COLLAPSED));
+	let tags = $derived.by(() => {
+		const needle = tagQuery.trim().toLowerCase();
+		return needle
+			? repoStore.allTags.filter((tag) => tag.label.toLowerCase().includes(needle))
+			: repoStore.allTags;
+	});
 	let folders = $derived.by(() => {
 		const needle = folderQuery.trim().toLowerCase();
 		return needle
 			? repoStore.folders.filter((folder) => folder.path.toLowerCase().includes(needle))
 			: repoStore.folders;
 	});
+	let visibleTags = $derived(showAllTags ? tags : tags.slice(0, MAX_COLLAPSED));
+	let visibleFolders = $derived(showAllFolders ? folders : folders.slice(0, MAX_COLLAPSED));
 	let activeCount = $derived(repoStore.selectedTags.length + repoStore.selectedFolders.length);
 
 	function isSelected(key: string): boolean {
@@ -54,6 +62,19 @@
 </script>
 
 <svelte:window onclick={onwindowclick} />
+
+{#snippet toggle(expanded: boolean, onclick: () => void)}
+	<button
+		type="button"
+		class="icon-button expand-toggle"
+		title={expanded ? m.filter_show_fewer() : m.filter_show_all()}
+		aria-label={expanded ? m.filter_show_fewer() : m.filter_show_all()}
+		aria-expanded={expanded}
+		{onclick}
+	>
+		<Icon name={expanded ? 'collapse' : 'expand'} size={14} />
+	</button>
+{/snippet}
 
 <div class="filters no-print" bind:this={root} {onkeydown} role="presentation">
 	<div class="row">
@@ -98,45 +119,59 @@
 	{#if open}
 		<div class="popover" id={popoverId}>
 			<section>
-				<h3 title={m.filter_folders()}><Icon name="folder" /><span class="visually-hidden">{m.filter_folders()}</span></h3>
-				{#if repoStore.folders.length === 0}
-					<p class="muted small" title={m.filter_no_folders()} aria-label={m.filter_no_folders()}><Icon name="folder" size={18} /></p>
-				{:else}
-					{#if repoStore.folders.length > 8}
+				<div class="section-head">
+					<h3 title={m.filter_folders()}><Icon name="folder" /><span class="visually-hidden">{m.filter_folders()}</span></h3>
+					{#if repoStore.folders.length > 0}
 						<input
 							type="search"
-							class="folder-search"
+							class="section-search"
 							placeholder={m.filter_find_folder_placeholder()}
 							aria-label={m.filter_find_folder()}
 							bind:value={folderQuery}
 							autocomplete="off"
 						/>
 					{/if}
-					<ul class="folder-list">
-						{#each folders as folder (folder.path)}
-							<li>
-								<label>
-									<input
-										type="checkbox"
-										checked={repoStore.selectedFolders.includes(folder.path)}
-										onchange={() => repoStore.toggleFolder(folder.path)}
-									/>
-									<span class="path">{folder.path}</span>
-									<span class="count">{folder.count}</span>
-								</label>
-							</li>
+				</div>
+				{#if repoStore.folders.length === 0}
+					<p class="muted small" title={m.filter_no_folders()} aria-label={m.filter_no_folders()}><Icon name="folder" size={18} /></p>
+				{:else}
+					<div class="tags">
+						{#each visibleFolders as folder (folder.path)}
+							<button
+								type="button"
+								class="tag selectable"
+								class:selected={repoStore.selectedFolders.includes(folder.path)}
+								aria-pressed={repoStore.selectedFolders.includes(folder.path)}
+								onclick={() => repoStore.toggleFolder(folder.path)}
+							>
+								<span class="path">{folder.path}</span>
+								<span class="count">{folder.count}</span>
+							</button>
 						{:else}
-							<li class="muted small" title={m.filter_no_matching_folders()} aria-label={m.filter_no_matching_folders()}><Icon name="search" size={18} /></li>
+							<p class="muted small" title={m.filter_no_matching_folders()} aria-label={m.filter_no_matching_folders()}><Icon name="search" size={18} /></p>
 						{/each}
-					</ul>
+					</div>
+					{#if folders.length > MAX_COLLAPSED}
+						{@render toggle(showAllFolders, () => (showAllFolders = !showAllFolders))}
+					{/if}
 				{/if}
 			</section>
 
-			{#if tags.length > 0}
+			{#if repoStore.allTags.length > 0}
 				<section>
-					<h3 title={m.filter_tags()}><Icon name="tag" /><span class="visually-hidden">{m.filter_tags()}</span></h3>
+					<div class="section-head">
+						<h3 title={m.filter_tags()}><Icon name="tag" /><span class="visually-hidden">{m.filter_tags()}</span></h3>
+						<input
+							type="search"
+							class="section-search"
+							placeholder={m.filter_find_tag_placeholder()}
+							aria-label={m.filter_find_tag()}
+							bind:value={tagQuery}
+							autocomplete="off"
+						/>
+					</div>
 					<div class="tags">
-						{#each visible as tag (tag.key)}
+						{#each visibleTags as tag (tag.key)}
 							<button
 								type="button"
 								class="tag selectable"
@@ -147,22 +182,13 @@
 								{tag.label}
 								<span class="count">{tag.count}</span>
 							</button>
+						{:else}
+							<p class="muted small" title={m.filter_no_matching_tags()} aria-label={m.filter_no_matching_tags()}><Icon name="search" size={18} /></p>
 						{/each}
-
-						{#if tags.length > MAX_COLLAPSED}
-							<button
-								type="button"
-								class="link more-tags"
-								title={showAll ? m.filter_fewer_tags() : m.filter_more_tags({ count: tags.length - MAX_COLLAPSED })}
-								aria-label={showAll ? m.filter_fewer_tags() : m.filter_more_tags({ count: tags.length - MAX_COLLAPSED })}
-								aria-expanded={showAll}
-								onclick={() => (showAll = !showAll)}
-							>
-								<Icon name={showAll ? 'collapse' : 'expand'} size={14} />
-								{#if !showAll}{tags.length - MAX_COLLAPSED}{/if}
-							</button>
-						{/if}
 					</div>
+					{#if tags.length > MAX_COLLAPSED}
+						{@render toggle(showAllTags, () => (showAllTags = !showAllTags))}
+					{/if}
 				</section>
 			{/if}
 		</div>
@@ -202,6 +228,7 @@
 					aria-label={m.filter_remove_tag({ tag })}
 					onclick={() => repoStore.toggleTag(tag)}
 				>
+					<Icon name="tag" size={12} />
 					{tag}
 					<span aria-hidden="true">×</span>
 				</button>
@@ -217,10 +244,10 @@
 </div>
 
 <style>
-	.more-tags {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.2rem;
+	.expand-toggle {
+		display: flex;
+		margin: 0.4rem auto 0;
+		padding: 0.2rem 0.5rem;
 	}
 	.filters {
 		display: flex;
@@ -302,8 +329,14 @@
 		max-height: 70vh;
 		overflow-y: auto;
 	}
+	.section-head {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.4rem;
+	}
 	h3 {
-		margin: 0 0 0.4rem;
+		margin: 0;
 		display: flex;
 		color: var(--text-dim);
 	}
@@ -312,37 +345,16 @@
 		margin: 0;
 	}
 
-	.folder-search {
-		width: 100%;
-		margin-bottom: 0.4rem;
-	}
-	.folder-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		max-height: 12rem;
-		overflow-y: auto;
-	}
-	.folder-list label {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.2rem 0.3rem;
-		border-radius: 6px;
-		font-size: 0.85rem;
-		cursor: pointer;
-	}
-	.folder-list label:hover {
-		background: var(--surface-2);
-	}
-	.folder-list input {
-		width: auto;
-		margin: 0;
-	}
-	.path {
+	.section-search {
 		flex: 1;
 		min-width: 0;
+		font-size: 0.78rem;
+		padding: 0.2rem 0.5rem;
+	}
+	.path {
+		min-width: 0;
 		overflow-wrap: anywhere;
+		white-space: normal;
 	}
 
 	.tags {
