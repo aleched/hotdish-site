@@ -10,6 +10,7 @@
 	import { validateFields } from '$lib/template/schema';
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import type { IconName } from '$lib/ui/icon-names';
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 	import TagInput from '$lib/ui/TagInput.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -73,21 +74,14 @@
 		}
 	}
 
-	function setMeta(key: string, value: string) {
-		setField(key, value);
+	function fieldIcon(field: TemplateField): IconName | undefined {
+		return field.icon ?? (field.key === 'tags' ? 'tag' : undefined);
 	}
 
-	const META_FIELDS: {
-		key: string;
-		label: string;
-		icon: 'servings' | 'prep' | 'cook';
-		placeholder: string;
-	}[] = [
-		{ key: 'servings', label: m.recipe_servings(), icon: 'servings', placeholder: m.recipe_servings() },
-		{ key: 'prep_time', label: m.recipe_prep_time(), icon: 'prep', placeholder: m.recipe_prep_time() },
-		{ key: 'cook_time', label: m.recipe_cook_time(), icon: 'cook', placeholder: m.recipe_cook_time() }
-	];
-	const META_KEYS = [...META_FIELDS.map((item) => item.key), 'source'];
+	/** Single-line fields with an icon drop the visible label and use it as the placeholder instead. */
+	function compact(field: TemplateField): boolean {
+		return field.key === 'tags' || (!!field.icon && ['text', 'number', 'url'].includes(field.type));
+	}
 
 	function toggleListValue(key: string, option: string) {
 		const current = listValue(key);
@@ -236,14 +230,15 @@
 		/>
 
 		{#if template}
-			{#each template.fields as field (field.key)}
-				{#if field.key !== 'title' && !META_KEYS.includes(field.key)}
-					<div class="field" class:with-icon={field.key === 'tags'}>
-						{#if field.key === 'tags'}
-							<span class="field-icon" title={m.filter_tags()}><Icon name="tag" size={20} /></span>
+			{#snippet fieldBlock(field: TemplateField)}
+					<div class="field" class:with-icon={!!fieldIcon(field) && compact(field)}>
+						{#if fieldIcon(field) && compact(field)}
+							<span class="field-icon" title={field.key === 'tags' ? m.filter_tags() : field.label}>
+								<Icon name={fieldIcon(field)!} size={field.key === 'tags' ? 20 : 18} />
+							</span>
 						{/if}
 						<div class="field-body">
-						<label class="label" class:visually-hidden={field.key === 'tags'} for={fieldInputId(field)}>
+						<label class="label" class:visually-hidden={compact(field)} for={fieldInputId(field)}>
 							{field.label}{#if field.required}<span class="req">*</span>{/if}
 						</label>
 
@@ -293,6 +288,8 @@
 							<input
 								id={fieldInputId(field)}
 								type="number"
+								title={compact(field) ? field.label : undefined}
+								placeholder={compact(field) ? field.label : undefined}
 								value={textValue(field.key)}
 								oninput={(event) =>
 									setField(
@@ -304,6 +301,8 @@
 							<input
 								id={fieldInputId(field)}
 								type="text"
+								title={compact(field) ? field.label : undefined}
+								placeholder={compact(field) ? field.label : undefined}
 								value={textValue(field.key)}
 								oninput={(event) => setField(field.key, event.currentTarget.value)}
 							/>
@@ -314,6 +313,20 @@
 						{/if}
 						</div>
 					</div>
+			{/snippet}
+
+			{#each template.layout as row (row[0].key)}
+				{@const shown = row.filter((field) => field.key !== 'title')}
+				{#if shown.length > 1}
+					<div class="field-row" style:--cols={shown.length}>
+						{#each shown as field (field.key)}
+							{@render fieldBlock(field)}
+						{/each}
+					</div>
+				{:else}
+					{#each shown as field (field.key)}
+						{@render fieldBlock(field)}
+					{/each}
 				{/if}
 			{/each}
 		{/if}
@@ -331,33 +344,6 @@
 				</div>
 			</div>
 		{/if}
-
-		<div class="meta-row">
-			{#each META_FIELDS as meta (meta.key)}
-				<div class="input-icon">
-					<span class="field-icon" title={meta.label}><Icon name={meta.icon} size={18} /></span>
-					<input
-						type="text"
-						aria-label={meta.label}
-						title={meta.label}
-						placeholder={meta.placeholder}
-						value={textValue(meta.key)}
-						oninput={(event) => setMeta(meta.key, event.currentTarget.value)}
-					/>
-				</div>
-			{/each}
-		</div>
-		<div class="input-icon">
-			<span class="field-icon" title={m.doc_source()}><Icon name="link" size={18} /></span>
-			<input
-				type="text"
-				aria-label={m.doc_source()}
-				title={m.doc_source()}
-				placeholder={m.form_source_placeholder()}
-				value={textValue('source')}
-				oninput={(event) => setField('source', event.currentTarget.value)}
-			/>
-		</div>
 	</section>
 
 	{#if !headerOnly}
@@ -594,6 +580,16 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}
+	.field-row {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: 0.5rem;
+	}
+	@media (max-width: 560px) {
+		.field-row {
+			grid-template-columns: 1fr;
+		}
+	}
 	.field.with-icon {
 		flex-direction: row;
 		align-items: flex-start;
@@ -612,26 +608,6 @@
 		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
 		height: calc(1.6rem + 0.9rem + 2px);
 		color: var(--text-dim);
-	}
-	.meta-row {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.5rem;
-	}
-	.input-icon {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		min-width: 0;
-	}
-	.input-icon input {
-		flex: 1;
-		min-width: 0;
-	}
-	@media (max-width: 560px) {
-		.meta-row {
-			grid-template-columns: 1fr;
-		}
 	}
 	.label {
 		font-size: 0.85rem;

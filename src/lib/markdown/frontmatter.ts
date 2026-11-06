@@ -43,7 +43,7 @@ export function parseFrontmatter(source: string): Frontmatter {
 }
 
 /** Keys shown first, in this order. Anything else keeps its original relative order after them. */
-export const FRONTMATTER_ORDER = ['title', 'tags', 'servings', 'prep_time', 'cook_time', 'source'];
+export const FRONTMATTER_ORDER = ['title', 'tags'];
 
 function orderFields(data: Record<string, unknown>): Record<string, unknown> {
 	const known = FRONTMATTER_ORDER.filter((key) => key in data);

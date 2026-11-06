@@ -1,54 +1,8 @@
 <script lang="ts">
+	import type { IconName } from '$lib/ui/icon-names';
+
 	interface Props {
-		name:
-			| 'plus'
-			| 'edit'
-			| 'trash'
-			| 'move'
-			| 'expand'
-			| 'collapse'
-			| 'settings'
-			| 'grip'
-			| 'filter'
-			| 'text'
-			| 'list'
-			| 'ordered'
-			| 'form'
-			| 'markdown'
-			| 'rich'
-			| 'save'
-			| 'cancel'
-			| 'undo'
-			| 'search'
-			| 'folder'
-			| 'tag'
-			| 'section'
-			| 'subsection'
-			| 'clock'
-			| 'repos'
-			| 'link'
-			| 'branch'
-			| 'key'
-			| 'keyoff'
-			| 'servings'
-			| 'prep'
-			| 'cook'
-			| 'file'
-			| 'sun'
-			| 'moon'
-			| 'monitor'
-			| 'palette'
-			| 'info'
-			| 'cache'
-			| 'refresh'
-			| 'spinner'
-			| 'home'
-			| 'up'
-			| 'check'
-			| 'message'
-			| 'confirm'
-			| 'empty'
-			| 'dice';
+		name: IconName;
 		size?: number;
 	}
 

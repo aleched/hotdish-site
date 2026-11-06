@@ -6,11 +6,8 @@ export function scaffoldDoc(template: DocTemplate | null): string {
 	const fields: Record<string, unknown> = { title: '' };
 	if (!template || template.fields.some((field) => field.key === 'tags')) fields.tags = [];
 
-	const sections = (template?.sections ?? [
-		{ heading: 'Ingredients', type: 'list' as const },
-		{ heading: 'Instructions', type: 'ordered' as const }
-	])
-		.filter((section) => !('optional' in section && section.optional))
+	const sections = (template?.sections ?? [])
+		.filter((section) => !section.optional)
 		.map((section) => `## ${section.heading}\n`)
 		.join('\n');
 

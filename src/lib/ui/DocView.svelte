@@ -21,24 +21,36 @@
 		}
 	});
 
-	const META = [
-		{ key: 'servings', label: m.recipe_servings(), icon: 'servings' },
-		{ key: 'prep_time', label: m.recipe_prep_time(), icon: 'prep' },
-		{ key: 'cook_time', label: m.recipe_cook_time(), icon: 'cook' }
-	] as const;
-	const HANDLED = ['title', 'tags', 'servings', 'prep_time', 'cook_time', 'source'];
+	let factFields = $derived(
+		(repoStore.template?.fields ?? []).filter(
+			(field) =>
+				field.key !== 'title' && field.key !== 'tags' && (field.icon || field.type === 'url')
+		)
+	);
+	let handled = $derived(['title', 'tags', ...factFields.map((field) => field.key)]);
 
 	function has(value: unknown): boolean {
 		return value !== null && value !== undefined && String(value).trim() !== '';
 	}
 
-	let metaItems = $derived(META.filter((item) => has(doc.fields[item.key])));
-	let source = $derived(has(doc.fields.source) ? String(doc.fields.source).trim() : '');
-	let isUrl = $derived(/^https?:\/\//i.test(source));
+	let facts = $derived(
+		factFields
+			.filter((field) => has(doc.fields[field.key]))
+			.map((field) => {
+				const text = formatValue(doc.fields[field.key]).trim();
+				return {
+					key: field.key,
+					label: field.label,
+					icon: field.icon ?? 'link',
+					text,
+					href: field.type === 'url' && /^https?:\/\//i.test(text) ? text : null
+				};
+			})
+	);
 
 	let extras = $derived(
 		Object.entries(doc.fields).filter(
-			([key, value]) => !HANDLED.includes(key) && value !== null && value !== undefined
+			([key, value]) => !handled.includes(key) && value !== null && value !== undefined
 		)
 	);
 
@@ -81,29 +93,19 @@
 		</div>
 	{/if}
 
-	{#if metaItems.length > 0}
+	{#if facts.length > 0}
 		<div class="facts">
-			{#each metaItems as item (item.key)}
-				<span class="fact" title={item.label}>
-					<Icon name={item.icon} size={16} />
-					<span class="visually-hidden">{item.label}:</span>
-					{formatValue(doc.fields[item.key])}
+			{#each facts as fact (fact.key)}
+				<span class="fact" title={fact.label}>
+					<Icon name={fact.icon} size={16} />
+					<span class="visually-hidden">{fact.label}:</span>
+					{#if fact.href}
+						<a href={fact.href} target="_blank" rel="noopener noreferrer">{fact.text}</a>
+					{:else}
+						{fact.text}
+					{/if}
 				</span>
 			{/each}
-		</div>
-	{/if}
-
-	{#if source}
-		<div class="facts">
-			<span class="fact" title={m.doc_source()}>
-				<Icon name="link" size={16} />
-				<span class="visually-hidden">{m.doc_source()}:</span>
-				{#if isUrl}
-					<a href={source} target="_blank" rel="noopener noreferrer">{source}</a>
-				{:else}
-					{source}
-				{/if}
-			</span>
 		</div>
 	{/if}
 

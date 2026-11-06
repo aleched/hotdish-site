@@ -131,9 +131,22 @@ name: Document
 fields:
   - key: tags
     label: Tags
-    type: multi-enum      # text | number | boolean | enum | multi-enum
+    type: multi-enum      # text | number | boolean | enum | multi-enum | url
     allowCustom: false    # false restricts values to `options`
     options: [breakfast, dinner, dessert]
+
+  - key: source
+    label: Source
+    type: url             # shown as a link in the viewer when the value is an http(s) URL
+    icon: link            # optional icon shown next to the field (names in src/lib/ui/icon-names.ts)
+
+  - group:                # fields in a group share one line of the form
+      - key: prep_time
+        label: Prep time
+        type: text
+      - key: cook_time
+        label: Cook time
+        type: text
 
 sections:
   - id: ingredients
@@ -151,9 +164,11 @@ Important properties of templates:
   shown as unmatched. Unknown frontmatter keys survive a round trip.
 - **Violations are warnings, not errors.** A document that breaks the template still renders and
   still saves.
-- **A repository without a template works fine.** The editor falls back to inferring each
-  section's style from its existing content.
-- **A broken template degrades gracefully.** Invalid YAML disables the form, not the site.
+- **A repository without a template uses the built-in default.** It is the same file as
+  `static/template.example.yml`. To opt out and edit plain markdown only, commit an empty
+  `.hotdish/template.yml`. A repository template replaces the default entirely.
+- **A broken template degrades gracefully.** Invalid YAML disables the form, not the site: the
+  editor falls back to plain markdown with no template.
 
 Section order in the file is canonical — the template lists which sections exist, not the order
 they must appear in, so a document can place its own boxes.

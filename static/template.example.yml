@@ -1,9 +1,14 @@
-# Example Hotdish template.
-# Copy to `.hotdish/template.yml` in your repository.
+# Example Hotdish template, also used as the built-in default for repositories without one.
+# Copy to `.hotdish/template.yml` in your repository to customize it. To opt out of templates
+# entirely, commit an empty `.hotdish/template.yml`.
 #
 # Templates are advisory. They shape the editing form and constrain tag values, but they are
 # never a storage format: documents stay plain markdown, and anything the template does not
 # describe is preserved exactly as written.
+#
+# Field options: key, label, type (text, number, boolean, enum, multi-enum, url), required,
+# options, allowCustom, icon (shown next to the field; see src/lib/ui/icon-names.ts).
+# Wrap fields in group: (a list of fields) to show them on one line.
 
 version: 1
 name: Document
@@ -12,7 +17,7 @@ fields:
   - key: tags
     label: Tags
     type: multi-enum
-    allowCustom: false
+    allowCustom: true
     options:
       - breakfast
       - dinner
@@ -21,17 +26,27 @@ fields:
       - quick
       - make-ahead
 
-  - key: servings
-    label: Servings
-    type: number
+  # A group puts its fields on one line of the form.
+  - group:
+      - key: servings
+        label: Servings
+        type: number
+        icon: servings
 
-  - key: time
-    label: Total time
-    type: text
+      - key: prep_time
+        label: Prep time
+        type: text
+        icon: prep
+
+      - key: cook_time
+        label: Cook time
+        type: text
+        icon: cook
 
   - key: source
     label: Source
-    type: text
+    type: url
+    icon: link
 
 sections:
   - id: ingredients

@@ -1,9 +1,10 @@
 import yaml from 'js-yaml';
 import { m } from '$lib/paraglide/messages.js';
+import { isIconName, type IconName } from '$lib/ui/icon-names';
 
 export const TEMPLATE_PATH = '.hotdish/template.yml';
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'enum' | 'multi-enum';
+export type FieldType = 'text' | 'number' | 'boolean' | 'enum' | 'multi-enum' | 'url';
 
 export interface TemplateField {
 	key: string;
@@ -13,6 +14,7 @@ export interface TemplateField {
 	options: string[];
 	/** When false, values outside `options` are flagged as warnings. */
 	allowCustom: boolean;
+	icon?: IconName;
 }
 
 export type SectionType = 'list' | 'ordered' | 'text';
@@ -31,6 +33,8 @@ export interface DocTemplate {
 	version: number;
 	name: string;
 	fields: TemplateField[];
+	/** Fields grouped into form rows; every field appears exactly once. Fields in a `group` share a row. */
+	layout: TemplateField[][];
 	sections: TemplateSection[];
 }
 
@@ -40,7 +44,7 @@ export interface TemplateParseResult {
 	error?: string;
 }
 
-const FIELD_TYPES: FieldType[] = ['text', 'number', 'boolean', 'enum', 'multi-enum'];
+const FIELD_TYPES: FieldType[] = ['text', 'number', 'boolean', 'enum', 'multi-enum', 'url'];
 const SECTION_TYPES: SectionType[] = ['list', 'ordered', 'text'];
 
 /**
@@ -63,27 +67,34 @@ export function parseTemplate(raw: string): TemplateParseResult {
 	const warnings: string[] = [];
 
 	const fields: TemplateField[] = [];
+	const layout: TemplateField[][] = [];
 	for (const entry of asArray(source.fields)) {
 		if (!entry || typeof entry !== 'object') continue;
 		const item = entry as Record<string, unknown>;
-		const key = asString(item.key);
-		if (!key) {
-			warnings.push(m.template_warn_field_no_key());
+
+		if ('group' in item) {
+			const members: TemplateField[] = [];
+			for (const child of asArray(item.group)) {
+				if (!child || typeof child !== 'object') continue;
+				if ('group' in child) {
+					warnings.push(m.template_warn_group_nested());
+					continue;
+				}
+				const field = parseField(child as Record<string, unknown>, warnings);
+				if (field) members.push(field);
+			}
+			if (members.length < 2) warnings.push(m.template_warn_group_small());
+			fields.push(...members);
+			// A group of one is just a field; keep each member on its own row.
+			if (members.length < 2) layout.push(...members.map((field) => [field]));
+			else layout.push(members);
 			continue;
 		}
-		const type = asString(item.type) as FieldType;
-		const resolvedType = FIELD_TYPES.includes(type) ? type : 'text';
-		if (type && resolvedType !== type) {
-			warnings.push(m.template_warn_field_type({ key, type: String(type) }));
-		}
-		fields.push({
-			key,
-			label: asString(item.label) ?? humanize(key),
-			type: resolvedType,
-			required: item.required === true,
-			options: asArray(item.options).map((option) => String(option)),
-			allowCustom: item.allowCustom !== false
-		});
+
+		const field = parseField(item, warnings);
+		if (!field) continue;
+		fields.push(field);
+		layout.push([field]);
 	}
 
 	const sections: TemplateSection[] = [];
@@ -118,10 +129,39 @@ export function parseTemplate(raw: string): TemplateParseResult {
 		version: typeof source.version === 'number' ? source.version : 1,
 		name: asString(source.name) ?? 'Document',
 		fields,
+		layout,
 		sections
 	};
 
 	return { template, error: warnings.length ? warnings.join(' ') : undefined };
+}
+
+function parseField(item: Record<string, unknown>, warnings: string[]): TemplateField | null {
+	const key = asString(item.key);
+	if (!key) {
+		warnings.push(m.template_warn_field_no_key());
+		return null;
+	}
+	const type = asString(item.type) as FieldType;
+	const resolvedType = FIELD_TYPES.includes(type) ? type : 'text';
+	if (type && resolvedType !== type) {
+		warnings.push(m.template_warn_field_type({ key, type: String(type) }));
+	}
+	const iconName = asString(item.icon);
+	let icon: IconName | undefined;
+	if (iconName) {
+		if (isIconName(iconName)) icon = iconName;
+		else warnings.push(m.template_warn_field_icon({ key, icon: iconName }));
+	}
+	return {
+		key,
+		label: asString(item.label) ?? humanize(key),
+		type: resolvedType,
+		required: item.required === true,
+		options: asArray(item.options).map((option) => String(option)),
+		allowCustom: item.allowCustom !== false,
+		icon
+	};
 }
 
 export function findSectionByHeading(

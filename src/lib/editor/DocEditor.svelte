@@ -366,7 +366,7 @@
 		</p>
 	{/if}
 
-	{#if repoStore.template && !rawOnly}
+	{#if repoStore.template && !repoStore.templateIsDefault && !rawOnly}
 		<p class="muted small">
 			{@html m.editor_using_template({ name: `<strong>${escapeHtml(repoStore.template.name)}</strong>` })}
 		</p>
