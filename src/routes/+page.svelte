@@ -9,6 +9,7 @@
 	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import EmptyState from '$lib/ui/EmptyState.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 	let isMounted = true;
@@ -35,7 +36,7 @@
 	let formDirty = $derived(formSnapshot() !== baseline);
 
 	function undoForm() {
-		if (!window.confirm('Discard your unsaved changes?')) return;
+		if (!window.confirm(m.confirm_discard())) return;
 		[input, name, kind, gitRef, basePath, token] = JSON.parse(baseline);
 		needsForgeChoice = false;
 		error = null;
@@ -86,7 +87,7 @@
 	}
 
 	function cancelForm() {
-		if (formDirty && !window.confirm('Discard your unsaved changes?')) return;
+		if (formDirty && !window.confirm(m.confirm_discard())) return;
 		cancelEdit();
 	}
 
@@ -125,7 +126,7 @@
 		error = null;
 		try {
 			if (!/^https?:\/\//i.test(input.trim())) {
-				throw new Error('Enter a full repository URL so its host and forge can be detected.');
+				throw new Error(m.home_error_full_url());
 			}
 			const parsed = parseRepoInput(input);
 			let forge: ForgeKind | null | undefined = knownForgeKind(parsed.host) ?? (kind || null);
@@ -140,8 +141,7 @@
 			}
 			if (!forge) {
 				needsForgeChoice = true;
-				error =
-					'Could not identify this forge automatically. Select its type; self-hosted APIs may block browser detection.';
+				error = m.home_error_forge_unknown();
 				return null;
 			}
 			needsForgeChoice = false;
@@ -226,19 +226,19 @@
 </script>
 
 <svelte:head>
-	<title>Hotdish — recipes from any git repository</title>
+	<title>{m.home_page_title()}</title>
 </svelte:head>
 
 {#snippet editForm()}
 				<form onsubmit={save} class="form inline-form">
 					<div class="url-row">
 						<div class="field url-field">
-							<div class="input-icon" title="Repository URL (required)">
+							<div class="input-icon" title={m.home_url_required()}>
 								<Icon name="link" />
 								<input
 									id="input"
 									type="text"
-									aria-label="Repository URL"
+									aria-label={m.home_url()}
 									aria-required="true"
 									bind:value={input}
 									placeholder="https://github.com/alice/recipes"
@@ -254,8 +254,8 @@
 								<button
 									type="button"
 									class="part"
-									title="Discard changes"
-									aria-label="Discard changes"
+									title={m.common_discard_changes()}
+									aria-label={m.common_discard_changes()}
 									disabled={isDetectingForge}
 									onclick={undoForm}
 								>
@@ -265,8 +265,8 @@
 							<button
 								type="button"
 								class="part"
-								title="Cancel"
-								aria-label="Cancel"
+								title={m.common_cancel()}
+								aria-label={m.common_cancel()}
 								disabled={isDetectingForge}
 								onclick={cancelForm}
 							>
@@ -275,8 +275,8 @@
 							<button
 								class="part save"
 								type="submit"
-								title={isDetectingForge ? 'Detecting forge...' : isCreating ? 'Save and open' : 'Save changes'}
-								aria-label={isCreating ? 'Save and open' : 'Save changes'}
+								title={isDetectingForge ? m.home_detecting() : isCreating ? m.home_save_open() : m.common_save_changes()}
+								aria-label={isCreating ? m.home_save_open() : m.common_save_changes()}
 								disabled={!input.trim() || isDetectingForge || (needsForgeChoice && !kind)}
 							>
 								<Icon name="save" />
@@ -285,27 +285,27 @@
 					</div>
 
 					<div class="grid profile-fields">
-						<div class="input-icon" title="Name">
+						<div class="input-icon" title={m.home_name()}>
 							<Icon name="repos" />
-							<input id="name" type="text" aria-label="Name" bind:value={name} placeholder="Name" />
+							<input id="name" type="text" aria-label={m.home_name()} bind:value={name} placeholder={m.home_name()} />
 						</div>
-						<div class="input-icon" title="Branch">
+						<div class="input-icon" title={m.home_branch()}>
 							<Icon name="branch" />
-							<input id="ref" type="text" aria-label="Branch" bind:value={gitRef} placeholder="main" />
+							<input id="ref" type="text" aria-label={m.home_branch()} bind:value={gitRef} placeholder="main" />
 						</div>
-						<div class="input-icon" title="Sub-folder">
+						<div class="input-icon" title={m.home_subfolder()}>
 							<Icon name="folder" />
-							<input id="base" type="text" aria-label="Sub-folder" bind:value={basePath} placeholder="/" />
+							<input id="base" type="text" aria-label={m.home_subfolder()} bind:value={basePath} placeholder="/" />
 						</div>
 					</div>
 
-					<div class="input-icon" title="Access token">
+					<div class="input-icon" title={m.home_token()}>
 						{#if token}
 							<button
 								type="button"
 								class="token-clear"
-								title="Clear token"
-								aria-label="Clear token"
+								title={m.home_token_clear()}
+								aria-label={m.home_token_clear()}
 								onclick={() => (token = '')}
 							>
 								<Icon name="keyoff" />
@@ -316,17 +316,17 @@
 						<input
 							id="token"
 							type="password"
-							aria-label="Access token"
+							aria-label={m.home_token()}
 							bind:value={token}
-							placeholder={hintKind ? TOKEN_GUIDANCE[hintKind] : 'Optional. Needed for private repositories and saving changes'}
+							placeholder={hintKind ? TOKEN_GUIDANCE[hintKind] : m.token_placeholder_generic()}
 							autocomplete="off"
 							spellcheck="false"
 						/>
 					</div>
 					{#if needsForgeChoice}
 						<div class="field">
-							<select id="kind" aria-label="Forge type" bind:value={kind}>
-								<option value="">Forge…</option>
+							<select id="kind" aria-label={m.home_forge_type()} bind:value={kind}>
+								<option value="">{m.home_forge_option()}</option>
 								{#each kinds as option (option)}
 									<option value={option}>{FORGE_LABELS[option]}</option>
 								{/each}
@@ -339,14 +339,14 @@
 
 <section class="panel">
 	<div class="section-heading">
-		<h2 title="Saved repositories">
-			<Icon name="repos" size={20} /><span class="visually-hidden">Saved repositories</span>
+		<h2 title={m.home_saved_repos()}>
+			<Icon name="repos" size={20} /><span class="visually-hidden">{m.home_saved_repos()}</span>
 		</h2>
 		<button
 			type="button"
 			class="icon-button"
-			title="Add saved repository"
-			aria-label="Add saved repository"
+			title={m.home_add_repo()}
+			aria-label={m.home_add_repo()}
 			disabled={isCreating || editingId !== null}
 			onclick={startCreate}
 		>
@@ -370,8 +370,8 @@
 					class="grip"
 					draggable="true"
 					data-grip={profile.id}
-					title="Drag to reorder (or use Arrow Up/Down)"
-					aria-label={`Reorder ${profile.name}`}
+					title={m.home_reorder_hint()}
+					aria-label={m.home_reorder({ name: profile.name })}
 					ondragstart={(event) => onDragStart(event, profile.id)}
 					ondragend={onDragEnd}
 					onkeydown={(event) => onGripKey(event, profile.id, index)}
@@ -384,20 +384,20 @@
 					<a class="info" href={`/r/${encodeSrc(profileToRef(profile))}`}>
 						<strong>{profile.name}</strong>
 						<span class="muted path">
-							{#if profile.token}<span class="has-token" title="Access token saved"><Icon name="key" size={14} /></span>{/if}{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
+							{#if profile.token}<span class="has-token" title={m.home_token_saved()}><Icon name="key" size={14} /></span>{/if}{FORGE_LABELS[profile.kind]} · {profile.host}/{profile.owner}/{profile.repo}
 							{#if profile.ref}@{profile.ref}{/if}
 							{#if profile.basePath}· {profile.basePath}{/if}
 						</span>
 					</a>
 					<div class="row actions">
 						{#if confirming?.id === profile.id}
-							<span class="confirm-text" title="Delete this repository?" aria-label="Delete this repository?"><Icon name="confirm" size={20} /></span>
+							<span class="confirm-text" title={m.home_delete_confirm()} aria-label={m.home_delete_confirm()}><Icon name="confirm" size={20} /></span>
 							<div class="split">
 								<button
 									type="button"
 									class="part"
-									title="Cancel"
-									aria-label="Cancel"
+									title={m.common_cancel()}
+									aria-label={m.common_cancel()}
 									onclick={() => (confirming = null)}
 								>
 									<Icon name="cancel" />
@@ -405,8 +405,8 @@
 								<button
 									type="button"
 									class="part danger-part"
-									title="Confirm delete"
-									aria-label="Confirm delete"
+									title={m.common_confirm_delete()}
+									aria-label={m.common_confirm_delete()}
 									onclick={() => runConfirmed(profile)}
 								>
 									<Icon name="trash" />
@@ -417,8 +417,8 @@
 								<button
 									type="button"
 									class="part"
-									title="Edit"
-									aria-label="Edit"
+									title={m.common_edit()}
+									aria-label={m.common_edit()}
 									disabled={isCreating || editingId !== null}
 									onclick={() => startEdit(profile)}
 								>
@@ -427,8 +427,8 @@
 								<button
 									type="button"
 									class="part danger-hover"
-									title="Delete"
-									aria-label="Delete"
+									title={m.common_delete()}
+									aria-label={m.common_delete()}
 									onclick={() => (confirming = { id: profile.id })}
 								>
 									<Icon name="trash" />
@@ -441,7 +441,7 @@
 		{/each}
 	</ul>
 	{#if !isCreating && !profileStore.profiles.length}
-		<EmptyState icon="empty" label="No saved repositories yet. Use the + button to add one." />
+		<EmptyState icon="empty" label={m.home_empty()} />
 	{/if}
 </section>
 

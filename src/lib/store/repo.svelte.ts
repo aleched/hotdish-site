@@ -1,4 +1,5 @@
 import { readBlob, writeBlob } from '$lib/cache/blobCache';
+import { m } from '$lib/paraglide/messages.js';
 import { createProvider } from '$lib/forge/factory';
 import { describeForgeError } from '$lib/forge/errors';
 import type { BlobEntry, ForgeProvider, RepoRef } from '$lib/forge/types';
@@ -223,7 +224,7 @@ class RepoStore {
 	/** Reads and parses a single recipe, preferring the content-addressed cache. */
 	async getDoc(path: string): Promise<RecipeDoc> {
 		const entry = this.entryFor(path);
-		if (!entry) throw new Error(`No recipe found at ${path}`);
+		if (!entry) throw new Error(m.error_recipe_not_found({ path }));
 
 		const cached = this.#docs.get(entry.sha);
 		if (cached) return cached;
@@ -298,7 +299,7 @@ class RepoStore {
 		if (cached !== undefined) return cached;
 
 		const provider = this.#provider;
-		if (!provider || !this.resolvedRef) throw new Error('Repository is not loaded.');
+		if (!provider || !this.resolvedRef) throw new Error(m.error_repo_not_loaded());
 
 		const raw = await provider.readFile(entry.path, this.resolvedRef);
 		await writeBlob(entry.sha, raw);

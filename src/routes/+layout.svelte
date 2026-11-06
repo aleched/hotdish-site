@@ -6,8 +6,16 @@
 	import { navStore } from '$lib/store/nav.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import RateLimitPrompt from '$lib/ui/RateLimitPrompt.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { localeDirection } from '$lib/i18n/locales';
 
 	let { children } = $props();
+
+	$effect(() => {
+		document.documentElement.lang = getLocale();
+		document.documentElement.dir = localeDirection(getLocale());
+	});
 
 	let activeSrc = $derived($page.params.src ?? null);
 	let repoName = $derived(
@@ -34,8 +42,8 @@
 </script>
 
 <svelte:head>
-	<title>Hotdish</title>
-	<meta name="description" content="Browse, search and edit recipes stored as markdown in a git repository." />
+	<title>{m.app_title()}</title>
+	<meta name="description" content={m.app_description()} />
 </svelte:head>
 
 <div class="shell">
@@ -46,7 +54,7 @@
 					type="button"
 					class="burger ghost"
 					class:open={navStore.open}
-					aria-label="Menu"
+					aria-label={m.nav_menu()}
 					aria-expanded={navStore.open}
 					aria-controls="recipe-nav"
 					onclick={() => navStore.toggle()}
@@ -64,13 +72,13 @@
 			</a>
 
 			{#if repoName && activeSrc}
-				<a class="repo" href={`/r/${activeSrc}`} title="Browse this repository">{repoName}</a>
+				<a class="repo" href={`/r/${activeSrc}`} title={m.nav_browse_repo()}>{repoName}</a>
 				{#if isUnsaved}
 					<button
 						type="button"
 						class="icon-button save-repo"
-						title="Add to saved repositories"
-						aria-label="Add to saved repositories"
+						title={m.nav_save_repo()}
+						aria-label={m.nav_save_repo()}
 						onclick={saveRepo}
 					>
 						<Icon name="plus" />
@@ -79,7 +87,7 @@
 			{/if}
 
 			<div class="spacer"></div>
-			<a class="nav settings" href="/settings" title="Settings" aria-label="Settings">
+			<a class="nav settings" href="/settings" title={m.nav_settings()} aria-label={m.nav_settings()}>
 				<Icon name="settings" size={20} />
 			</a>
 		</div>

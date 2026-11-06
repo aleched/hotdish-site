@@ -1,4 +1,5 @@
 import { utf8ToBase64 } from '$lib/util/base64';
+import { m } from '$lib/paraglide/messages.js';
 import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import { knownForgeKind } from './parse';
@@ -154,7 +155,7 @@ export class GitHubProvider implements ForgeProvider {
 	}
 
 	async writeFile(args: WriteArgs): Promise<WriteResult> {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 
 		const body: Record<string, unknown> = {
 			message: args.message,
@@ -177,7 +178,7 @@ export class GitHubProvider implements ForgeProvider {
 	}
 
 	#requireToken(): void {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 	}
 
 	async deleteFile(args: DeleteArgs): Promise<void> {
@@ -215,8 +216,8 @@ export class GitHubProvider implements ForgeProvider {
 			this.#ctx
 		);
 		if (args.baseSha && current.sha !== args.baseSha) {
-			throw new ForgeError('conflict', 'The file changed since it was loaded.', {
-				hint: 'Reload the recipe to pick up the newer version before moving it.'
+			throw new ForgeError('conflict', m.error_conflict(), {
+				hint: m.error_move_conflict_hint()
 			});
 		}
 
@@ -271,8 +272,8 @@ export class GitHubProvider implements ForgeProvider {
 		} catch (error) {
 			// A non-fast-forward update means someone else pushed in the meantime.
 			if (error instanceof ForgeError && error.kind === 'invalid') {
-				throw new ForgeError('conflict', 'The branch changed while moving the file.', {
-					hint: 'Reload the repository and try again.'
+				throw new ForgeError('conflict', m.error_branch_changed(), {
+					hint: m.error_branch_changed_hint()
 				});
 			}
 			throw error;

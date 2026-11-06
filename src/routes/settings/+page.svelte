@@ -5,11 +5,44 @@
 	import { editorPrefs, EDITOR_MODES } from '$lib/store/editorPrefs.svelte';
 	import ModeToggle from '$lib/ui/ModeToggle.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import Flag from '$lib/ui/Flag.svelte';
 	import { FRACTIONS } from '$lib/editor/fractions';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, setLocale, languageOptions, nativeName, type Locale } from '$lib/i18n/locales';
+	import { tick } from 'svelte';
 
 	const PREVIEW_FRACTIONS = ['1/2', '2/3', '3/4'];
 
 	const MODE_ICONS = { system: 'monitor', light: 'sun', dark: 'moon' } as const;
+	const MODE_LABELS = { system: m.theme_system, light: m.theme_light, dark: m.theme_dark } as const;
+
+	let languageOpen = $state(false);
+	let languageQuery = $state('');
+	let languageEl = $state<HTMLElement>();
+	let languageSearchEl = $state<HTMLInputElement>();
+	const languageResults = $derived(languageOptions(getLocale(), languageQuery));
+
+	async function toggleLanguage() {
+		languageOpen = !languageOpen;
+		languageQuery = '';
+		if (languageOpen) {
+			await tick();
+			languageSearchEl?.focus();
+		}
+	}
+
+	function chooseLanguage(locale: Locale) {
+		languageOpen = false;
+		if (locale !== getLocale()) setLocale(locale);
+	}
+
+	function onWindowPointer(e: Event) {
+		if (languageOpen && languageEl && !languageEl.contains(e.target as Node)) languageOpen = false;
+	}
+
+	function onWindowKey(e: KeyboardEvent) {
+		if (e.key === 'Escape') languageOpen = false;
+	}
 
 	let cacheMessage = $state<string | null>(null);
 	let confirmingCache = $state(false);
@@ -18,27 +51,73 @@
 		confirmingCache = false;
 		await clearBlobCache();
 		historyStore.reset();
-		cacheMessage = 'Cleared';
+		cacheMessage = m.settings_cache_cleared();
 		setTimeout(() => (cacheMessage = null), 3000);
 	}
 </script>
 
+<svelte:window onpointerdown={onWindowPointer} onkeydown={onWindowKey} />
+
 <svelte:head>
-	<title>Settings — Hotdish</title>
+	<title>{m.settings_page_title()}</title>
 </svelte:head>
 
-<h1 class="visually-hidden">Settings</h1>
+<h1 class="visually-hidden">{m.settings_heading()}</h1>
 
 <section class="card stack panel">
 	<div class="theme">
-		<div class="split" role="radiogroup" aria-label="Appearance">
+		<div class="language" bind:this={languageEl}>
+			<button
+				type="button"
+				class="lang-trigger"
+				aria-haspopup="listbox"
+				aria-expanded={languageOpen}
+				aria-label={`${m.settings_language()}: ${nativeName(getLocale())}`}
+				title={nativeName(getLocale())}
+				onclick={toggleLanguage}
+			>
+				<Flag locale={getLocale()} />
+				<span lang={getLocale()}>{nativeName(getLocale())}</span>
+			</button>
+			{#if languageOpen}
+				<div class="lang-menu">
+					<input
+						type="search"
+						class="lang-search"
+						placeholder={m.settings_language()}
+						aria-label={m.settings_language()}
+						bind:value={languageQuery}
+						bind:this={languageSearchEl}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' && languageResults[0]) chooseLanguage(languageResults[0]);
+						}}
+					/>
+					<ul role="listbox" aria-label={m.settings_language()}>
+						{#each languageResults as locale (locale)}
+							<li role="option" aria-selected={getLocale() === locale}>
+								<button
+									type="button"
+									lang={locale}
+									class:selected={getLocale() === locale}
+									onclick={() => chooseLanguage(locale)}
+								>
+									<Flag {locale} />
+									<span class="native">{nativeName(locale)}</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+		</div>
+		<div class="split" role="radiogroup" aria-label={m.settings_appearance()}>
 			{#each THEME_MODES as mode (mode)}
 				<button
 					type="button"
 					role="radio"
 					aria-checked={themeStore.mode === mode}
-					aria-label={mode[0].toUpperCase() + mode.slice(1)}
-					title={mode[0].toUpperCase() + mode.slice(1)}
+					aria-label={MODE_LABELS[mode]()}
+					title={MODE_LABELS[mode]()}
 					class="part"
 					class:selected={themeStore.mode === mode}
 					onclick={() => themeStore.setMode(mode)}
@@ -47,7 +126,7 @@
 				</button>
 			{/each}
 		</div>
-		<div class="split" role="radiogroup" aria-label="Accent color">
+		<div class="split" role="radiogroup" aria-label={m.settings_accent()}>
 			{#each THEME_ACCENTS as accent (accent.id)}
 				<button
 					type="button"
@@ -70,24 +149,24 @@
 
 	<div class="settings">
 		<div class="setting">
-			<span>Default editor</span>
+			<span>{m.settings_default_editor()}</span>
 			<span class="control">
 				<ModeToggle
 					items={EDITOR_MODES}
 					value={editorPrefs.defaultMode}
-					label="Default editing mode"
+					label={m.settings_default_editor_label()}
 					onselect={(mode) => editorPrefs.setDefaultMode(mode)}
 				/>
 			</span>
 		</div>
-		<div class="setting switch" title="Browser spellcheck in the form, rich text and markdown editors">
-			<span>Spellcheck</span>
+		<div class="setting switch" title={m.settings_spellcheck_hint()}>
+			<span>{m.settings_spellcheck()}</span>
 			<span class="control">
 				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
-						aria-label="Spellcheck"
+						aria-label={m.settings_spellcheck()}
 						checked={editorPrefs.spellcheck}
 						onchange={(event) => editorPrefs.setSpellcheck(event.currentTarget.checked)}
 					/>
@@ -95,34 +174,34 @@
 				</label>
 			</span>
 		</div>
-		<div class="setting switch" title="Replace typed fractions with symbols">
-			<span>Auto fractions</span>
+		<div class="setting switch" title={m.settings_fractions_hint()}>
+			<span>{m.settings_fractions()}</span>
 			<span class="control">
 				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
-						aria-label="Replace typed fractions with symbols"
+						aria-label={m.settings_fractions_hint()}
 						checked={editorPrefs.fractions}
 						onchange={(event) => editorPrefs.setFractions(event.currentTarget.checked)}
 					/>
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
 				</label>
-				<ul class="fraction-preview" aria-label="Fraction preview">
+				<ul class="fraction-preview" aria-label={m.settings_fractions_preview()}>
 					{#each PREVIEW_FRACTIONS as typed (typed)}
 						<li>{editorPrefs.fractions ? FRACTIONS[typed] : typed}</li>
 					{/each}
 				</ul>
 			</span>
 		</div>
-		<div class="setting switch" title="Show the random recipe button next to search">
-			<span>Random button</span>
+		<div class="setting switch" title={m.settings_random_hint()}>
+			<span>{m.settings_random()}</span>
 			<span class="control">
 				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
-						aria-label="Show the random recipe button"
+						aria-label={m.settings_random_label()}
 						checked={editorPrefs.randomButton}
 						onchange={(event) => editorPrefs.setRandomButton(event.currentTarget.checked)}
 					/>
@@ -140,17 +219,15 @@
 			type="button"
 			class="clear"
 			class:confirming={confirmingCache}
-			title={confirmingCache
-				? 'Click again to clear the cache'
-				: 'Clear cached recipe content (safe; it only costs a few extra requests)'}
+			title={confirmingCache ? m.settings_cache_confirm_hint() : m.settings_cache_hint()}
 			onclick={() => (confirmingCache ? emptyCache() : (confirmingCache = true))}
 			onblur={() => (confirmingCache = false)}
 		>
 			<Icon name="trash" />
 			<!-- Both labels share one grid cell so the button keeps its size when the text swaps. -->
 			<span class="labels">
-				<span class:hidden={confirmingCache}>Clear cache</span>
-				<span class:hidden={!confirmingCache}>Confirm clear?</span>
+				<span class:hidden={confirmingCache}>{m.settings_cache_clear()}</span>
+				<span class:hidden={!confirmingCache}>{m.settings_cache_confirm()}</span>
 			</span>
 		</button>
 		{#if cacheMessage}<span class="muted cleared" role="status" title={cacheMessage} aria-label={cacheMessage}><Icon name="check" /></span>{/if}
@@ -160,39 +237,29 @@
 <section class="card stack panel">
 	<div class="stack">
 		<p class="muted intro">
-			<span class="corner" title="About"><Icon name="info" size={20} /><span class="visually-hidden">About</span></span>
-			<span>Recipes from a GitHub, GitLab or Gitea repository, rendered in your browser. No account,
-			server or database.</span>
+			<span class="corner" title={m.settings_about()}><Icon name="info" size={20} /><span class="visually-hidden">{m.settings_about()}</span></span>
+			<span>{m.about_intro()}</span>
 		</p>
 		<ul class="muted about-list">
 			<li>
 				<Icon name="file" />
-				<span>Recipes are plain markdown with YAML frontmatter, so your repository works without this site.</span>
+				<span>{m.about_markdown()}</span>
 			</li>
 			<li>
 				<Icon name="key" />
-				<span>
-					Tokens stay in this browser's <code>localStorage</code> and are sent only to their forge.
-					On a shared computer, leave the token blank or remove it when done.
-				</span>
+				<span>{@html m.about_tokens()}</span>
 			</li>
 			<li>
 				<Icon name="link" />
-				<span>Share links hold only the repository and path, so private repositories can't be shared.</span>
+				<span>{m.about_share()}</span>
 			</li>
 			<li>
 				<Icon name="form" />
-				<span>
-					Add <code>.hotdish/template.yml</code> for structured editing and fixed tags
-					(<a href="/template.example.yml" target="_blank" rel="noopener">example</a>).
-				</span>
+				<span>{@html m.about_template({ link: `<a href="/template.example.yml" target="_blank" rel="noopener">${m.about_template_example()}</a>` })}</span>
 			</li>
 			<li>
 				<Icon name="clock" />
-				<span>
-					Forges limit API requests per hour (GitHub: about 60 without a token, 5,000 with one). Add
-					a token if you see rate-limit errors.
-				</span>
+				<span>{m.about_rate_limit()}</span>
 			</li>
 		</ul>
 	</div>
@@ -354,6 +421,75 @@
 	}
 	.split {
 		display: inline-flex;
+	}
+	.language {
+		position: relative;
+		max-width: 100%;
+	}
+	.lang-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0 0.8rem;
+		box-sizing: border-box;
+		/* Same height as a text input: 1.6 line-height + 0.45rem padding twice + 1px border twice. */
+		height: calc(1.6rem + 0.9rem + 2px);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--text);
+		cursor: pointer;
+	}
+	.lang-trigger:hover,
+	.lang-trigger[aria-expanded='true'] {
+		border-color: var(--accent);
+	}
+	.lang-menu {
+		position: absolute;
+		z-index: 20;
+		top: calc(100% + 4px);
+		left: 0;
+		min-width: 14rem;
+		max-width: 90vw;
+		padding: 0.4rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+	}
+	.lang-search {
+		width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 0.4rem;
+	}
+	.lang-menu ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		max-height: 16rem;
+		overflow-y: auto;
+	}
+	.lang-menu li button {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 0.35rem 0.5rem;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--text);
+		text-align: left;
+		cursor: pointer;
+	}
+	.lang-menu li button:hover {
+		background: var(--surface-2);
+	}
+	.lang-menu li button.selected {
+		color: var(--accent);
+	}
+	.lang-menu .native {
+		color: inherit;
 	}
 	.part {
 		display: inline-flex;

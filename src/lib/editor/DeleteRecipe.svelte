@@ -5,6 +5,7 @@
 	import { historyStore } from '$lib/store/history.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		doc: RecipeDoc;
@@ -24,7 +25,7 @@
 		const branch = repoStore.resolvedRef;
 		const ref = repoStore.ref;
 		if (!provider || !branch || !ref) {
-			error = new Error('The repository is not loaded.');
+			error = new Error(m.error_repo_not_loaded());
 			return;
 		}
 
@@ -55,18 +56,17 @@
 </script>
 
 <CommitDialog
-	title={`Delete ${doc.title}?`}
+	title={m.delete_title({ title: doc.title })}
 	bind:message
 	busy={deleting}
 	{error}
 	danger
-	submitLabel="Delete"
+	submitLabel={m.common_delete()}
 	submitIcon="trash"
 	onsubmit={remove}
 	oncancel={onclose}
 >
 	<p class="banner warn">
-		This removes <code>{doc.path}</code> from the branch. It can still be recovered from the
-		repository's commit history.
+		{@html m.delete_warning({ path: `<code>${doc.path.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)}</code>` })}
 	</p>
 </CommitDialog>

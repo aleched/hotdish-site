@@ -1,4 +1,5 @@
 import { knownForgeKind } from './parse';
+import { m } from '$lib/paraglide/messages.js';
 import type { ForgeKind } from './types';
 
 export type ForgeErrorKind =
@@ -32,9 +33,9 @@ export class ForgeError extends Error {
 export function networkError(kind: ForgeKind, host: string): ForgeError {
 	const selfHosted = !knownForgeKind(host);
 	const hint = selfHosted
-		? `Could not reach ${host}. If this is a self-hosted instance, its API may not allow browser requests (CORS). A ${kind === 'gitea' ? 'Gitea' : 'server'} admin can enable it — for Gitea, set ALLOW_DOMAIN in the [cors] section of app.ini.`
-		: `Could not reach ${host}. Check your connection and try again.`;
-	return new ForgeError('network', `Network request to ${host} failed.`, { hint });
+		? m.error_network_self_hosted({ host, admin: kind === 'gitea' ? 'Gitea' : m.error_network_server() })
+		: m.error_network_hosted({ host });
+	return new ForgeError('network', m.error_network({ host }), { hint });
 }
 
 export function describeForgeError(error: unknown): { message: string; hint?: string } {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/ui/Icon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		id?: string;
@@ -8,7 +9,7 @@
 		onchange: (values: string[]) => void;
 	}
 
-	let { id, values, placeholder = 'Add a tag', onchange }: Props = $props();
+	let { id, values, placeholder = m.tag_add(), onchange }: Props = $props();
 
 	let draft = $state('');
 
@@ -66,8 +67,8 @@
 			<button
 				type="button"
 				class="chip-x"
-				title={`Remove ${tag}`}
-				aria-label={`Remove tag ${tag}`}
+				title={m.tag_remove({ tag })}
+				aria-label={m.tag_remove({ tag })}
 				onclick={() => remove(tag)}
 			>
 				<Icon name="plus" size={10} />

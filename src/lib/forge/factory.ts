@@ -2,6 +2,7 @@ import { GiteaProvider } from './gitea';
 import { GitHubProvider } from './github';
 import { GitLabProvider } from './gitlab';
 import type { ForgeKind, ForgeProvider, RepoRef } from './types';
+import { m } from '$lib/paraglide/messages.js';
 
 export function createProvider(ref: RepoRef, token?: string): ForgeProvider {
 	switch (ref.kind) {
@@ -21,7 +22,7 @@ export const FORGE_LABELS: Record<ForgeKind, string> = {
 };
 
 export const TOKEN_GUIDANCE: Record<ForgeKind, string> = {
-	github: 'Fine-grained token, this repo only, Contents: read (write to edit).',
-	gitlab: 'Project token, read_repository (write_repository to edit).',
-	gitea: 'Token with repository read (write to edit).'
+	github: m.token_guidance_github(),
+	gitlab: m.token_guidance_gitlab(),
+	gitea: m.token_guidance_gitea()
 };

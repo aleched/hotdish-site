@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import { m } from '$lib/paraglide/messages.js';
 
 export const TEMPLATE_PATH = '.hotdish/template.yml';
 
@@ -55,7 +56,7 @@ export function parseTemplate(raw: string): TemplateParseResult {
 	}
 
 	if (!loaded || typeof loaded !== 'object' || Array.isArray(loaded)) {
-		return { template: null, error: 'Template must be a YAML mapping.' };
+		return { template: null, error: m.template_error_mapping() };
 	}
 
 	const source = loaded as Record<string, unknown>;
@@ -67,13 +68,13 @@ export function parseTemplate(raw: string): TemplateParseResult {
 		const item = entry as Record<string, unknown>;
 		const key = asString(item.key);
 		if (!key) {
-			warnings.push('A field is missing "key" and was ignored.');
+			warnings.push(m.template_warn_field_no_key());
 			continue;
 		}
 		const type = asString(item.type) as FieldType;
 		const resolvedType = FIELD_TYPES.includes(type) ? type : 'text';
 		if (type && resolvedType !== type) {
-			warnings.push(`Field "${key}" has unknown type "${type}"; treated as text.`);
+			warnings.push(m.template_warn_field_type({ key, type: String(type) }));
 		}
 		fields.push({
 			key,
@@ -91,13 +92,13 @@ export function parseTemplate(raw: string): TemplateParseResult {
 		const item = entry as Record<string, unknown>;
 		const heading = asString(item.heading);
 		if (!heading) {
-			warnings.push('A section is missing "heading" and was ignored.');
+			warnings.push(m.template_warn_section_no_heading());
 			continue;
 		}
 		const type = asString(item.type) as SectionType;
 		const resolvedType = SECTION_TYPES.includes(type) ? type : 'text';
 		if (type && resolvedType !== type) {
-			warnings.push(`Section "${heading}" has unknown type "${type}"; treated as text.`);
+			warnings.push(m.template_warn_section_type({ heading, type: String(type) }));
 		}
 		sections.push({
 			id: asString(item.id) ?? slugify(heading),
@@ -110,7 +111,7 @@ export function parseTemplate(raw: string): TemplateParseResult {
 	}
 
 	if (fields.length === 0 && sections.length === 0) {
-		return { template: null, error: 'Template defines no fields or sections.' };
+		return { template: null, error: m.template_error_empty() };
 	}
 
 	const template: RecipeTemplate = {

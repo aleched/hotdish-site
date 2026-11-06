@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { FORGE_LABELS } from '$lib/forge/factory';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { rateLimitStore } from '$lib/store/rateLimit.svelte';
 	import Modal from './Modal.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let notice = $derived(rateLimitStore.notice);
 </script>
 
 {#if notice}
-	<Modal title="Rate limit reached" onclose={() => rateLimitStore.dismiss()}>
+	<Modal title={m.rate_title()} onclose={() => rateLimitStore.dismiss()}>
 		<div class="stack">
 			<p class="intro">
-				{FORGE_LABELS[notice.kind]} ({notice.host}) is rejecting requests because the API rate limit
-				was exceeded.
+				{m.rate_intro({ forge: FORGE_LABELS[notice.kind], host: notice.host })}
 			</p>
 			<p class="muted small">
 				{#if notice.resetAt}
-					The limit resets at {notice.resetAt.toLocaleTimeString()}.
+					{m.rate_resets({ time: notice.resetAt.toLocaleTimeString(getLocale()) })}
 				{:else}
-					Wait a few minutes before trying again.
+					{m.rate_wait()}
 				{/if}
-				Adding a personal access token to this repository raises the limit.
+				{m.rate_token_hint()}
 			</p>
 			<div class="row actions">
 				<button
@@ -27,7 +28,7 @@
 					type="button"
 					onclick={() => rateLimitStore.dismiss()}
 				>
-					OK
+					{m.common_ok()}
 				</button>
 			</div>
 		</div>

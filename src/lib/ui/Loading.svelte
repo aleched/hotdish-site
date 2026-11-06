@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		label?: string;
 	}
 
-	let { label = 'Loading' }: Props = $props();
+	let { label = m.loading_default() }: Props = $props();
 </script>
 
 <p class="muted loading" role="status" title={label}>

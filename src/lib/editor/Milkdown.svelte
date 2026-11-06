@@ -5,6 +5,7 @@
 	import { fractionBefore } from '$lib/editor/fractions';
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Loading from '$lib/ui/Loading.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface CrepeLike {
 		create(): Promise<unknown>;
@@ -104,7 +105,7 @@
 <div class="host" bind:this={container} spellcheck={editorPrefs.spellcheck}></div>
 
 {#if !ready && !error}
-	<Loading label="Starting editor" />
+	<Loading label={m.milkdown_starting()} />
 {/if}
 
 <style>

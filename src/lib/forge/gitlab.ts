@@ -1,4 +1,5 @@
 import { ForgeError } from './errors';
+import { m } from '$lib/paraglide/messages.js';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import type {
 	BlobEntry,
@@ -161,7 +162,7 @@ export class GitLabProvider implements ForgeProvider {
 	}
 
 	async writeFile(args: WriteArgs): Promise<WriteResult> {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 
 		const body: Record<string, unknown> = {
 			branch: args.branch,
@@ -185,7 +186,7 @@ export class GitLabProvider implements ForgeProvider {
 	}
 
 	#requireToken(): void {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 	}
 
 	async deleteFile(args: DeleteArgs): Promise<void> {

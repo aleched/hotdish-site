@@ -3,6 +3,7 @@
 	import { renderMarkdown } from '$lib/markdown/render';
 	import Icon from '$lib/ui/Icon.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		doc: RecipeDoc;
@@ -14,16 +15,16 @@
 		try {
 			return renderMarkdown(stripLeadingTitle(doc.body, doc.title));
 		} catch (error) {
-			return `<p class="banner error">Could not render this recipe: ${escapeHtml(
-				error instanceof Error ? error.message : String(error)
+			return `<p class="banner error">${escapeHtml(
+				m.recipe_render_error({ error: error instanceof Error ? error.message : String(error) })
 			)}</p>`;
 		}
 	});
 
 	const META = [
-		{ key: 'servings', label: 'Servings', icon: 'servings' },
-		{ key: 'prep_time', label: 'Prep time', icon: 'prep' },
-		{ key: 'cook_time', label: 'Cook time', icon: 'cook' }
+		{ key: 'servings', label: m.recipe_servings(), icon: 'servings' },
+		{ key: 'prep_time', label: m.recipe_prep_time(), icon: 'prep' },
+		{ key: 'cook_time', label: m.recipe_cook_time(), icon: 'cook' }
 	] as const;
 	const HANDLED = ['title', 'tags', 'servings', 'prep_time', 'cook_time', 'source'];
 
@@ -72,7 +73,7 @@
 					type="button"
 					class="tag"
 					onclick={() => repoStore.toggleTag(tag)}
-					title={`Filter by ${tag}`}
+					title={m.recipe_filter_by({ tag })}
 				>
 					{tag}
 				</button>
@@ -94,9 +95,9 @@
 
 	{#if source}
 		<div class="facts">
-			<span class="fact" title="Source">
+			<span class="fact" title={m.recipe_source()}>
 				<Icon name="link" size={16} />
-				<span class="visually-hidden">Source:</span>
+				<span class="visually-hidden">{m.recipe_source()}:</span>
 				{#if isUrl}
 					<a href={source} target="_blank" rel="noopener noreferrer">{source}</a>
 				{:else}
@@ -119,8 +120,7 @@
 
 	{#if doc.frontmatterError}
 		<p class="banner warn">
-			Frontmatter could not be parsed ({doc.frontmatterError}). It is shown as part of the body
-			and will be preserved exactly as written.
+			{m.recipe_frontmatter_error({ error: doc.frontmatterError })}
 		</p>
 	{/if}
 

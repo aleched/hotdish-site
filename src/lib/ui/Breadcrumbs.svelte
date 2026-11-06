@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/ui/Icon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Crumb {
 		label: string;
@@ -49,7 +50,7 @@
 	}
 </script>
 
-<nav aria-label="Breadcrumb">
+<nav aria-label={m.crumbs_label()}>
 	<ol>
 		{#each showInput || pending ? crumbs.slice(0, 1) : crumbs as crumb, index (crumb.href)}
 			<li>
@@ -68,15 +69,15 @@
 				<input
 					type="text"
 					bind:value
-					aria-label="Folder and file name"
-					title="Folder and file name"
+					aria-label={m.crumbs_path_input()}
+					title={m.crumbs_path_input()}
 					autocomplete="off"
 					spellcheck="false"
 					autofocus
 				/>
 			</li>
 		{:else if pending}
-			<li><span aria-current="page" title="Unsaved path">{value}</span></li>
+			<li><span aria-current="page" title={m.crumbs_unsaved()}>{value}</span></li>
 		{/if}
 		{#if renamable && !forceEdit}
 			<li>
@@ -84,8 +85,8 @@
 					type="button"
 					class="icon-button pencil"
 					class:active={renaming}
-					title={renaming ? 'Done editing path' : 'Rename or move'}
-					aria-label={renaming ? 'Done editing path' : 'Rename or move'}
+					title={renaming ? m.crumbs_done() : m.crumbs_rename()}
+					aria-label={renaming ? m.crumbs_done() : m.crumbs_rename()}
 					aria-pressed={renaming}
 					onclick={toggle}
 				>

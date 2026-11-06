@@ -23,6 +23,7 @@
 	import EmptyState from '$lib/ui/EmptyState.svelte';
 	import Loading from '$lib/ui/Loading.svelte';
 	import DeleteRecipe from '$lib/editor/DeleteRecipe.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let src = $derived($page.params.src ?? '');
 
@@ -30,7 +31,7 @@
 	function loadWithTimeout<T>(loader: () => Promise<T>, ms = 15000): Promise<T> {
 		return new Promise<T>((resolve, reject) => {
 			const timer = setTimeout(
-				() => reject(new Error('Timed out loading the editor. Check the browser console.')),
+				() => reject(new Error(m.repo_editor_timeout())),
 				ms
 			);
 			loader().then(
@@ -217,7 +218,7 @@
 	let rootLabel = $derived(
 		repoStore.ref
 			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || repoStore.ref.repo)
-			: 'Repository'
+			: m.repo_root_fallback()
 	);
 
 	// At the repository root the cards show view history; filtering or browsing into a folder shows the tree.
@@ -257,13 +258,13 @@
 </script>
 
 <svelte:head>
-	<title>{doc ? `${doc.title} — Hotdish` : `${rootLabel} — Hotdish`}</title>
+	<title>{m.repo_page_title({ title: doc ? doc.title : rootLabel })}</title>
 </svelte:head>
 
 {#if decoded.error}
-	<p class="banner error">That share link could not be read ({decoded.error}).</p>
+	<p class="banner error">{m.repo_link_unreadable({ error: decoded.error })}</p>
 	<p>
-		<a class="icon-link" href="/" title="Open a different repository" aria-label="Open a different repository">
+		<a class="icon-link" href="/" title={m.repo_open_different()} aria-label={m.repo_open_different()}>
 			<Icon name="home" size={20} />
 		</a>
 	</p>
@@ -276,13 +277,13 @@
 		<button
 			type="button"
 			class="icon-button"
-			title="Retry"
-			aria-label="Retry"
+			title={m.common_retry()}
+			aria-label={m.common_retry()}
 			onclick={() => repoStore.reload()}
 		>
 			<Icon name="refresh" />
 		</button>
-		<a class="icon-link" href="/" title="Add an access token" aria-label="Add an access token">
+		<a class="icon-link" href="/" title={m.repo_add_token()} aria-label={m.repo_add_token()}>
 			<Icon name="key" size={20} />
 		</a>
 	</div>
@@ -293,7 +294,7 @@
 
 			{#if repoStore.indexing}
 				<p class="muted progress">
-					Indexing {repoStore.indexed} of {repoStore.indexTotal} recipes…
+					{m.repo_indexing({ done: repoStore.indexed, total: repoStore.indexTotal })}
 				</p>
 			{/if}
 
@@ -303,8 +304,8 @@
 						<button
 							type="button"
 							class="icon-button"
-							title={foldersAreExpanded ? 'Collapse all folders' : 'Expand all folders'}
-							aria-label={foldersAreExpanded ? 'Collapse all folders' : 'Expand all folders'}
+							title={foldersAreExpanded ? m.repo_collapse_all() : m.repo_expand_all()}
+							aria-label={foldersAreExpanded ? m.repo_collapse_all() : m.repo_expand_all()}
 							aria-expanded={foldersAreExpanded}
 							onclick={toggleFolders}
 						>
@@ -313,7 +314,7 @@
 								size={14}
 							/>
 						</button>
-						<a class="side-label" href={`/r/${src}`} title="Repository home">{rootLabel}</a>
+						<a class="side-label" href={`/r/${src}`} title={m.repo_home()}>{rootLabel}</a>
 					</div>
 				</div>
 			{/if}
@@ -328,19 +329,19 @@
 				/>
 			{:else if repoStore.status === 'ready' && !repoStore.indexing}
 				<p class="muted">
-					{repoStore.isFiltering ? 'No recipes match those filters.' : 'No markdown files found.'}
+					{repoStore.isFiltering ? m.repo_no_matches() : m.repo_no_markdown()}
 				</p>
 			{/if}
 
 			{#if repoStore.truncated}
 				<p class="banner warn">
-					This repository is too large to list completely. Some recipes may be missing.
+					{m.repo_truncated()}
 				</p>
 			{/if}
 
 			{#if repoStore.skipped.length > 0}
 				<details class="skipped">
-					<summary>{repoStore.skipped.length} file(s) could not be read</summary>
+					<summary>{m.repo_skipped({ count: repoStore.skipped.length })}</summary>
 					<ul>
 						{#each repoStore.skipped as skippedPath (skippedPath)}
 							<li>{skippedPath}</li>
@@ -367,16 +368,16 @@
 							<a
 								class="part"
 								href={`/r/${src}/${encodeURI(path)}?edit`}
-								title="Edit"
-								aria-label="Edit"
+								title={m.common_edit()}
+								aria-label={m.common_edit()}
 							>
 								<Icon name="edit" />
 							</a>
 							<button
 								type="button"
 								class="part danger-hover"
-								title="Delete"
-								aria-label="Delete"
+								title={m.common_delete()}
+								aria-label={m.common_delete()}
 								disabled={!doc}
 								onclick={() => (recipeDialog = 'delete')}
 							>
@@ -387,8 +388,8 @@
 						<button
 							type="button"
 							class="icon-button"
-							title="New recipe"
-							aria-label="New recipe"
+							title={m.repo_new_recipe()}
+							aria-label={m.repo_new_recipe()}
 							onclick={() => openCreate(path)}
 						>
 							<Icon name="plus" />
@@ -400,14 +401,13 @@
 
 			{#if repoStore.templateError}
 				<p class="banner warn">
-					The repository template could not be used ({repoStore.templateError}). Editing falls
-					back to plain markdown.
+					{m.repo_template_error({ error: repoStore.templateError })}
 				</p>
 			{/if}
 
 			{#if draft}
 				{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-					<Loading label="Loading editor" />
+					<Loading label={m.repo_loading_editor()} />
 				{:then module}
 					{@const Editor = module.default}
 					{#key draft.doc.path}
@@ -415,20 +415,18 @@
 					{/key}
 				{:catch error}
 					<p class="banner error">
-						The editor could not be loaded ({error instanceof Error
-							? error.message
-							: String(error)}).
+						{m.repo_editor_failed({ error: error instanceof Error ? error.message : String(error) })}
 					</p>
 				{/await}
 			{:else if entry}
 				{#if docError}
 					<p class="banner error">{docError}</p>
 				{:else if docLoading && !doc}
-					<Loading label="Loading recipe" />
+					<Loading label={m.repo_loading_recipe()} />
 				{:else if doc}
 					{#if editing}
 						{#await loadWithTimeout(() => import('$lib/editor/RecipeEditor.svelte'))}
-							<Loading label="Loading editor" />
+							<Loading label={m.repo_loading_editor()} />
 						{:then module}
 							{@const Editor = module.default}
 							{#key doc.sha}
@@ -440,9 +438,7 @@
 							{/key}
 						{:catch error}
 							<p class="banner error">
-								The editor could not be loaded ({error instanceof Error
-									? error.message
-									: String(error)}).
+								{m.repo_editor_failed({ error: error instanceof Error ? error.message : String(error) })}
 							</p>
 						{/await}
 					{:else}
@@ -451,8 +447,8 @@
 				{/if}
 			{:else if folder}
 				{#if showRecent && recentItems.length > 0}
-					<h2 class="recent-title" title="Recently viewed">
-						<Icon name="clock" size={20} /><span class="visually-hidden">Recently viewed</span>
+					<h2 class="recent-title" title={m.repo_recent()}>
+						<Icon name="clock" size={20} /><span class="visually-hidden">{m.repo_recent()}</span>
 					</h2>
 					<ul class="cards">
 						{#each recentItems.slice(0, recentLimit) as item (item.path)}
@@ -477,8 +473,8 @@
 						<button
 							type="button"
 							class="icon-button more"
-							title="Show all recent recipes"
-							aria-label="Show all recent recipes"
+							title={m.repo_show_recent()}
+							aria-label={m.repo_show_recent()}
 							onclick={() => (recentLimit = Infinity)}
 						>
 							<Icon name="expand" />
@@ -488,7 +484,7 @@
 				{/if}
 				{#if folder.children.length === 0}
 					{#if repoStore.status === 'ready' && !repoStore.indexing}
-						<EmptyState icon="empty" label="This folder is empty." />
+						<EmptyState icon="empty" label={m.repo_folder_empty()} />
 					{/if}
 				{:else}
 					<ul class="cards">
@@ -501,8 +497,8 @@
 											{#if child.kind === 'folder'}
 												<span
 													class="count"
-													title="{child.count} recipes"
-													aria-label="{child.count} recipes"
+													title={m.repo_recipe_count({ count: child.count })}
+													aria-label={m.repo_recipe_count({ count: child.count })}
 												>
 													{child.count}
 												</span>
@@ -527,8 +523,8 @@
 						<button
 							type="button"
 							class="icon-button more"
-							title="Show all items"
-							aria-label="Show all items"
+							title={m.repo_show_all()}
+							aria-label={m.repo_show_all()}
 							onclick={() => (childLimit = Infinity)}
 						>
 							<Icon name="expand" />
@@ -536,21 +532,21 @@
 					{/if}
 				{/if}
 			{:else if notFound}
-				<p class="banner warn nothing" title="Nothing found" role="status">
+				<p class="banner warn nothing" title={m.repo_nothing_found()} role="status">
 					<Icon name="search" size={18} /><code>{path}</code>
 				</p>
 				<p>
 					<a
 						class="icon-link"
 						href={`/r/${src}`}
-						title="Back to the top of this repository"
-						aria-label="Back to the top of this repository"
+						title={m.repo_back_to_top()}
+						aria-label={m.repo_back_to_top()}
 					>
 						<Icon name="up" size={20} />
 					</a>
 				</p>
 			{:else}
-				<Loading label="Loading repository" />
+				<Loading label={m.repo_loading_repo()} />
 			{/if}
 		</section>
 	</div>

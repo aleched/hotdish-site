@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { m } from '$lib/paraglide/messages.js';
 
 const STORAGE_KEY = 'hotdish.editor.v1';
 
@@ -9,10 +10,10 @@ export const EDITOR_MODES: readonly {
 	label: string;
 	icon: 'form' | 'markdown' | 'rich' | 'file';
 }[] = [
-	{ value: 'form', label: 'Form', icon: 'form' },
-	{ value: 'rich', label: 'Rich text', icon: 'rich' },
-	{ value: 'source', label: 'Markdown', icon: 'markdown' },
-	{ value: 'raw', label: 'Raw file', icon: 'file' }
+	{ value: 'form', label: m.mode_form(), icon: 'form' },
+	{ value: 'rich', label: m.mode_rich(), icon: 'rich' },
+	{ value: 'source', label: m.mode_markdown(), icon: 'markdown' },
+	{ value: 'raw', label: m.mode_raw(), icon: 'file' }
 ];
 
 class EditorPrefs {

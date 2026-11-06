@@ -1,4 +1,5 @@
 import { trimSlashes } from '$lib/share/codec';
+import { m } from '$lib/paraglide/messages.js';
 import type { ForgeKind, RepoRef } from './types';
 
 const KNOWN_HOSTS: Record<string, ForgeKind> = {
@@ -25,12 +26,12 @@ export function knownForgeKind(host: string): ForgeKind | undefined {
  */
 export function parseRepoInput(input: string, options: ParseOptions = {}): RepoRef {
 	const raw = input.trim();
-	if (!raw) throw new Error('Enter a repository URL or owner/repo.');
+	if (!raw) throw new Error(m.error_repo_input_empty());
 
 	if (!/^[a-z]+:\/\//i.test(raw)) {
 		const segments = trimSlashes(raw).split('/').filter(Boolean);
 		if (segments.length < 2) {
-			throw new Error('Enter a full repository URL, or owner/repo.');
+			throw new Error(m.error_repo_input_short());
 		}
 		const kind = options.fallbackKind ?? 'github';
 		return {
@@ -45,13 +46,13 @@ export function parseRepoInput(input: string, options: ParseOptions = {}): RepoR
 	try {
 		url = new URL(raw);
 	} catch {
-		throw new Error('That does not look like a valid URL.');
+		throw new Error(m.error_url_invalid());
 	}
 
 	const host = url.host;
 	const kind = knownForgeKind(url.hostname) ?? options.fallbackKind ?? 'gitea';
 	const segments = trimSlashes(url.pathname).split('/').filter(Boolean);
-	if (segments.length < 2) throw new Error('That URL does not include an owner and repository.');
+	if (segments.length < 2) throw new Error(m.error_url_no_repo());
 
 	const owner = segments[0];
 	const repo = segments[1].replace(/\.git$/, '');

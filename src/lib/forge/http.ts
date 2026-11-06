@@ -1,4 +1,5 @@
 import { rateLimitStore } from '$lib/store/rateLimit.svelte';
+import { m } from '$lib/paraglide/messages.js';
 import { ForgeError, networkError } from './errors';
 import type { ForgeKind, RateLimitInfo } from './types';
 
@@ -30,9 +31,9 @@ export async function forgeFetch(
 	const detail = extractMessage(body) ?? response.statusText;
 
 	if (response.status === 401) {
-		throw new ForgeError('auth', `Authentication failed: ${detail}`, {
+		throw new ForgeError('auth', m.error_auth({ detail }), {
 			status: 401,
-			hint: 'Check that the access token is valid and has not expired.'
+			hint: m.error_auth_hint()
 		});
 	}
 
@@ -44,36 +45,36 @@ export async function forgeFetch(
 				host: ctx.host,
 				resetAt: readRateLimit(response.headers)?.resetAt ?? null
 			});
-			throw new ForgeError('rate-limit', 'Rate limit exceeded.', {
+			throw new ForgeError('rate-limit', m.error_rate_limit(), {
 				status: response.status,
-				hint: 'Add a personal access token to this repository on the home page to raise the limit, or wait for the window to reset.'
+				hint: m.error_rate_limit_hint()
 			});
 		}
-		throw new ForgeError('auth', `Access denied: ${detail}`, {
+		throw new ForgeError('auth', m.error_denied({ detail }), {
 			status: 403,
-			hint: 'The token may lack permission for this repository.'
+			hint: m.error_denied_hint()
 		});
 	}
 
 	if (response.status === 404) {
-		throw new ForgeError('not-found', `Not found: ${detail}`, {
+		throw new ForgeError('not-found', m.error_not_found({ detail }), {
 			status: 404,
-			hint: 'Check the repository, branch and path. Private repositories need a token.'
+			hint: m.error_not_found_hint()
 		});
 	}
 
 	if (response.status === 409 || response.status === 412) {
-		throw new ForgeError('conflict', 'The file changed since it was loaded.', {
+		throw new ForgeError('conflict', m.error_conflict(), {
 			status: response.status,
-			hint: 'Reload the recipe to pick up the newer version before saving again.'
+			hint: m.error_conflict_hint()
 		});
 	}
 
 	if (response.status === 422) {
-		throw new ForgeError('invalid', `Request rejected: ${detail}`, { status: 422 });
+		throw new ForgeError('invalid', m.error_rejected({ detail }), { status: 422 });
 	}
 
-	throw new ForgeError('unknown', `Request failed (${response.status}): ${detail}`, {
+	throw new ForgeError('unknown', m.error_failed({ status: response.status, detail }), {
 		status: response.status
 	});
 }

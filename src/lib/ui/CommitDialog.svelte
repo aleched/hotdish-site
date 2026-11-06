@@ -6,6 +6,7 @@
 	import { repoStore } from '$lib/store/repo.svelte';
 	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		title: string;
@@ -33,7 +34,7 @@
 		message = $bindable(),
 		busy = false,
 		error = null,
-		submitLabel = 'Submit',
+		submitLabel = m.commit_submit(),
 		submitIcon = 'save',
 		danger = false,
 		disabled = false,
@@ -54,7 +55,7 @@
 	let needsToken = $derived(missingToken || authFailed);
 	// Without a token the prompt speaks for itself; only a rejected token needs the error text.
 	let shownError = $derived(missingToken && authFailed ? null : described);
-	let guidance = $derived(repoStore.ref ? TOKEN_GUIDANCE[repoStore.ref.kind] : 'Access token');
+	let guidance = $derived(repoStore.ref ? TOKEN_GUIDANCE[repoStore.ref.kind] : m.home_token());
 	let branch = $derived(repoStore.resolvedRef);
 
 	let token = $state('');
@@ -108,20 +109,20 @@
 		{#if children}{@render children()}{/if}
 
 		<div class="field">
-			<label class="visually-hidden" for="commit-message">Commit message</label>
+			<label class="visually-hidden" for="commit-message">{m.commit_message()}</label>
 			<div class="message-row">
-				<span class="message-icon" title="Commit message"><Icon name="message" size={18} /></span>
+				<span class="message-icon" title={m.commit_message()}><Icon name="message" size={18} /></span>
 				<input
 					id="commit-message"
 					type="text"
 					bind:value={message}
-					placeholder="Commit message"
+					placeholder={m.commit_message()}
 					autocomplete="off"
 					use:focusAndSelect
 				/>
 			</div>
 			{#if branch}
-				<p class="muted small branch-note" title="Commits directly to {branch}">
+				<p class="muted small branch-note" title={m.commit_directly({ branch })}>
 					<Icon name="branch" size={14} /><code>{branch}</code>
 				</p>
 			{/if}
@@ -135,12 +136,12 @@
 				{/if}
 				{#if needsToken}
 					<div class="token-row">
-						<span class="token-icon" title="Access token"><Icon name="key" size={18} /></span>
+						<span class="token-icon" title={m.home_token()}><Icon name="key" size={18} /></span>
 						<input
 							type="password"
 							bind:value={token}
 							placeholder={guidance}
-							aria-label="Access token"
+							aria-label={m.home_token()}
 							autocomplete="off"
 							spellcheck="false"
 							disabled={checkingToken}
@@ -150,8 +151,8 @@
 							<button
 								type="button"
 								class="part save"
-								title="Save token"
-								aria-label="Save token"
+								title={m.commit_save_token()}
+								aria-label={m.commit_save_token()}
 								disabled={checkingToken || !token.trim()}
 								onclick={saveToken}
 							>
@@ -170,8 +171,8 @@
 				<button
 					type="button"
 					class="part"
-					title="Cancel"
-					aria-label="Cancel"
+					title={m.common_cancel()}
+					aria-label={m.common_cancel()}
 					disabled={busy}
 					onclick={oncancel}
 				>

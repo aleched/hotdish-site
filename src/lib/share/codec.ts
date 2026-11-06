@@ -1,5 +1,6 @@
 import { decodeBase64Url, encodeBase64Url } from '$lib/util/base64';
 import type { ForgeKind, RepoRef } from '$lib/forge/types';
+import { m } from '$lib/paraglide/messages.js';
 
 const KINDS: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 
@@ -19,7 +20,7 @@ export function decodeSrc(src: string): RepoRef {
 	try {
 		plain = decodeBase64Url(src);
 	} catch {
-		throw new Error('This link is malformed.');
+		throw new Error(m.error_link_malformed());
 	}
 
 	const hashIndex = plain.indexOf('#');
@@ -27,10 +28,10 @@ export function decodeSrc(src: string): RepoRef {
 	const head = hashIndex === -1 ? plain : plain.slice(0, hashIndex);
 
 	const colonIndex = head.indexOf(':');
-	if (colonIndex === -1) throw new Error('This link is malformed.');
+	if (colonIndex === -1) throw new Error(m.error_link_malformed());
 
 	const kind = head.slice(0, colonIndex) as ForgeKind;
-	if (!KINDS.includes(kind)) throw new Error(`Unsupported forge "${kind}".`);
+	if (!KINDS.includes(kind)) throw new Error(m.error_link_unsupported({ kind }));
 
 	let rest = head.slice(colonIndex + 1);
 	let gitRef: string | undefined;
@@ -41,7 +42,7 @@ export function decodeSrc(src: string): RepoRef {
 	}
 
 	const segments = rest.split('/').filter(Boolean);
-	if (segments.length < 3) throw new Error('This link is missing repository details.');
+	if (segments.length < 3) throw new Error(m.error_link_incomplete());
 
 	const [host, owner, ...repoParts] = segments;
 	return {

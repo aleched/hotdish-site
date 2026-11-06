@@ -1,16 +1,17 @@
 import { browser } from '$app/environment';
+import { m } from '$lib/paraglide/messages.js';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type ThemeAccent = 'purple' | 'blue' | 'red' | 'green' | 'yellow' | 'orange';
 
 export const THEME_MODES: ThemeMode[] = ['system', 'light', 'dark'];
 export const THEME_ACCENTS: { id: ThemeAccent; label: string; emoji: string; color: string }[] = [
-	{ id: 'purple', label: 'Grape', emoji: '🍇', color: '#7b3fa0' },
-	{ id: 'blue', label: 'Blueberry', emoji: '🫐', color: '#2557a7' },
-	{ id: 'green', label: 'Avocado', emoji: '🥑', color: '#5b7a1f' },
-	{ id: 'yellow', label: 'Banana', emoji: '🍌', color: '#d4a017' },
-	{ id: 'orange', label: 'Carrot', emoji: '🥕', color: '#bf6a14' },
-	{ id: 'red', label: 'Tomato', emoji: '🍅', color: '#c62f1f' }
+	{ id: 'purple', label: m.accent_grape(), emoji: '🍇', color: '#7b3fa0' },
+	{ id: 'blue', label: m.accent_blueberry(), emoji: '🫐', color: '#2557a7' },
+	{ id: 'green', label: m.accent_avocado(), emoji: '🥑', color: '#5b7a1f' },
+	{ id: 'yellow', label: m.accent_banana(), emoji: '🍌', color: '#d4a017' },
+	{ id: 'orange', label: m.accent_carrot(), emoji: '🥕', color: '#bf6a14' },
+	{ id: 'red', label: m.accent_tomato(), emoji: '🍅', color: '#c62f1f' }
 ];
 
 const STORAGE_KEY = 'hotdish.theme.v1';

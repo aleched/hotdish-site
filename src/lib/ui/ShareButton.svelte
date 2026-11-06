@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { repoStore } from '$lib/store/repo.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		source?: { href: string; label: string; kind: string } | null;
@@ -35,8 +36,8 @@
 		if (isPublic) return;
 		showToast(
 			isPublic === false
-				? 'This repository is private, so people you share this link with will need their own access to open it. Your token is never included in the link.'
-				: 'Could not confirm whether this repository is public. If it is private, people you share this link with will need their own access. Your token is never included in the link.'
+				? m.share_private()
+				: m.share_unknown()
 		);
 	}
 
@@ -58,8 +59,8 @@
 			type="button"
 			class="part"
 			onclick={copy}
-			title={copied ? 'Link copied' : `Copy share link: ${shareUrl}`}
-			aria-label={copied ? 'Link copied' : 'Share'}
+			title={copied ? m.share_copied() : m.share_copy({ url: shareUrl })}
+			aria-label={copied ? m.share_copied() : m.share_label()}
 		>
 			{#if copied}
 				<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -81,8 +82,8 @@
 				href={source.href}
 				target="_blank"
 				rel="noopener noreferrer"
-				title={`View source on ${source.label}`}
-				aria-label={`View source on ${source.label}`}
+				title={m.share_view_source({ label: source.label })}
+				aria-label={m.share_view_source({ label: source.label })}
 			>
 				<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
 					{#if source.kind === 'github'}
@@ -98,13 +99,13 @@
 	</div>
 
 	{#if failed}
-		<input class="fallback" type="text" readonly value={shareUrl} aria-label="Share link" />
+		<input class="fallback" type="text" readonly value={shareUrl} 		aria-label={m.share_link()} />
 	{/if}
 
 	{#if toast}
 		<div class="toast" role="status">
 			<p>{toast}</p>
-			<button type="button" class="ghost close" aria-label="Dismiss" onclick={dismissToast}>
+					<button type="button" class="ghost close" aria-label={m.common_dismiss()} onclick={dismissToast}>
 				<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
 					<path d="M4 4l8 8M12 4l-8 8" />
 				</svg>

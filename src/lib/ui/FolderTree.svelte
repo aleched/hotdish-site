@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { TreeFolder } from '$lib/tree';
 	import FolderTree from './FolderTree.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		node: TreeFolder;
@@ -26,8 +27,8 @@
 						class="chevron"
 						class:open
 						aria-expanded={open}
-						aria-label={`${open ? 'Collapse' : 'Expand'} ${child.name}`}
-						title={open ? 'Collapse' : 'Expand'}
+						aria-label={open ? m.tree_collapse_named({ name: child.name }) : m.tree_expand_named({ name: child.name })}
+						title={open ? m.tree_collapse() : m.tree_expand()}
 						onclick={() => ontoggle(child.path)}
 					>
 						<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

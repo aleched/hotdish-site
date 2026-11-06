@@ -5,6 +5,7 @@
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const MAX_COLLAPSED = 12;
 	const popoverId = 'filter-popover';
@@ -57,12 +58,12 @@
 <div class="filters no-print" bind:this={root} {onkeydown} role="presentation">
 	<div class="row">
 		<label class="search">
-			<span class="visually-hidden">Search recipes</span>
+			<span class="visually-hidden">{m.filter_search()}</span>
 			<Icon name="search" />
 			<input
 				type="search"
-				aria-label="Search recipes"
-				title="Search recipes"
+				aria-label={m.filter_search()}
+				title={m.filter_search()}
 				bind:value={repoStore.query}
 				autocomplete="off"
 			/>
@@ -71,8 +72,8 @@
 			type="button"
 			class="filter-button"
 			class:active={activeCount > 0 || open}
-			aria-label={activeCount > 0 ? `Filters (${activeCount} active)` : 'Filters'}
-			title="Filter by folder or tag"
+			aria-label={activeCount > 0 ? m.filter_button_active({ count: activeCount }) : m.filter_button()}
+			title={m.filter_by()}
 			aria-expanded={open}
 			aria-controls={popoverId}
 			onclick={() => (open = !open)}
@@ -84,8 +85,8 @@
 			<button
 				type="button"
 				class="filter-button"
-				aria-label="Random recipe"
-				title="Random recipe"
+				aria-label={m.filter_random()}
+				title={m.filter_random()}
 				disabled={!canRandom}
 				onclick={randomRecipe}
 			>
@@ -97,16 +98,16 @@
 	{#if open}
 		<div class="popover" id={popoverId}>
 			<section>
-				<h3 title="Folders"><Icon name="folder" /><span class="visually-hidden">Folders</span></h3>
+				<h3 title={m.filter_folders()}><Icon name="folder" /><span class="visually-hidden">{m.filter_folders()}</span></h3>
 				{#if repoStore.folders.length === 0}
-					<p class="muted small" title="No folders" aria-label="No folders"><Icon name="folder" size={18} /></p>
+					<p class="muted small" title={m.filter_no_folders()} aria-label={m.filter_no_folders()}><Icon name="folder" size={18} /></p>
 				{:else}
 					{#if repoStore.folders.length > 8}
 						<input
 							type="search"
 							class="folder-search"
-							placeholder="Find a folder…"
-							aria-label="Find a folder"
+							placeholder={m.filter_find_folder_placeholder()}
+							aria-label={m.filter_find_folder()}
 							bind:value={folderQuery}
 							autocomplete="off"
 						/>
@@ -125,7 +126,7 @@
 								</label>
 							</li>
 						{:else}
-							<li class="muted small" title="No matching folders" aria-label="No matching folders"><Icon name="search" size={18} /></li>
+							<li class="muted small" title={m.filter_no_matching_folders()} aria-label={m.filter_no_matching_folders()}><Icon name="search" size={18} /></li>
 						{/each}
 					</ul>
 				{/if}
@@ -133,7 +134,7 @@
 
 			{#if tags.length > 0}
 				<section>
-					<h3 title="Tags"><Icon name="tag" /><span class="visually-hidden">Tags</span></h3>
+					<h3 title={m.filter_tags()}><Icon name="tag" /><span class="visually-hidden">{m.filter_tags()}</span></h3>
 					<div class="tags">
 						{#each visible as tag (tag.key)}
 							<button
@@ -152,8 +153,8 @@
 							<button
 								type="button"
 								class="link more-tags"
-								title={showAll ? 'Show fewer tags' : `Show ${tags.length - MAX_COLLAPSED} more tags`}
-								aria-label={showAll ? 'Show fewer tags' : `Show ${tags.length - MAX_COLLAPSED} more tags`}
+								title={showAll ? m.filter_fewer_tags() : m.filter_more_tags({ count: tags.length - MAX_COLLAPSED })}
+								aria-label={showAll ? m.filter_fewer_tags() : m.filter_more_tags({ count: tags.length - MAX_COLLAPSED })}
 								aria-expanded={showAll}
 								onclick={() => (showAll = !showAll)}
 							>
@@ -172,8 +173,8 @@
 			<button
 				type="button"
 				class="tag selectable clear-chip"
-				aria-label="Clear all filters"
-				title="Clear all filters"
+				aria-label={m.filter_clear_all()}
+				title={m.filter_clear_all()}
 				onclick={() => repoStore.clearFilters()}
 			>
 				<span class="clear-x" aria-hidden="true">
@@ -186,7 +187,7 @@
 				<button
 					type="button"
 					class="tag selectable selected"
-					aria-label={`Remove folder filter ${path}`}
+					aria-label={m.filter_remove_folder({ path })}
 					onclick={() => repoStore.toggleFolder(path)}
 				>
 					<Icon name="folder" size={12} />
@@ -198,7 +199,7 @@
 				<button
 					type="button"
 					class="tag selectable selected"
-					aria-label={`Remove tag filter ${tag}`}
+					aria-label={m.filter_remove_tag({ tag })}
 					onclick={() => repoStore.toggleTag(tag)}
 				>
 					{tag}
@@ -210,7 +211,7 @@
 
 	{#if repoStore.isFiltering}
 		<p class="status muted">
-			{repoStore.filtered.length} of {repoStore.recipes.length} recipes
+			{m.filter_status({ shown: repoStore.filtered.length, total: repoStore.recipes.length })}
 		</p>
 	{/if}
 </div>

@@ -18,9 +18,14 @@
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 
 	import ModeToggle from '$lib/ui/ModeToggle.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 	import { editorPrefs, EDITOR_MODES, type EditorMode } from '$lib/store/editorPrefs.svelte';
 
 	type Mode = EditorMode;
+
+	function escapeHtml(text: string): string {
+		return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+	}
 
 	interface Props {
 		doc: RecipeDoc;
@@ -50,7 +55,7 @@
 		const invalid = folderError(parentFolder(value)) ?? fileNameError(baseName(value));
 		if (invalid) return invalid;
 		const full = toFull(destination, repoStore.basePath);
-		return repoStore.entryFor(full) ? `${full} already exists.` : null;
+		return repoStore.entryFor(full) ? m.editor_already_exists({ path: full }) : null;
 	});
 
 	// A new recipe's file name follows its title until the name is edited by hand.
@@ -131,14 +136,14 @@
 		if (next === mode) return;
 		modeError = null;
 		if (fmError) {
-			modeError = 'Fix the frontmatter before switching modes.';
+			modeError = m.editor_fix_frontmatter();
 			return;
 		}
 		capture();
 		if (mode === 'raw') {
 			const parsed = parseFrontmatter(rawText);
 			if (parsed.error) {
-				modeError = `Fix the frontmatter before switching modes (${parsed.error}).`;
+				modeError = m.editor_fix_frontmatter_detail({ error: parsed.error });
 				return;
 			}
 			fields = parsed.data;
@@ -212,7 +217,7 @@
 		const provider = repoStore.provider;
 		const branch = repoStore.resolvedRef;
 		if (!provider || !branch) {
-			saveError = new Error('The repository is not loaded.');
+			saveError = new Error(m.error_repo_not_loaded());
 			return;
 		}
 
@@ -278,7 +283,7 @@
 	}
 
 	function undo() {
-		if (!window.confirm('Discard your unsaved changes?')) return;
+		if (!window.confirm(m.confirm_discard())) return;
 		fields = $state.snapshot(doc.fields);
 		body = doc.body;
 		rawText = doc.raw;
@@ -291,7 +296,7 @@
 	}
 
 	function cancel() {
-		if ((dirty || moved) && !window.confirm('Discard your unsaved changes?')) return;
+		if ((dirty || moved) && !window.confirm(m.confirm_discard())) return;
 		leaving = true;
 		onclose?.();
 	}
@@ -299,7 +304,7 @@
 	// Guards in-app navigation (links, back button); beforeunload covers closing the tab.
 	beforeNavigate((navigation) => {
 		if (leaving || !(dirty || moved) || navigation.type === 'leave') return;
-		if (!window.confirm('Discard your unsaved changes?')) navigation.cancel();
+		if (!window.confirm(m.confirm_discard())) navigation.cancel();
 	});
 </script>
 
@@ -310,10 +315,10 @@
 		<ModeToggle
 			items={modes}
 			value={mode}
-			label="Editing mode"
+			label={m.editor_mode_label()}
 			onselect={setMode}
 			unavailable={(value) =>
-				rawOnly && value !== 'raw' ? 'the frontmatter could not be parsed' : null}
+				rawOnly && value !== 'raw' ? m.editor_unparsable_reason() : null}
 		/>
 
 		<div class="split">
@@ -321,8 +326,8 @@
 				<button
 					type="button"
 					class="part"
-					title="Undo changes"
-					aria-label="Undo changes"
+					title={m.editor_undo()}
+					aria-label={m.editor_undo()}
 					disabled={saving}
 					onclick={undo}
 				>
@@ -332,8 +337,8 @@
 			<button
 				type="button"
 				class="part"
-				title="Cancel"
-				aria-label="Cancel"
+				title={m.common_cancel()}
+				aria-label={m.common_cancel()}
 				onclick={cancel}
 			>
 				<Icon name="cancel" />
@@ -341,8 +346,8 @@
 			<button
 				class="part save"
 				type="button"
-				title="Save"
-				aria-label="Save"
+				title={m.common_save()}
+				aria-label={m.common_save()}
 				disabled={(!dirty && !isNew && !moved) || Boolean(moveProblem) || Boolean(fmError) || (!rawOnly && Boolean(rawProblem)) || (isNew && !String(fields.title ?? '').trim()) || saving}
 				onclick={startSave}
 			>
@@ -357,14 +362,13 @@
 
 	{#if rawOnly}
 		<p class="banner warn">
-			The frontmatter in this file could not be parsed ({doc.frontmatterError}). To avoid losing
-			it, only raw markdown editing is available.
+			{m.editor_raw_only({ error: doc.frontmatterError ?? '' })}
 		</p>
 	{/if}
 
 	{#if repoStore.template && !rawOnly}
 		<p class="muted small">
-			Using the <strong>{repoStore.template.name}</strong> template from this repository.
+			{@html m.editor_using_template({ name: `<strong>${escapeHtml(repoStore.template.name)}</strong>` })}
 		</p>
 	{/if}
 
@@ -382,9 +386,9 @@
 				spellcheck={false}
 				value={fmText}
 				oninput={(event) => onFrontmatterInput(event.currentTarget.value)}
-				placeholder="Frontmatter (YAML)"
-				title="Frontmatter (YAML)"
-				aria-label="Frontmatter (YAML)"
+				placeholder={m.editor_frontmatter()}
+				title={m.editor_frontmatter()}
+				aria-label={m.editor_frontmatter()}
 				aria-invalid={Boolean(fmError)}
 			/>
 			{#if fmError}<p class="banner warn">{fmError}</p>{/if}
@@ -407,7 +411,7 @@
 			fractions={false}
 			spellcheck={false}
 			bind:value={rawText}
-			aria-label="Raw file"
+			aria-label={m.editor_raw_file()}
 		/>
 		{#if rawProblem}<p class="banner warn">{rawProblem}</p>{/if}
 	{:else}
@@ -418,7 +422,7 @@
 				minDigits={sourceDigits}
 				spellcheck={editorPrefs.spellcheck}
 				bind:value={body}
-				aria-label="Markdown source"
+				aria-label={m.editor_markdown_source()}
 			/>
 			{#if previewHtml}
 				<div class="prose preview">{@html previewHtml}</div>
@@ -428,11 +432,11 @@
 
 	{#if confirming}
 		<CommitDialog
-			title={isNew ? 'Create recipe' : 'Save changes'}
+			title={isNew ? m.editor_create_recipe() : m.editor_save_changes()}
 			bind:message
 			busy={saving}
 			error={saveError}
-			submitLabel="Save"
+			submitLabel={m.common_save()}
 			submitIcon="save"
 			disabled={diff.identical && !isNew && !moved}
 			wide
@@ -441,15 +445,14 @@
 		>
 			{#if moved}
 				<p class="muted small">
-					Moves <code>{doc.path}</code> to <code>{toFull(destination, repoStore.basePath)}</code>
+					{@html m.editor_moves({ from: `<code>${escapeHtml(doc.path)}</code>`, to: `<code>${escapeHtml(toFull(destination, repoStore.basePath))}</code>` })}
 				</p>
 			{/if}
 			{#if diff.identical}
-				{#if !moved}<p class="muted" title="No changes to save" aria-label="No changes to save"><Icon name="check" /></p>{/if}
+				{#if !moved}<p class="muted" title={m.editor_no_changes()} aria-label={m.editor_no_changes()}><Icon name="check" /></p>{/if}
 			{:else}
 				<p class="muted small">
-					+{diff.added} line(s), −{diff.removed} line(s) in
-					<code>{isNew ? toFull(destination, repoStore.basePath) : doc.path}</code>
+					{@html m.editor_diff_summary({ added: diff.added, removed: diff.removed, path: `<code>${escapeHtml(isNew ? toFull(destination, repoStore.basePath) : doc.path)}</code>` })}
 				</p>
 				<pre class="diff">{#each diff.lines as line, index (index)}<span class={line.kind}
 						>{line.kind === 'added' ? '+' : line.kind === 'removed' ? '-' : ' '}{line.text}</span
@@ -458,15 +461,12 @@
 
 			{#snippet errorExtra()}
 				{#if conflict}
-					<p>
-						The file changed in the repository since it was loaded. Reload to get the latest
-						version — your edits here will be lost, so copy anything you need first.
-					</p>
+					<p>{m.editor_conflict()}</p>
 					<button
 						type="button"
 						class="icon-button dialog-button"
-						title="Reload from repository"
-						aria-label="Reload from repository"
+						title={m.editor_reload()}
+						aria-label={m.editor_reload()}
 						onclick={reloadFromRepo}
 					>
 						<Icon name="refresh" />

@@ -1,5 +1,6 @@
 <script lang="ts" generics="T extends string">
 	import Icon from '$lib/ui/Icon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Item {
 		value: T;
@@ -53,7 +54,7 @@
 			aria-checked={value === item.value}
 			aria-disabled={reason !== null}
 			aria-label={item.label}
-			title={reason ? `${item.label} is unavailable: ${reason}` : item.label}
+			title={reason ? m.mode_unavailable({ label: item.label, reason }) : item.label}
 			tabindex={value === item.value ? 0 : -1}
 			class:on={value === item.value}
 			class:unavailable={reason !== null}

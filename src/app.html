@@ -11,7 +11,16 @@
 				if (t.mode === 'light' || t.mode === 'dark') document.documentElement.dataset.theme = t.mode;
 				if (t.accent && t.accent !== 'purple') document.documentElement.dataset.accent = t.accent;
 			} catch (e) {}
-		</script>		%sveltekit.head%
+		</script>
+		<style>
+			/* Paint the themed background before the app CSS loads, so reloads don't flash. */
+			html { background: #fdfbf7; color-scheme: light; }
+			@media (prefers-color-scheme: dark) {
+				html:not([data-theme='light']) { background: #18191b; color-scheme: dark; }
+			}
+			html[data-theme='dark'] { background: #18191b; color-scheme: dark; }
+		</style>
+		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>

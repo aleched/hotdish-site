@@ -1,4 +1,5 @@
 import { utf8ToBase64 } from '$lib/util/base64';
+import { m } from '$lib/paraglide/messages.js';
 import { ForgeError } from './errors';
 import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
 import type {
@@ -152,7 +153,7 @@ export class GiteaProvider implements ForgeProvider {
 	}
 
 	async writeFile(args: WriteArgs): Promise<WriteResult> {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 
 		const body: Record<string, unknown> = {
 			message: args.message,
@@ -175,7 +176,7 @@ export class GiteaProvider implements ForgeProvider {
 	}
 
 	#requireToken(): void {
-		if (!this.#token) throw new ForgeError('auth', 'Access token required.');
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
 	}
 
 	async deleteFile(args: DeleteArgs): Promise<void> {
@@ -219,9 +220,9 @@ export class GiteaProvider implements ForgeProvider {
 			return { sha: result.files?.[0]?.content?.sha };
 		} catch (error) {
 			if (error instanceof ForgeError && (error.status === 404 || error.status === 405)) {
-				throw new ForgeError('unknown', 'The file could not be moved.', {
+				throw new ForgeError('unknown', m.error_move_failed(), {
 					status: error.status,
-					hint: 'The file may have been removed, or the server is older than Gitea / Forgejo 1.20, which is needed for moving files.'
+					hint: m.error_move_failed_hint()
 				});
 			}
 			throw error;

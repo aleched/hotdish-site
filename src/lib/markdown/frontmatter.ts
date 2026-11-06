@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import { m } from '$lib/paraglide/messages.js';
 
 export interface Frontmatter {
 	/** Parsed YAML mapping. Unknown keys are preserved so they survive a round trip. */
@@ -64,7 +65,7 @@ export function parseYamlMapping(text: string): { data: Record<string, unknown> 
 		const parsed = yaml.load(text);
 		if (parsed === undefined || parsed === null) return { data: {} };
 		if (typeof parsed !== 'object' || Array.isArray(parsed)) {
-			return { error: 'Frontmatter must be a set of key: value pairs.' };
+			return { error: m.frontmatter_error_pairs() };
 		}
 		return { data: parsed as Record<string, unknown> };
 	} catch (error) {

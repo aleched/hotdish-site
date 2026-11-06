@@ -12,6 +12,7 @@
 	import Icon from '$lib/ui/Icon.svelte';
 	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
 	import TagInput from '$lib/ui/TagInput.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		doc: StructuredDoc;
@@ -28,7 +29,7 @@
 	function openIntro() {
 		introOpen = true;
 		requestAnimationFrame(() =>
-			document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Introduction"]')?.focus()
+			document.querySelector<HTMLTextAreaElement>('textarea[data-intro]')?.focus()
 		);
 	}
 
@@ -82,9 +83,9 @@
 		icon: 'servings' | 'prep' | 'cook';
 		placeholder: string;
 	}[] = [
-		{ key: 'servings', label: 'Servings', icon: 'servings', placeholder: 'Servings' },
-		{ key: 'prep_time', label: 'Prep time', icon: 'prep', placeholder: 'Prep time' },
-		{ key: 'cook_time', label: 'Cook time', icon: 'cook', placeholder: 'Cook time' }
+		{ key: 'servings', label: m.recipe_servings(), icon: 'servings', placeholder: m.recipe_servings() },
+		{ key: 'prep_time', label: m.recipe_prep_time(), icon: 'prep', placeholder: m.recipe_prep_time() },
+		{ key: 'cook_time', label: m.recipe_cook_time(), icon: 'cook', placeholder: m.recipe_cook_time() }
 	];
 	const META_KEYS = [...META_FIELDS.map((item) => item.key), 'source'];
 
@@ -129,9 +130,9 @@
 	}
 
 	function placeholderFor(type: string): string {
-		if (type === 'ordered') return 'One step per line';
-		if (type === 'list') return 'One bullet per line';
-		return 'Notes, prose, anything';
+		if (type === 'ordered') return m.form_one_step();
+		if (type === 'list') return m.form_one_bullet();
+		return m.form_notes();
 	}
 
 	function fieldInputId(field: TemplateField): string {
@@ -139,9 +140,9 @@
 	}
 
 	const SECTION_TYPES: { value: SectionType; label: string }[] = [
-		{ value: 'text', label: 'Free text' },
-		{ value: 'list', label: 'Bulleted' },
-		{ value: 'ordered', label: 'Numbered' }
+		{ value: 'text', label: m.form_type_text() },
+		{ value: 'list', label: m.form_type_list() },
+		{ value: 'ordered', label: m.form_type_ordered() }
 	];
 
 	function setType(section: StructuredSection, type: SectionType) {
@@ -227,9 +228,9 @@
 		<input
 			id="field-title"
 			type="text"
-			aria-label="Title"
-			title="Title"
-			placeholder="Title"
+			aria-label={m.form_title()}
+			title={m.form_title()}
+			placeholder={m.form_title()}
 			value={textValue('title')}
 			oninput={(event) => setField('title', event.currentTarget.value)}
 		/>
@@ -239,7 +240,7 @@
 				{#if field.key !== 'title' && !META_KEYS.includes(field.key)}
 					<div class="field" class:with-icon={field.key === 'tags'}>
 						{#if field.key === 'tags'}
-							<span class="field-icon" title="Tags"><Icon name="tag" size={20} /></span>
+							<span class="field-icon" title={m.filter_tags()}><Icon name="tag" size={20} /></span>
 						{/if}
 						<div class="field-body">
 						<label class="label" class:visually-hidden={field.key === 'tags'} for={fieldInputId(field)}>
@@ -264,7 +265,7 @@
 							{#if field.allowCustom}
 								<TagInput
 									values={listValue(field.key)}
-									placeholder="Add a custom value"
+									placeholder={m.form_custom_value()}
 									onchange={(values) => setField(field.key, values)}
 								/>
 							{/if}
@@ -319,9 +320,9 @@
 
 		{#if !template || !template.fields.some((field) => field.key === 'tags')}
 			<div class="field with-icon">
-				<span class="field-icon" title="Tags"><Icon name="tag" size={20} /></span>
+				<span class="field-icon" title={m.filter_tags()}><Icon name="tag" size={20} /></span>
 				<div class="field-body">
-					<label class="visually-hidden" for="field-tags">Tags</label>
+					<label class="visually-hidden" for="field-tags">{m.filter_tags()}</label>
 					<TagInput
 						id="field-tags"
 						values={listValue('tags')}
@@ -347,12 +348,12 @@
 			{/each}
 		</div>
 		<div class="input-icon">
-			<span class="field-icon" title="Source"><Icon name="link" size={18} /></span>
+			<span class="field-icon" title={m.recipe_source()}><Icon name="link" size={18} /></span>
 			<input
 				type="text"
-				aria-label="Source"
-				title="Source"
-				placeholder="Source (URL or person)"
+				aria-label={m.recipe_source()}
+				title={m.recipe_source()}
+				placeholder={m.form_source_placeholder()}
 				value={textValue('source')}
 				oninput={(event) => setField('source', event.currentTarget.value)}
 			/>
@@ -367,19 +368,20 @@
 				fit
 				gutter="dash"
 				bind:value={doc.preamble}
-				aria-label="Introduction"
+				aria-label={m.form_intro()}
+				data-intro
 				onblur={() => {
 					if (!doc.preamble.trim()) introOpen = false;
 				}}
-				placeholder="Introduction"
+				placeholder={m.form_intro()}
 			/>
 		</section>
 	{:else}
 		<button
 			type="button"
 			class="add-intro"
-			title="Add introduction"
-			aria-label="Add introduction"
+			title={m.form_add_intro()}
+			aria-label={m.form_add_intro()}
 			onclick={openIntro}
 		>
 			<Icon name="plus" size={12} />
@@ -391,7 +393,7 @@
 		<section
 			class="card stack"
 			role="group"
-			aria-label={section.heading || 'Section'}
+			aria-label={section.heading || m.form_section()}
 			class:dragging={dragIndex === sectionIndex}
 			class:over={overIndex === sectionIndex && dragIndex !== sectionIndex}
 			ondragover={(event) => onDragOver(event, sectionIndex)}
@@ -403,8 +405,8 @@
 					class="grip"
 					draggable="true"
 					data-section-grip={sectionIndex}
-					title="Drag to reorder (or use Arrow Up/Down)"
-					aria-label={`Reorder ${section.heading || 'section'}`}
+					title={m.form_drag_hint()}
+					aria-label={m.form_reorder({ name: section.heading || m.form_section() })}
 					ondragstart={(event) => onDragStart(event, sectionIndex)}
 					ondragend={onDragEnd}
 					onkeydown={(event) => onGripKey(event, sectionIndex)}
@@ -415,12 +417,12 @@
 					class="heading-input"
 					type="text"
 					bind:value={section.heading}
-					aria-label="Section heading"
+					aria-label={m.form_section_heading()}
 				/>
 				<div
 					class="type-toggle"
 					role="radiogroup"
-					aria-label="Section style"
+					aria-label={m.form_section_style()}
 					style:--i={SECTION_TYPES.findIndex((item) => item.value === section.type)}
 				>
 					<span class="thumb" aria-hidden="true"></span>
@@ -443,15 +445,15 @@
 				<button
 					type="button"
 					class="ghost danger remove"
-					title="Remove section"
-					aria-label="Remove section"
+					title={m.form_remove_section()}
+					aria-label={m.form_remove_section()}
 					onclick={() => removeSection(sectionIndex)}
 				><Icon name="trash" /></button>
 			</header>
 
 			{#if !section.matched && template}
 				<p class="muted small">
-					Not described by the template. It is kept exactly as written.
+					{m.form_unmatched()}
 				</p>
 			{/if}
 
@@ -462,16 +464,16 @@
 							<input
 								type="text"
 								class="sub-input"
-								placeholder={templateSectionFor(section)?.subheadingLabel ?? 'Sub-heading'}
+								placeholder={templateSectionFor(section)?.subheadingLabel ?? m.form_subheading()}
 								value={block.heading ?? ''}
 								oninput={(event) => (block.heading = event.currentTarget.value)}
-								aria-label="Sub-heading"
+																aria-label={m.form_subheading()}
 							/>
 							<button
 								type="button"
 								class="ghost danger remove"
-								title="Remove sub-section"
-								aria-label="Remove sub-section"
+																title={m.form_remove_subsection()}
+																aria-label={m.form_remove_subsection()}
 								onclick={() => removeBlock(section, blockIndex)}
 							><Icon name="trash" /></button>
 						</div>
@@ -493,7 +495,7 @@
 								fit
 								gutter="dash"
 								mono={false}
-								aria-label="Text before the list"
+								aria-label={m.form_text_before()}
 								value={block.leadingText}
 								oninput={(event) => (block.leadingText = event.currentTarget.value)}
 							/>
@@ -514,7 +516,7 @@
 								fit
 								gutter="dash"
 								mono={false}
-								aria-label="Text after the list"
+								aria-label={m.form_text_after()}
 								value={block.trailingText}
 								oninput={(event) => (block.trailingText = event.currentTarget.value)}
 							/>
@@ -527,8 +529,8 @@
 				<button
 					type="button"
 					class="add-sub add-btn"
-					title={`Add ${templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}`}
-					aria-label={`Add ${templateSectionFor(section)?.subheadingLabel ?? 'sub-section'}`}
+					title={templateSectionFor(section)?.subheadingLabel ? m.form_add_named({ name: templateSectionFor(section)!.subheadingLabel! }) : m.form_add_subsection()}
+					aria-label={templateSectionFor(section)?.subheadingLabel ? m.form_add_named({ name: templateSectionFor(section)!.subheadingLabel! }) : m.form_add_subsection()}
 					onclick={() => addBlock(section)}
 				>
 					<Icon name="plus" size={14} /><Icon name="subsection" />
@@ -539,8 +541,8 @@
 
 	{#if missingSections.length > 0}
 		<section class="card stack">
-			<h2 title="Add a section">
-				<Icon name="plus" size={20} /><span class="visually-hidden">Add a section</span>
+			<h2 title={m.form_add_a_section()}>
+				<Icon name="plus" size={20} /><span class="visually-hidden">{m.form_add_a_section()}</span>
 			</h2>
 			<div class="row wrap">
 				{#each missingSections as section (section.id)}
@@ -560,11 +562,11 @@
 		<button
 			type="button"
 			class="add-btn"
-			title="Add section"
-			aria-label="Add section"
+			title={m.form_add_section()}
+			aria-label={m.form_add_section()}
 			onclick={() =>
 				doc.sections.push({
-					heading: 'New section',
+					heading: m.form_new_section(),
 					type: 'list',
 					matched: false,
 					blocks: [{ items: [], leadingText: '', trailingText: '' }]
