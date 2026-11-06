@@ -107,7 +107,9 @@ fields:
 
 describe('template name', () => {
 	it('is null when the file has no name', () => {
-		expect(parseTemplate('version: 1').template?.name).toBeNull();
+		const result = parseTemplate('fields:\n  - key: tags\n');
+		expect(result.template).not.toBeNull();
+		expect(result.template?.name).toBeNull();
 	});
 });
 
