@@ -8,6 +8,7 @@
 	import { profileStore } from '$lib/store/profiles.svelte';
 	import { navStore } from '$lib/store/nav.svelte';
 	import { historyStore } from '$lib/store/history.svelte';
+	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Breadcrumbs from '$lib/ui/Breadcrumbs.svelte';
 	import FolderTree from '$lib/ui/FolderTree.svelte';
 	import RecipeView from '$lib/ui/RecipeView.svelte';
@@ -221,10 +222,14 @@
 			: m.repo_root_fallback()
 	);
 
+	const DAY_MS = 24 * 60 * 60 * 1000;
+
 	// At the repository root the cards show view history; filtering or browsing into a folder shows the tree.
-	let showRecent = $derived(path === '' && !repoStore.isFiltering);
+	let showRecent = $derived(path === '' && !repoStore.isFiltering && editorPrefs.recentDays !== 0);
 	let recentItems = $derived(
 		historyStore.items.flatMap((item) => {
+			const days = editorPrefs.recentDays;
+			if (days !== null && Date.now() - item.openedAt > days * DAY_MS) return [];
 			const full = repoStore.basePath
 				? `${repoStore.basePath.replace(/\/+$/, '')}/${item.path}`
 				: item.path;

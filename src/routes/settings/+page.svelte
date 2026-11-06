@@ -2,7 +2,7 @@
 	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
 	import { clearBlobCache } from '$lib/cache/blobCache';
 	import { historyStore } from '$lib/store/history.svelte';
-	import { editorPrefs, EDITOR_MODES } from '$lib/store/editorPrefs.svelte';
+	import { editorPrefs, EDITOR_MODES, MAX_RECENT_DAYS } from '$lib/store/editorPrefs.svelte';
 	import ModeToggle from '$lib/ui/ModeToggle.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import Flag from '$lib/ui/Flag.svelte';
@@ -46,6 +46,18 @@
 
 	let cacheMessage = $state<string | null>(null);
 	let confirmingCache = $state(false);
+
+	// Normalizes the field on blur (change); input also saves so leaving the page mid-edit never loses it.
+	let daysEl = $state<HTMLInputElement>();
+	function saveDays(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		// type=number ignores maxlength, so trim to 3 digits manually
+		if (input.value.length > 3) input.value = input.value.slice(0, 3);
+		editorPrefs.setRecentDays(input.valueAsNumber);
+	}
+	function commitDays() {
+		if (daysEl) daysEl.value = String(editorPrefs.recentDays ?? '');
+	}
 
 	async function emptyCache() {
 		confirmingCache = false;
@@ -208,6 +220,25 @@
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
 				</label>
 				<span class="dice-preview" class:off={!editorPrefs.randomButton} aria-hidden="true"><Icon name="dice" /></span>
+			</span>
+		</div>
+		<div class="setting" title={m.settings_recent_hint()}>
+			<span>{m.settings_recent()}</span>
+			<span class="control">
+				<input
+					type="number"
+					class="days"
+					min="0"
+					max={MAX_RECENT_DAYS}
+					step="1"
+					placeholder="∞"
+					aria-label={m.settings_recent_hint()}
+					value={editorPrefs.recentDays ?? ''}
+					bind:this={daysEl}
+					onchange={commitDays}
+					oninput={saveDays}
+				/>
+				<span class="unit">{m.settings_recent_unit()}</span>
 			</span>
 		</div>
 	</div>
@@ -383,6 +414,9 @@
 		align-items: center;
 		justify-self: start;
 		gap: 0.75rem;
+	}
+	.days {
+		width: calc(3ch + 2.5rem);
 	}
 	.dice-preview {
 		display: inline-flex;

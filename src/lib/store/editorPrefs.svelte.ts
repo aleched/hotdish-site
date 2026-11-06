@@ -16,11 +16,22 @@ export const EDITOR_MODES: readonly {
 	{ value: 'raw', label: m.mode_raw(), icon: 'file' }
 ];
 
+export const MAX_RECENT_DAYS = 365;
+
+/** null means no limit; 0 hides the recent section. */
+export type RecentDays = number | null;
+
+function clampDays(days: number): RecentDays {
+	if (!Number.isFinite(days)) return null;
+	return Math.min(MAX_RECENT_DAYS, Math.max(0, Math.round(days)));
+}
+
 class EditorPrefs {
 	defaultMode = $state<EditorMode>('form');
 	spellcheck = $state(true);
 	fractions = $state(true);
 	randomButton = $state(true);
+	recentDays = $state<RecentDays>(7);
 
 	constructor() {
 		if (!browser) return;
@@ -30,10 +41,13 @@ class EditorPrefs {
 				defaultMode?: string;
 				spellcheck?: boolean;
 				randomButton?: boolean;
+				recentDays?: number | null;
 			};
 			if (typeof parsed.fractions === 'boolean') this.fractions = parsed.fractions;
 			if (typeof parsed.spellcheck === 'boolean') this.spellcheck = parsed.spellcheck;
 			if (typeof parsed.randomButton === 'boolean') this.randomButton = parsed.randomButton;
+			if (parsed.recentDays === null) this.recentDays = null;
+			else if (typeof parsed.recentDays === 'number') this.recentDays = clampDays(parsed.recentDays);
 			const mode = EDITOR_MODES.find((item) => item.value === parsed.defaultMode);
 			if (mode) this.defaultMode = mode.value;
 		} catch {
@@ -61,6 +75,12 @@ class EditorPrefs {
 		this.persist();
 	}
 
+	/** An empty or non-numeric value (NaN) clears the limit. */
+	setRecentDays(days: number): void {
+		this.recentDays = clampDays(days);
+		this.persist();
+	}
+
 	private persist(): void {
 		try {
 			localStorage.setItem(
@@ -69,7 +89,8 @@ class EditorPrefs {
 					fractions: this.fractions,
 					defaultMode: this.defaultMode,
 					spellcheck: this.spellcheck,
-					randomButton: this.randomButton
+					randomButton: this.randomButton,
+					recentDays: this.recentDays
 				})
 			);
 		} catch {
