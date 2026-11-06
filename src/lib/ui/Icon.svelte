@@ -101,15 +101,15 @@
 		<circle cx="4.5" cy="12.5" r="1.5" />
 		<circle cx="11.5" cy="5.5" r="1.5" />
 		<path d="M4.5 5v6M11.5 7c0 2.5-3 2.5-7 4" />
-	{:else if name === 'servings'}
+	{:else if name === 'person'}
 		<circle cx="8" cy="5.2" r="2.4" />
 		<path d="M3 13.5c.4-2.7 2.3-4.2 5-4.2s4.6 1.5 5 4.2z" />
-	{:else if name === 'prep'}
+	{:else if name === 'bowl'}
 		<path d="M2 7.6h12c0 3.6-2.4 6.8-6 6.8s-6-3.2-6-6.8z" />
 		<path d="M6 15h4" />
 		<ellipse cx="6.2" cy="10.6" rx="1.4" ry="2.1" transform="rotate(45 6.2 10.6)" />
 		<path d="M7.4 9.4L13.2 3.6" />
-	{:else if name === 'cook'}
+	{:else if name === 'flame'}
 		<path
 			transform="translate(8 7.2) scale(1.2) translate(-8 -7.2)"
 			stroke-width="1.17"
@@ -177,6 +177,62 @@
 			<circle cx="6" cy="8" r="1.1" /><circle cx="10" cy="8" r="1.1" />
 			<circle cx="6" cy="12.5" r="1.1" /><circle cx="10" cy="12.5" r="1.1" />
 		</g>
+	{:else if name === 'calendar'}
+		<rect x="2" y="3" width="12" height="11" rx="2" />
+		<path d="M2 7h12M5.5 1.5v3M10.5 1.5v3" />
+	{:else if name === 'hourglass'}
+		<path d="M4 2h8M4 14h8" />
+		<path d="M4.5 2c0 3 3.5 4 3.5 6s-3.5 3-3.5 6M11.5 2c0 3-3.5 4-3.5 6s3.5 3 3.5 6" />
+	{:else if name === 'timer'}
+		<circle cx="8" cy="9" r="5" />
+		<path d="M8 9V6.5M6.5 1.5h3M12 4l1-1" />
+	{:else if name === 'star'}
+		<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z" />
+	{:else if name === 'flag'}
+		<path d="M3.5 14.5V2M3.5 2.5h8.5l-2 3 2 3H3.5" />
+	{:else if name === 'pin'}
+		<path d="M8 14.5s4.5-4.2 4.5-7.8a4.5 4.5 0 0 0-9 0c0 3.6 4.5 7.8 4.5 7.8z" />
+		<circle cx="8" cy="6.7" r="1.6" />
+	{:else if name === 'money'}
+		<circle cx="8" cy="8" r="6" />
+		<path d="M9.8 6c-.3-.8-1-1.2-1.8-1.2-1 0-1.8.5-1.8 1.4 0 2 3.8 1 3.8 3 0 .9-.8 1.4-1.9 1.4-.9 0-1.6-.4-1.9-1.2M8 3.5v1.3M8 11.2v1.3" />
+	{:else if name === 'book'}
+		<path d="M2 3c2-.8 4-.8 6 .7 2-1.5 4-1.5 6-.7v9.5c-2-.8-4-.8-6 .7-2-1.5-4-1.5-6-.7z" />
+		<path d="M8 3.7v9.5" />
+	{:else if name === 'phone'}
+		<path d="M3.5 2h2.3l1 3-1.5 1c.8 1.7 2 2.9 3.7 3.7l1-1.5 3 1v2.3c0 .8-.7 1.5-1.5 1.5C7 14 2 9 2 3.5 2 2.7 2.7 2 3.5 2z" />
+	{:else if name === 'mail'}
+		<rect x="1.5" y="3" width="13" height="10" rx="1.5" />
+		<path d="M2 4l6 5 6-5" />
+	{:else if name === 'globe'}
+		<circle cx="8" cy="8" r="6.5" />
+		<path d="M1.5 8h13M8 1.5c2 2 2.5 4 2.5 6.5S10 12.5 8 14.5c-2-2-2.5-4-2.5-6.5S6 3.5 8 1.5z" />
+	{:else if name === 'scale'}
+		<path d="M8 2v12M4 14h8M3 4h10" />
+		<path d="M3 4L1.2 9a1.8 1.5 0 0 0 3.6 0zM13 4l-1.8 5a1.8 1.5 0 0 0 3.6 0z" />
+	{:else if name === 'ruler'}
+		<path d="M2 10.5L10.5 2 14 5.5 5.5 14z" />
+		<path d="M8.5 4l1.5 1.5M6.5 6l1 1M4.5 8l1.5 1.5M10.5 8l1 1" />
+	{:else if name === 'heart'}
+		<path d="M8 13.5S2 9.8 2 5.8A3.2 3.2 0 0 1 8 4.2a3.2 3.2 0 0 1 6 1.6c0 4-6 7.7-6 7.7z" />
+	{:else if name === 'lightbulb'}
+		<path d="M5.5 11.5c0-1-.2-1.4-1-2.4a4.5 4.5 0 1 1 7 0c-.8 1-1 1.4-1 2.4z" />
+		<path d="M6.3 13.5h3.4M7 15h2" />
+	{:else if name === 'warning'}
+		<path d="M8 2L14.5 13.5h-13z" />
+		<path d="M8 6.5v3.2" />
+		<circle cx="8" cy="11.5" r=".5" fill="currentColor" />
+	{:else if name === 'user'}
+		<circle cx="8" cy="8" r="6.5" />
+		<circle cx="8" cy="6.5" r="2" />
+		<path d="M4 12.5c.6-2 2.2-3 4-3s3.4 1 4 3" />
+	{:else if name === 'group'}
+		<circle cx="8" cy="5" r="2.2" />
+		<path d="M4 13c.3-2.4 1.8-3.8 4-3.8s3.7 1.4 4 3.8z" />
+		<circle cx="3" cy="6.5" r="1.4" />
+		<path d="M.8 12.5c.2-1.8 1.2-2.8 2.5-2.8" />
+		<circle cx="13" cy="6.5" r="1.4" />
+		<path d="M15.2 12.5c-.2-1.8-1.2-2.8-2.5-2.8" />
 	{/if}
 </svg>
 

@@ -31,17 +31,17 @@ fields:
       - key: servings
         label: Servings
         type: number
-        icon: servings
+        icon: person
 
       - key: prep_time
         label: Prep time
         type: text
-        icon: prep
+        icon: bowl
 
       - key: cook_time
         label: Cook time
         type: text
-        icon: cook
+        icon: flame
 
   - key: source
     label: Source
