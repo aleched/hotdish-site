@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { Doc } from '$lib/markdown/doc';
-	import { commitMessages, parentFolder, toRelative } from '$lib/paths';
+	import { commitMessages, encodeDocPath, parentFolder, toRelative } from '$lib/paths';
 	import { historyStore } from '$lib/store/history.svelte';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import CommitDialog from '$lib/ui/CommitDialog.svelte';
@@ -46,7 +46,7 @@
 			while (folder && !repoStore.folders.some((item) => item.path === folder)) {
 				folder = parentFolder(folder);
 			}
-			await goto(folder ? `/r/${src}/${encodeURI(folder)}` : `/r/${src}`);
+			await goto(folder ? `/r/${src}/${encodeDocPath(folder)}` : `/r/${src}`);
 		} catch (cause) {
 			error = cause;
 		} finally {

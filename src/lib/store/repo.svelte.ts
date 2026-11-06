@@ -172,7 +172,11 @@ class RepoStore {
 		this.#key = key;
 		this.#token = token;
 		this.ref = ref;
-		if (!options.force) this.selectedFolders = [];
+		if (!options.force) {
+			this.query = '';
+			this.selectedTags = [];
+			this.selectedFolders = [];
+		}
 		this.status = 'loading';
 		this.error = null;
 		this.entries = [];

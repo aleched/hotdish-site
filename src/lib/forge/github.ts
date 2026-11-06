@@ -1,7 +1,8 @@
 import { utf8ToBase64 } from '$lib/util/base64';
 import { m } from '$lib/paraglide/messages.js';
 import { ForgeError } from './errors';
-import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
+import { forgeFetch, forgeFetchJson } from './http';
+import { readRateLimit } from './rateLimitHeaders';
 import { knownForgeKind } from './parse';
 import type {
 	BlobEntry,

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { encodeDocPath } from '$lib/paths';
 	import Icon from '$lib/ui/Icon.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
@@ -40,7 +41,7 @@
 		let accumulated = '';
 		for (const segment of segments) {
 			accumulated = accumulated ? `${accumulated}/${segment}` : segment;
-			result.push({ label: segment, href: `/r/${src}/${encodeURI(accumulated)}` });
+			result.push({ label: segment, href: `/r/${src}/${encodeDocPath(accumulated)}` });
 		}
 		return result;
 	});

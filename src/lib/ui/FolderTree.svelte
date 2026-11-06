@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { encodeDocPath } from '$lib/paths';
 	import type { TreeFolder } from '$lib/tree';
 	import FolderTree from './FolderTree.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -35,7 +36,7 @@
 							<path d="M6 3.5L10.5 8 6 12.5" />
 						</svg>
 					</button>
-					<a class="folder-link" href={`/r/${src}/${encodeURI(child.path)}`}>
+					<a class="folder-link" href={`/r/${src}/${encodeDocPath(child.path)}`}>
 						<span class="name">{child.name}</span>
 						<span class="count">{child.count}</span>
 					</a>
@@ -56,7 +57,7 @@
 				<a
 					class="file"
 					class:active={currentPath === child.path}
-					href={`/r/${src}/${encodeURI(child.path)}`}
+					href={`/r/${src}/${encodeDocPath(child.path)}`}
 				>
 					{child.doc.title}
 				</a>

@@ -1,3 +1,5 @@
+import { m } from '$lib/paraglide/messages.js';
+
 /** Path and commit-message helpers shared by the create, move and delete flows. */
 
 export function slugify(value: string): string {
@@ -30,10 +32,10 @@ export function normalizeFolder(value: string): string {
 export function folderError(folder: string): string | null {
 	const segments = normalizeFolder(folder).split('/').filter(Boolean);
 	if (segments.some((segment) => segment === '.' || segment === '..')) {
-		return 'Folder names cannot be "." or "..".';
+		return m.path_folder_dots();
 	}
 	if (segments.some((segment) => segment.startsWith('.'))) {
-		return 'Folder names cannot start with "." (hidden folders are not listed).';
+		return m.path_folder_hidden();
 	}
 	return null;
 }
@@ -41,9 +43,9 @@ export function folderError(folder: string): string | null {
 /** Returns a reason the file name is unusable, or null when it is fine. */
 export function fileNameError(name: string): string | null {
 	const trimmed = name.trim();
-	if (!trimmed) return 'A file name is required.';
-	if (/[\\/]/.test(trimmed)) return 'File names cannot contain slashes. Use the folder field.';
-	if (trimmed.startsWith('.')) return 'File names cannot start with ".".';
+	if (!trimmed) return m.path_name_required();
+	if (/[\\/]/.test(trimmed)) return m.path_name_slash();
+	if (trimmed.startsWith('.')) return m.path_name_dot();
 	return null;
 }
 
@@ -72,6 +74,11 @@ export function toRelative(fullPath: string, basePath: string): string {
 
 export function toFull(relativePath: string, basePath: string): string {
 	return joinPath(basePath, relativePath);
+}
+
+/** Encodes each segment of a document path for use in a URL, keeping the slashes. */
+export function encodeDocPath(path: string): string {
+	return path.split('/').map(encodeURIComponent).join('/');
 }
 
 export const commitMessages = {

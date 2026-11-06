@@ -1,6 +1,7 @@
 import { ForgeError } from './errors';
 import { m } from '$lib/paraglide/messages.js';
-import { forgeFetch, forgeFetchJson, readRateLimit } from './http';
+import { forgeFetch, forgeFetchJson } from './http';
+import { readRateLimit } from './rateLimitHeaders';
 import type {
 	BlobEntry,
 	DeleteArgs,

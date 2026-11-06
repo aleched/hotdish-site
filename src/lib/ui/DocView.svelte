@@ -71,6 +71,12 @@
 	$effect(() => {
 		void html;
 		if (!prose || !editorPrefs.strikeLists) {
+			for (const span of prose?.querySelectorAll<HTMLElement>('.strike-item') ?? []) {
+				span.removeAttribute('role');
+				span.removeAttribute('tabindex');
+				span.removeAttribute('aria-pressed');
+				span.parentElement?.classList.remove('strikable');
+			}
 			items = [];
 			return;
 		}
@@ -85,7 +91,9 @@
 				li.insertBefore(span, li.firstChild);
 			}
 			li.classList.add('strikable');
-			li.tabIndex = 0;
+			// The span is the control so the li keeps its list-item role for screen readers.
+			span.setAttribute('role', 'button');
+			span.tabIndex = 0;
 			return span;
 		});
 		const keys = strikeKeys(spans.map((span) => span.textContent ?? ''));
@@ -93,14 +101,12 @@
 	});
 
 	$effect(() => {
-		for (const { el, key } of items) el.classList.toggle('struck', strikeStore.keys.includes(key));
+		for (const { el, key } of items) {
+			const struck = strikeStore.keys.includes(key);
+			el.classList.toggle('struck', struck);
+			el.setAttribute('aria-pressed', String(struck));
+		}
 	});
-
-	function itemFor(target: EventTarget | null): { el: HTMLElement; key: string } | undefined {
-		const li = (target as HTMLElement | null)?.closest?.('li.strikable');
-		if (!li) return undefined;
-		return items.find((item) => item.el.parentElement === li);
-	}
 
 	function onProseClick(event: MouseEvent) {
 		if (!editorPrefs.strikeLists) return;
@@ -114,10 +120,10 @@
 
 	function onProseKeydown(event: KeyboardEvent) {
 		if (!editorPrefs.strikeLists || (event.key !== ' ' && event.key !== 'Enter')) return;
-		if (!(event.target as HTMLElement).matches('li.strikable')) return;
+		const item = items.find((entry) => entry.el === event.target);
+		if (!item) return;
 		event.preventDefault();
-		const item = itemFor(event.target);
-		if (item) void strikeStore.toggle(item.key);
+		void strikeStore.toggle(item.key);
 	}
 
 	/** The heading is rendered from the title, so avoid showing it twice. */

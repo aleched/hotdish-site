@@ -96,10 +96,7 @@
 </script>
 
 {#if error}
-	<p class="banner error">
-		The rich text editor could not start ({error}). Use the Markdown tab instead — it edits the
-		same content.
-	</p>
+	<p class="banner error">{m.milkdown_error({ error })}</p>
 {/if}
 
 <div class="host" bind:this={container} spellcheck={editorPrefs.spellcheck}></div>

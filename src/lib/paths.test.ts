@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	baseName,
 	commitMessages,
+	encodeDocPath,
 	fileNameError,
 	folderError,
 	joinPath,
@@ -54,6 +55,11 @@ describe('fileNameError', () => {
 });
 
 describe('path parts', () => {
+	it('encodes document paths segment by segment', () => {
+		expect(encodeDocPath('dinner/mac & cheese #2?.md')).toBe('dinner/mac%20%26%20cheese%20%232%3F.md');
+		expect(encodeDocPath('')).toBe('');
+	});
+
 	it('joins, splits and rebases paths', () => {
 		expect(joinPath('recipes/', '', '/dinner', 'pasta.md')).toBe('recipes/dinner/pasta.md');
 		expect(parentFolder('dinner/pasta.md')).toBe('dinner');

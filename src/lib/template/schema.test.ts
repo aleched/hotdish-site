@@ -43,6 +43,25 @@ describe('date fields', () => {
 		expect(validateFields(template, { when: '2026-11-06' })).toEqual([]);
 		expect(validateFields(template, {})).toEqual([]);
 	});
+
+	it('names the field in the date warning', () => {
+		expect(validateFields(template, { when: 'soon' })[0].message).toContain('When');
+	});
+});
+
+describe('validation messages', () => {
+	const template = parseTemplate(
+		'fields:\n  - key: title\n    label: Title\n    required: true\n  - key: serves\n    label: Serves\n    type: number\n  - key: course\n    label: Course\n    type: enum\n    options: [main, side]\n    allowCustom: false\n'
+	).template;
+
+	it('names the field in each warning', () => {
+		const issues = validateFields(template, { serves: 'lots', course: 'dessert' });
+		expect(issues.map((issue) => issue.key)).toEqual(['title', 'serves', 'course']);
+		expect(issues[0].message).toContain('Title');
+		expect(issues[1].message).toContain('Serves');
+		expect(issues[2].message).toContain('dessert');
+		expect(issues[2].message).toContain('Course');
+	});
 });
 
 describe('field groups', () => {
@@ -83,6 +102,12 @@ fields:
 	it('puts servings, prep and cook time on one row in the default template', () => {
 		const rows = getDefaultTemplate()!.layout.map((row) => row.map((field) => field.key));
 		expect(rows).toContainEqual(['servings', 'prep_time', 'cook_time']);
+	});
+});
+
+describe('template name', () => {
+	it('is null when the file has no name', () => {
+		expect(parseTemplate('version: 1').template?.name).toBeNull();
 	});
 });
 

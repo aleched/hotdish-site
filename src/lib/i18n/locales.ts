@@ -20,6 +20,7 @@ const INFO: Record<Locale, LocaleInfo> = {
 	es: { english: 'Spanish', native: 'Español' },
 	fa: { english: 'Persian', native: 'فارسی' },
 	fi: { english: 'Finnish', native: 'Suomi' },
+	fil: { english: 'Filipino', native: 'Filipino' },
 	fr: { english: 'French', native: 'Français' },
 	he: { english: 'Hebrew', native: 'עברית' },
 	hi: { english: 'Hindi', native: 'हिन्दी' },
@@ -43,7 +44,6 @@ const INFO: Record<Locale, LocaleInfo> = {
 	sw: { english: 'Swahili', native: 'Kiswahili' },
 	ta: { english: 'Tamil', native: 'தமிழ்' },
 	th: { english: 'Thai', native: 'ไทย' },
-	tl: { english: 'Tagalog (Filipino)', native: 'Tagalog' },
 	tlh: { english: 'Klingon', native: 'tlhIngan Hol' },
 	tr: { english: 'Turkish', native: 'Türkçe' },
 	uk: { english: 'Ukrainian', native: 'Українська' },
@@ -58,21 +58,8 @@ export function localeDirection(locale: Locale): 'ltr' | 'rtl' {
 	return RTL.includes(locale) ? 'rtl' : 'ltr';
 }
 
-// Browser tags that should resolve to a differently-coded locale.
-const ALIASES: Record<string, Locale> = { no: 'nb', nn: 'nb', fil: 'tl' };
-
 export function nativeName(locale: Locale): string {
 	return INFO[locale].native;
-}
-
-export function browserLocale(): Locale {
-	if (typeof navigator === 'undefined') return 'en';
-	for (const tag of navigator.languages ?? [navigator.language]) {
-		const code = tag.toLowerCase().split('-')[0];
-		const base = (ALIASES[code] ?? code) as Locale;
-		if ((locales as readonly string[]).includes(base)) return base;
-	}
-	return 'en';
 }
 
 // The selected language comes first, then the rest by language code. Filtered by code or name.

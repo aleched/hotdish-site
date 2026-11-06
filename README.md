@@ -6,7 +6,8 @@ reads the files directly from the forge's API in your browser, and renders them.
 
 - **Forges:** GitHub, GitLab and Gitea / Forgejo (including self-hosted).
 - **Storage:** plain markdown with YAML frontmatter, in whatever folder layout you like.
-- **Hosting:** Cloudflare Pages (static output, no functions required).
+- **Hosting:** Cloudflare Pages via `adapter-cloudflare` (a thin worker serves the client-rendered
+  app; no data passes through it).
 - **Editing:** a Milkdown/Crepe WYSIWYG, a markdown source view, and an optional template-driven
   form — all writing idiomatic markdown back to your repository.
 - **Managing documents:** create, delete, and move or rename documents between folders (new folders are
@@ -139,7 +140,7 @@ About section of the settings page:
 
 ```yaml
 version: 1
-name: Document
+name: Recipe
 
 fields:
   - key: tags

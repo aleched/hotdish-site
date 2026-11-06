@@ -45,6 +45,14 @@
 		['Fitness', '/template/fitness.yml']
 	];
 
+	function escapeHtml(value: string): string {
+		return value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+	}
+
+	const templateLinks = EXAMPLE_TEMPLATES.map(
+		([name, href]) => `<a href="${href}" target="_blank" rel="noopener">${escapeHtml(name)}</a>`
+	).join(', ');
+
 	const languageResults = $derived(languageOptions(getLocale(), languageQuery));
 
 	async function toggleLanguage() {
@@ -346,7 +354,7 @@
 			</li>
 			<li>
 				<Icon name="form" />
-				<span>{@html m.about_template({ links: EXAMPLE_TEMPLATES.map(([name, href]) => `<a href="${href}" target="_blank" rel="noopener">${name}</a>`).join(', ') })}</span>
+				<span>{@html m.about_template({ links: templateLinks })}</span>
 			</li>
 		</ul>
 		<details class="icon-gallery">

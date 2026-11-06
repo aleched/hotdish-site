@@ -16,11 +16,11 @@ const processor = unified()
 	.use(remarkRehype, { allowDangerousHtml: false })
 	.use(rehypeStringify);
 
-export function markdownToUnsafeHtml(markdown: string): string {
+function markdownToUnsafeHtml(markdown: string): string {
 	return String(processor.processSync(markdown));
 }
 
-export function sanitizeHtml(html: string): string {
+function sanitizeHtml(html: string): string {
 	return DOMPurify.sanitize(html, {
 		USE_PROFILES: { html: true },
 		ADD_ATTR: ['target', 'rel'],

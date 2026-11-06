@@ -31,7 +31,8 @@ export interface TemplateSection {
 
 export interface DocTemplate {
 	version: number;
-	name: string;
+	/** Null when the template file has no `name:`. */
+	name: string | null;
 	fields: TemplateField[];
 	/** Fields grouped into form rows; every field appears exactly once. Fields in a `group` share a row. */
 	layout: TemplateField[][];
@@ -116,7 +117,7 @@ export function parseTemplate(raw: string): TemplateParseResult {
 			heading,
 			type: resolvedType,
 			repeatable: item.repeatable === true,
-			subheadingLabel: asString(item.subheadingLabel) ?? 'Section',
+			subheadingLabel: asString(item.subheadingLabel) ?? m.form_section(),
 			optional: item.optional === true
 		});
 	}
@@ -127,7 +128,7 @@ export function parseTemplate(raw: string): TemplateParseResult {
 
 	const template: DocTemplate = {
 		version: typeof source.version === 'number' ? source.version : 1,
-		name: asString(source.name) ?? 'Document',
+		name: asString(source.name) ?? null,
 		fields,
 		layout,
 		sections
@@ -193,17 +194,17 @@ export function validateFields(
 			(Array.isArray(value) && value.length === 0);
 
 		if (field.required && empty) {
-			issues.push({ key: field.key, message: `${field.label} is required.` });
+			issues.push({ key: field.key, message: m.validation_required({ label: field.label }) });
 			continue;
 		}
 		if (empty) continue;
 
 		if (field.type === 'number' && Number.isNaN(Number(value))) {
-			issues.push({ key: field.key, message: `${field.label} should be a number.` });
+			issues.push({ key: field.key, message: m.validation_number({ label: field.label }) });
 		}
 
 		if (field.type === 'date' && !isIsoDate(String(value))) {
-			issues.push({ key: field.key, message: ` should be a date (YYYY-MM-DD).` });
+			issues.push({ key: field.key, message: m.validation_date({ label: field.label }) });
 		}
 
 		if ((field.type === 'enum' || field.type === 'multi-enum') && !field.allowCustom) {
@@ -213,7 +214,7 @@ export function validateFields(
 				if (!allowed.includes(item.toLowerCase())) {
 					issues.push({
 						key: field.key,
-						message: `"${item}" is not one of the allowed ${field.label} values.`
+						message: m.validation_not_allowed({ value: item, label: field.label })
 					});
 				}
 			}

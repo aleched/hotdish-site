@@ -19,7 +19,7 @@
 	import { findFolder, type TreeFolder } from '$lib/tree';
 	import { FORGE_LABELS } from '$lib/forge/factory';
 	import { untrack } from 'svelte';
-	import { joinPath, parentFolder, toFull } from '$lib/paths';
+	import { encodeDocPath, joinPath, parentFolder, toFull } from '$lib/paths';
 	import { parseDoc } from '$lib/markdown/doc';
 	import { scaffoldDoc } from '$lib/editor/scaffold';
 	import Icon from '$lib/ui/Icon.svelte';
@@ -186,7 +186,7 @@
 
 	function closeDraft(destination?: string) {
 		draft = null;
-		void goto(`/r/${src}/${encodeURI(destination ?? path)}`);
+		void goto(`/r/${src}/${encodeDocPath(destination ?? path)}`);
 	}
 
 	$effect(() => {
@@ -387,7 +387,7 @@
 							{#if connectionStore.online}
 								<a
 									class="part"
-									href={`/r/${src}/${encodeURI(path)}?edit`}
+									href={`/r/${src}/${encodeDocPath(path)}?edit`}
 									title={m.common_edit()}
 									aria-label={m.common_edit()}
 								>
@@ -465,7 +465,7 @@
 								<Editor
 									{doc}
 									targetRelative={renameValue}
-									onclose={(destination) => goto(`/r/${src}/${encodeURI(destination ?? path)}`)}
+									onclose={(destination) => goto(`/r/${src}/${encodeDocPath(destination ?? path)}`)}
 								/>
 							{/key}
 						{:catch error}
@@ -485,7 +485,7 @@
 					<ul class="cards">
 						{#each recentItems.slice(0, recentLimit) as item (item.path)}
 							<li>
-								<a class="card entry" href={`/r/${src}/${encodeURI(item.path)}`}>
+								<a class="card entry" href={`/r/${src}/${encodeDocPath(item.path)}`}>
 									<span class="head-row">
 										<span class="kind"><Icon name="file" size={18} /></span>
 										<span class="label">{item.title}</span>
@@ -522,7 +522,7 @@
 					<ul class="cards">
 						{#each folder.children.slice(0, childLimit) as child (child.path)}
 							<li>
-								<a class="card entry" href={`/r/${src}/${encodeURI(child.path)}`}>
+								<a class="card entry" href={`/r/${src}/${encodeDocPath(child.path)}`}>
 									<span class="head-row">
 										<span class="kind">
 											<Icon name={child.kind === 'folder' ? 'folder' : 'file'} size={18} />

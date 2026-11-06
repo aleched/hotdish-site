@@ -11,7 +11,7 @@
 # Wrap fields in group: (a list of fields) to show them on one line.
 
 version: 1
-name: Document
+name: Recipe
 
 fields:
   - key: tags

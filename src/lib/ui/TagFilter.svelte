@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { toRelative } from '$lib/paths';
+	import { encodeDocPath, toRelative } from '$lib/paths';
 	import { repoStore } from '$lib/store/repo.svelte';
 	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
@@ -21,13 +21,13 @@
 
 	/** Opens a random document from the current (filtered) list, avoiding the one already open. */
 	function randomDoc() {
-		const current = decodeURI($page.params.path ?? '');
+		const current = ($page.params.path ?? '').replace(/^\/+|\/+$/g, '');
 		const pool = repoStore.filtered
 			.map((doc) => toRelative(doc.path, repoStore.basePath))
 			.filter((path) => path !== current);
 		if (pool.length === 0) return;
 		const pick = pool[Math.floor(Math.random() * pool.length)];
-		void goto(`/r/${$page.params.src}/${encodeURI(pick)}`);
+		void goto(`/r/${$page.params.src}/${encodeDocPath(pick)}`);
 	}
 	let tags = $derived.by(() => {
 		const needle = tagQuery.trim().toLowerCase();
