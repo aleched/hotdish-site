@@ -160,6 +160,40 @@
 	<hr />
 
 	<div class="settings">
+		<div class="setting" title={m.settings_recent_hint()}>
+			<span>{m.settings_recent()}</span>
+			<span class="control">
+				<input
+					type="number"
+					class="days"
+					min="0"
+					max={MAX_RECENT_DAYS}
+					step="1"
+					placeholder="∞"
+					aria-label={m.settings_recent_hint()}
+					value={editorPrefs.recentDays ?? ''}
+					bind:this={daysEl}
+					onchange={commitDays}
+					oninput={saveDays}
+				/>
+			</span>
+		</div>
+		<div class="setting switch" title={m.settings_random_hint()}>
+			<span>{m.settings_random()}</span>
+			<span class="control">
+				<label class="toggle">
+					<input
+						type="checkbox"
+						role="switch"
+						aria-label={m.settings_random_label()}
+						checked={editorPrefs.randomButton}
+						onchange={(event) => editorPrefs.setRandomButton(event.currentTarget.checked)}
+					/>
+					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
+				</label>
+				<span class="dice-preview" class:off={!editorPrefs.randomButton} aria-hidden="true"><Icon name="dice" /></span>
+			</span>
+		</div>
 		<div class="setting">
 			<span>{m.settings_default_editor()}</span>
 			<span class="control">
@@ -169,21 +203,6 @@
 					label={m.settings_default_editor_label()}
 					onselect={(mode) => editorPrefs.setDefaultMode(mode)}
 				/>
-			</span>
-		</div>
-		<div class="setting switch" title={m.settings_spellcheck_hint()}>
-			<span>{m.settings_spellcheck()}</span>
-			<span class="control">
-				<label class="toggle">
-					<input
-						type="checkbox"
-						role="switch"
-						aria-label={m.settings_spellcheck()}
-						checked={editorPrefs.spellcheck}
-						onchange={(event) => editorPrefs.setSpellcheck(event.currentTarget.checked)}
-					/>
-					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
-				</label>
 			</span>
 		</div>
 		<div class="setting switch" title={m.settings_fractions_hint()}>
@@ -206,39 +225,19 @@
 				</ul>
 			</span>
 		</div>
-		<div class="setting switch" title={m.settings_random_hint()}>
-			<span>{m.settings_random()}</span>
+		<div class="setting switch" title={m.settings_spellcheck_hint()}>
+			<span>{m.settings_spellcheck()}</span>
 			<span class="control">
 				<label class="toggle">
 					<input
 						type="checkbox"
 						role="switch"
-						aria-label={m.settings_random_label()}
-						checked={editorPrefs.randomButton}
-						onchange={(event) => editorPrefs.setRandomButton(event.currentTarget.checked)}
+						aria-label={m.settings_spellcheck()}
+						checked={editorPrefs.spellcheck}
+						onchange={(event) => editorPrefs.setSpellcheck(event.currentTarget.checked)}
 					/>
 					<span class="track" aria-hidden="true"><span class="thumb"></span></span>
 				</label>
-				<span class="dice-preview" class:off={!editorPrefs.randomButton} aria-hidden="true"><Icon name="dice" /></span>
-			</span>
-		</div>
-		<div class="setting" title={m.settings_recent_hint()}>
-			<span>{m.settings_recent()}</span>
-			<span class="control">
-				<input
-					type="number"
-					class="days"
-					min="0"
-					max={MAX_RECENT_DAYS}
-					step="1"
-					placeholder="∞"
-					aria-label={m.settings_recent_hint()}
-					value={editorPrefs.recentDays ?? ''}
-					bind:this={daysEl}
-					onchange={commitDays}
-					oninput={saveDays}
-				/>
-				<span class="unit">{m.settings_recent_unit()}</span>
 			</span>
 		</div>
 	</div>
