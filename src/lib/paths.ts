@@ -1,4 +1,4 @@
-import { m } from '$lib/paraglide/messages.js';
+import { m } from '#lib/paraglide/messages.js';
 
 /** Path and commit-message helpers shared by the create, move and delete flows. */
 

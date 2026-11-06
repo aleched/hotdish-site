@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import type { ForgeKind, RepoRef } from '$lib/forge/types';
+import { browser } from '$app/env';
+import type { ForgeKind, RepoRef } from '#lib/forge/types.ts';
 
 export interface Profile {
 	id: string;
@@ -32,12 +32,7 @@ export function profileToRef(profile: Profile): RepoRef {
 }
 
 export function refMatchesProfile(ref: RepoRef, profile: Profile): boolean {
-	return (
-		ref.kind === profile.kind &&
-		ref.host === profile.host &&
-		ref.owner.toLowerCase() === profile.owner.toLowerCase() &&
-		ref.repo.toLowerCase() === profile.repo.toLowerCase()
-	);
+	return ref.kind === profile.kind && ref.host === profile.host && ref.owner.toLowerCase() === profile.owner.toLowerCase() && ref.repo.toLowerCase() === profile.repo.toLowerCase();
 }
 
 function sessionKey(ref: RepoRef): string {
@@ -67,11 +62,7 @@ class ProfileStore {
 
 	/** Finds a stored token for a repository, so private repos work after a reload. */
 	tokenFor(ref: RepoRef): string | undefined {
-		return (
-			this.profiles.find((profile) => refMatchesProfile(ref, profile))?.token ||
-			this.#sessionTokens.get(sessionKey(ref)) ||
-			undefined
-		);
+		return this.profiles.find((profile) => refMatchesProfile(ref, profile))?.token || this.#sessionTokens.get(sessionKey(ref)) || undefined;
 	}
 
 	profileFor(ref: RepoRef): Profile | undefined {
@@ -171,12 +162,8 @@ class ProfileStore {
 function isProfile(value: unknown): value is Profile {
 	if (!value || typeof value !== 'object') return false;
 	const candidate = value as Partial<Profile>;
-	return (
-		typeof candidate.id === 'string' &&
-		typeof candidate.owner === 'string' &&
-		typeof candidate.repo === 'string' &&
-		typeof candidate.host === 'string'
-	);
+
+	return typeof candidate.id === 'string' && typeof candidate.owner === 'string' && typeof candidate.repo === 'string' && typeof candidate.host === 'string';
 }
 
 export const profileStore = new ProfileStore();

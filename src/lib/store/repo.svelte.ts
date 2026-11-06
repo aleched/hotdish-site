@@ -1,17 +1,17 @@
-import { readBlob, writeBlob } from '$lib/cache/blobCache';
-import { readSnapshot, relevantEntries, sameEntries, splitEntries, writeSnapshot } from '$lib/cache/repoCache';
-import { connectionStore } from '$lib/store/connection.svelte';
-import { m } from '$lib/paraglide/messages.js';
-import { createProvider } from '$lib/forge/factory';
-import { ForgeError, describeForgeError } from '$lib/forge/errors';
-import type { BlobEntry, ForgeProvider, RepoRef } from '$lib/forge/types';
-import { parseDoc, toSummary } from '$lib/markdown/doc';
-import type { Doc, DocSummary } from '$lib/markdown/doc';
-import { parseTemplate, type DocTemplate } from '$lib/template/schema';
-import { getDefaultTemplate } from '$lib/template/default';
-import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-import { buildTree, type TreeFolder } from '$lib/tree';
-import { mapWithConcurrency } from '$lib/util/concurrency';
+import { readBlob, writeBlob } from '#lib/cache/blobCache.ts';
+import { readSnapshot, relevantEntries, sameEntries, splitEntries, writeSnapshot } from '#lib/cache/repoCache.ts';
+import { connectionStore } from '#lib/store/connection.svelte.ts';
+import { m } from '#lib/paraglide/messages.js';
+import { createProvider } from '#lib/forge/factory.ts';
+import { ForgeError, describeForgeError } from '#lib/forge/errors.ts';
+import type { BlobEntry, ForgeProvider, RepoRef } from '#lib/forge/types.ts';
+import { parseDoc, toSummary } from '#lib/markdown/doc.ts';
+import type { Doc, DocSummary } from '#lib/markdown/doc.ts';
+import { parseTemplate, type DocTemplate } from '#lib/template/schema.ts';
+import { getDefaultTemplate } from '#lib/template/default.ts';
+import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+import { buildTree, type TreeFolder } from '#lib/tree.ts';
+import { mapWithConcurrency } from '#lib/util/concurrency.ts';
 
 export type RepoStatus = 'idle' | 'loading' | 'ready' | 'error';
 

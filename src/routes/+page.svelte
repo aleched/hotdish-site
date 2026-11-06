@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
-	import { FORGE_LABELS, TOKEN_GUIDANCE } from '$lib/forge/factory';
-	import { detectForgeKind } from '$lib/forge/detect';
-	import { knownForgeKind, parseRepoInput } from '$lib/forge/parse';
-	import type { ForgeKind, RepoRef } from '$lib/forge/types';
-	import { encodeSrc } from '$lib/share/codec';
-	import { profileStore, profileToRef, type Profile } from '$lib/store/profiles.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import EmptyState from '$lib/ui/EmptyState.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { FORGE_LABELS, TOKEN_GUIDANCE } from '#lib/forge/factory.ts';
+	import { detectForgeKind } from '#lib/forge/detect.ts';
+	import { knownForgeKind, parseRepoInput } from '#lib/forge/parse.ts';
+	import type { ForgeKind, RepoRef } from '#lib/forge/types.ts';
+	import { encodeSrc } from '#lib/share/codec.ts';
+	import { profileStore, profileToRef, type Profile } from '#lib/store/profiles.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import EmptyState from '#lib/ui/EmptyState.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 	let isMounted = true;

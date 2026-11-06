@@ -2,10 +2,10 @@
 	import { onDestroy, onMount } from 'svelte';
 	import '@milkdown/crepe/theme/common/style.css';
 	import '@milkdown/crepe/theme/frame.css';
-	import { fractionBefore } from '$lib/editor/fractions';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-	import Loading from '$lib/ui/Loading.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { fractionBefore } from '#lib/editor/fractions.ts';
+	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import Loading from '#lib/ui/Loading.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface CrepeLike {
 		create(): Promise<unknown>;

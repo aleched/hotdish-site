@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { connectionState, type ConnectionState } from './connectionState';
 
 /**
@@ -15,8 +15,8 @@ class ConnectionStore {
 
 	constructor() {
 		if (!browser) return;
-		window.addEventListener('online', () => (this.browserOnline = true));
-		window.addEventListener('offline', () => (this.browserOnline = false));
+		window.addEventListener('online', () => this.browserOnline = true);
+		window.addEventListener('offline', () => this.browserOnline = false);
 	}
 
 	get state(): ConnectionState {

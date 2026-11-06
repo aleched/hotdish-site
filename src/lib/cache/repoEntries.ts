@@ -1,6 +1,6 @@
-import type { BlobEntry, RepoRef } from '$lib/forge/types';
-import { isMarkdownPath } from '$lib/markdown/doc';
-import { TEMPLATE_PATH } from '$lib/template/schema';
+import type { BlobEntry, RepoRef } from '#lib/forge/types.ts';
+import { isMarkdownPath } from '#lib/markdown/doc.ts';
+import { TEMPLATE_PATH } from '#lib/template/schema.ts';
 
 // Pure helpers for repository snapshots, kept apart from IndexedDB so they can be unit tested.
 

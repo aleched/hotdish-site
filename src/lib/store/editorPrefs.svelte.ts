@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import { m } from '$lib/paraglide/messages.js';
+import { browser } from '$app/env';
+import { m } from '#lib/paraglide/messages.js';
 
 const STORAGE_KEY = 'hotdish.editor.v1';
 

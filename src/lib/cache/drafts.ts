@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { createStore, del, get, set, type UseStore } from 'idb-keyval';
 
 /**

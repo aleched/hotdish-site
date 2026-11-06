@@ -2,7 +2,7 @@ import { GiteaProvider } from './gitea';
 import { GitHubProvider } from './github';
 import { GitLabProvider } from './gitlab';
 import type { ForgeKind, ForgeProvider, RepoRef } from './types';
-import { m } from '$lib/paraglide/messages.js';
+import { m } from '#lib/paraglide/messages.js';
 
 export function createProvider(ref: RepoRef, token?: string): ForgeProvider {
 	switch (ref.kind) {

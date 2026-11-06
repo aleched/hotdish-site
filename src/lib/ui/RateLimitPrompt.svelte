@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { FORGE_LABELS } from '$lib/forge/factory';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { rateLimitStore } from '$lib/store/rateLimit.svelte';
+	import { FORGE_LABELS } from '#lib/forge/factory.ts';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { rateLimitStore } from '#lib/store/rateLimit.svelte.ts';
 	import Modal from './Modal.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	let notice = $derived(rateLimitStore.notice);
 </script>

@@ -1,5 +1,5 @@
-import { serializeFrontmatter } from '$lib/markdown/frontmatter';
-import type { DocTemplate } from '$lib/template/schema';
+import { serializeFrontmatter } from '#lib/markdown/frontmatter.ts';
+import type { DocTemplate } from '#lib/template/schema.ts';
 
 /** Starting markdown for a new document: empty frontmatter plus the template's required sections. */
 export function scaffoldDoc(template: DocTemplate | null): string {

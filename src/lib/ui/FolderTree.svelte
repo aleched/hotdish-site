@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { encodeDocPath } from '$lib/paths';
-	import type { TreeFolder } from '$lib/tree';
+	import { encodeDocPath } from '#lib/paths.ts';
+	import type { TreeFolder } from '#lib/tree.ts';
 	import FolderTree from './FolderTree.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface Props {
 		node: TreeFolder;

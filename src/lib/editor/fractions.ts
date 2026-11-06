@@ -1,4 +1,4 @@
-import { editorPrefs } from '$lib/store/editorPrefs.svelte';
+import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
 
 export const FRACTIONS: Record<string, string> = {
 	'1/2': '½',

@@ -1,5 +1,5 @@
-import { rateLimitStore } from '$lib/store/rateLimit.svelte';
-import { m } from '$lib/paraglide/messages.js';
+import { rateLimitStore } from '#lib/store/rateLimit.svelte.ts';
+import { m } from '#lib/paraglide/messages.js';
 import { ForgeError, networkError } from './errors';
 import { readInt, readRateLimit } from './rateLimitHeaders';
 import type { ForgeKind } from './types';

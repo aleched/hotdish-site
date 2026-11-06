@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { themeStore, THEME_ACCENTS, THEME_MODES } from '$lib/store/theme.svelte';
-	import { clearBlobCache } from '$lib/cache/blobCache';
-	import { historyStore } from '$lib/store/history.svelte';
-	import { strikeStore } from '$lib/store/strikes.svelte';
-	import { editorPrefs, EDITOR_MODES, DEFAULT_TEMPLATES, MAX_RECENT_DAYS } from '$lib/store/editorPrefs.svelte';
-	import ModeToggle from '$lib/ui/ModeToggle.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import Flag from '$lib/ui/Flag.svelte';
-	import { FRACTIONS } from '$lib/editor/fractions';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, setLocale, languageOptions, nativeName, type Locale } from '$lib/i18n/locales';
-	import { ICON_NAMES } from '$lib/ui/icon-names';
+	import { themeStore, THEME_ACCENTS, THEME_MODES } from '#lib/store/theme.svelte.ts';
+	import { clearBlobCache } from '#lib/cache/blobCache.ts';
+	import { historyStore } from '#lib/store/history.svelte.ts';
+	import { strikeStore } from '#lib/store/strikes.svelte.ts';
+	import { editorPrefs, EDITOR_MODES, DEFAULT_TEMPLATES, MAX_RECENT_DAYS } from '#lib/store/editorPrefs.svelte.ts';
+	import ModeToggle from '#lib/ui/ModeToggle.svelte';
+	import Icon from '#lib/ui/Icon.svelte';
+	import Flag from '#lib/ui/Flag.svelte';
+	import { FRACTIONS } from '#lib/editor/fractions.ts';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale, setLocale, languageOptions, nativeName, type Locale } from '#lib/i18n/locales.ts';
+	import { ICON_NAMES } from '#lib/ui/icon-names.ts';
 	import { tick } from 'svelte';
 
 	let copiedIcon = $state<string | null>(null);

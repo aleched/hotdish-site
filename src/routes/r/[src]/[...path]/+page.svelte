@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { decodeSrc } from '$lib/share/codec';
-	import type { RepoRef } from '$lib/forge/types';
-	import type { Doc } from '$lib/markdown/doc';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { connectionStore } from '$lib/store/connection.svelte';
-	import { profileStore } from '$lib/store/profiles.svelte';
-	import { navStore } from '$lib/store/nav.svelte';
-	import { historyStore } from '$lib/store/history.svelte';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-	import Breadcrumbs from '$lib/ui/Breadcrumbs.svelte';
-	import FolderTree from '$lib/ui/FolderTree.svelte';
-	import DocView from '$lib/ui/DocView.svelte';
-	import ShareButton from '$lib/ui/ShareButton.svelte';
-	import { strikeStore } from '$lib/store/strikes.svelte';
-	import TagFilter from '$lib/ui/TagFilter.svelte';
-	import { findFolder, type TreeFolder } from '$lib/tree';
-	import { FORGE_LABELS } from '$lib/forge/factory';
+	import { decodeSrc } from '#lib/share/codec.ts';
+	import type { RepoRef } from '#lib/forge/types.ts';
+	import type { Doc } from '#lib/markdown/doc.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { connectionStore } from '#lib/store/connection.svelte.ts';
+	import { profileStore } from '#lib/store/profiles.svelte.ts';
+	import { navStore } from '#lib/store/nav.svelte.ts';
+	import { historyStore } from '#lib/store/history.svelte.ts';
+	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import Breadcrumbs from '#lib/ui/Breadcrumbs.svelte';
+	import FolderTree from '#lib/ui/FolderTree.svelte';
+	import DocView from '#lib/ui/DocView.svelte';
+	import ShareButton from '#lib/ui/ShareButton.svelte';
+	import { strikeStore } from '#lib/store/strikes.svelte.ts';
+	import TagFilter from '#lib/ui/TagFilter.svelte';
+	import { findFolder, type TreeFolder } from '#lib/tree.ts';
+	import { FORGE_LABELS } from '#lib/forge/factory.ts';
 	import { untrack } from 'svelte';
-	import { encodeDocPath, joinPath, parentFolder, toFull } from '$lib/paths';
-	import { parseDoc } from '$lib/markdown/doc';
-	import { scaffoldDoc } from '$lib/editor/scaffold';
-	import Icon from '$lib/ui/Icon.svelte';
-	import EmptyState from '$lib/ui/EmptyState.svelte';
-	import Loading from '$lib/ui/Loading.svelte';
-	import DeleteDoc from '$lib/editor/DeleteDoc.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { encodeDocPath, joinPath, parentFolder, toFull } from '#lib/paths.ts';
+	import { parseDoc } from '#lib/markdown/doc.ts';
+	import { scaffoldDoc } from '#lib/editor/scaffold.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import EmptyState from '#lib/ui/EmptyState.svelte';
+	import Loading from '#lib/ui/Loading.svelte';
+	import DeleteDoc from '#lib/editor/DeleteDoc.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
-	let src = $derived($page.params.src ?? '');
+	let src = $derived(page.params.src ?? '');
 
 	/** Surfaces a stalled dynamic import (blocked chunk, CSP) instead of spinning forever. */
 	function loadWithTimeout<T>(loader: () => Promise<T>, ms = 15000): Promise<T> {
@@ -50,8 +50,8 @@
 			);
 		});
 	}
-	let path = $derived(($page.params.path ?? '').replace(/^\/+|\/+$/g, ''));
-	let editing = $derived($page.url.searchParams.has('edit'));
+	let path = $derived((page.params.path ?? '').replace(/^\/+|\/+$/g, ''));
+	let editing = $derived(page.url.searchParams.has('edit'));
 
 	let decoded = $derived.by<{ ref: RepoRef | null; error: string | null }>(() => {
 		try {
@@ -218,11 +218,9 @@
 		};
 	});
 
-	let rootLabel = $derived(
-		repoStore.ref
-			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || repoStore.ref.repo)
-			: m.repo_root_fallback()
-	);
+	let rootLabel = $derived(repoStore.ref
+		? profileStore.profileFor(repoStore.ref)?.name?.trim() || repoStore.ref.repo
+		: m.repo_root_fallback());
 
 	const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -230,12 +228,12 @@
 	let showRecent = $derived(path === '' && !repoStore.isFiltering && editorPrefs.recentDays !== 0);
 	let recentItems = $derived(
 		historyStore.items.flatMap((item) => {
-			const days = editorPrefs.recentDays;
-			if (days !== null && Date.now() - item.openedAt > days * DAY_MS) return [];
-			const full = repoStore.basePath
-				? `${repoStore.basePath.replace(/\/+$/, '')}/${item.path}`
-				: item.path;
-			const found = repoStore.docs.find((candidate) => candidate.path === full);
+		const days = editorPrefs.recentDays;
+		if (days !== null && Date.now() - item.openedAt > days * DAY_MS) return [];
+		const full = repoStore.basePath
+			? `${repoStore.basePath.replace(/\/+$/, '')}/${item.path}`
+			: item.path;
+		const found = repoStore.docs.find((candidate) => candidate.path === full);
 			return found ? [{ path: item.path, title: found.title, tags: found.tags }] : [];
 		})
 	);
@@ -329,9 +327,9 @@
 			{#if repoStore.tree.children.length > 0}
 				<FolderTree
 					node={repoStore.tree}
-					{src}
+					src={src}
 					currentPath={path}
-					{open}
+					open={open}
 					ontoggle={toggleFolder}
 				/>
 			{:else if repoStore.status === 'ready' && !repoStore.indexing}
@@ -361,10 +359,10 @@
 		<section class="content">
 			<div class="head no-print">
 				<Breadcrumbs
-					{src}
-					{path}
-					{rootLabel}
-					renamable={Boolean(draft || (entry && editing && doc))}
+					src={src}
+					path={path}
+					rootLabel={rootLabel}
+					renamable={Boolean(draft || entry && editing && doc)}
 					forceEdit={Boolean(draft)}
 					bind:renaming
 					bind:value={renameValue}
@@ -410,10 +408,8 @@
 								title={connectionStore.online ? m.common_delete() : m.offline_unavailable()}
 								aria-label={m.common_delete()}
 								disabled={!doc || !connectionStore.online}
-								onclick={() => (docDialog = 'delete')}
-							>
-								<Icon name="trash" />
-							</button>
+								onclick={() => docDialog = 'delete'}
+							><Icon name="trash" /></button>
 						</div>
 					{:else if folder}
 						<button
@@ -438,7 +434,7 @@
 			{/if}
 
 			{#if draft}
-				{#await loadWithTimeout(() => import('$lib/editor/DocEditor.svelte'))}
+				{#await loadWithTimeout(() => import('#lib/editor/DocEditor.svelte'))}
 					<Loading label={m.repo_loading_editor()} />
 				{:then module}
 					{@const Editor = module.default}
@@ -457,13 +453,13 @@
 					<Loading label={m.repo_loading_doc()} />
 				{:else if doc}
 					{#if editing}
-						{#await loadWithTimeout(() => import('$lib/editor/DocEditor.svelte'))}
+						{#await loadWithTimeout(() => import('#lib/editor/DocEditor.svelte'))}
 							<Loading label={m.repo_loading_editor()} />
 						{:then module}
 							{@const Editor = module.default}
 							{#key doc.sha}
 								<Editor
-									{doc}
+									doc={doc}
 									targetRelative={renameValue}
 									onclose={(destination) => goto(`/r/${src}/${encodeDocPath(destination ?? path)}`)}
 								/>
@@ -474,7 +470,7 @@
 							</p>
 						{/await}
 					{:else}
-						<DocView {doc} />
+						<DocView doc={doc} />
 					{/if}
 				{/if}
 			{:else if folder}
@@ -507,10 +503,8 @@
 							class="icon-button more"
 							title={m.repo_show_recent()}
 							aria-label={m.repo_show_recent()}
-							onclick={() => (recentLimit = Infinity)}
-						>
-							<Icon name="expand" />
-						</button>
+							onclick={() => recentLimit = Infinity}
+						><Icon name="expand" /></button>
 					{/if}
 					<hr class="divider" />
 				{/if}
@@ -551,10 +545,8 @@
 							class="icon-button more"
 							title={m.repo_show_all()}
 							aria-label={m.repo_show_all()}
-							onclick={() => (childLimit = Infinity)}
-						>
-							<Icon name="expand" />
-						</button>
+							onclick={() => childLimit = Infinity}
+						><Icon name="expand" /></button>
 					{/if}
 				{/if}
 			{:else if notFound}
@@ -577,8 +569,12 @@
 		</section>
 	</div>
 
-	{#if doc && entry && 	docDialog === 'delete'}
-			<DeleteDoc {doc} {src} onclose={() => (docDialog = null)} />
+	{#if doc && entry && docDialog === 'delete'}
+		<DeleteDoc
+			doc={doc}
+			src={src}
+			onclose={() => docDialog = null}
+		/>
 	{/if}
 {/if}
 

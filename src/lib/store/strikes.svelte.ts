@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { get, set, del } from 'idb-keyval';
-import type { RepoRef } from '$lib/forge/types';
+import type { RepoRef } from '#lib/forge/types.ts';
 
 function strikeStoreKey(ref: RepoRef, path: string): string {
 	return ['strikes', ref.kind, ref.host, ref.owner, ref.repo, path].join(':');

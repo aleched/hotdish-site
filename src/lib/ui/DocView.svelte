@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { Doc } from '$lib/markdown/doc';
-	import { renderMarkdown } from '$lib/markdown/render';
-	import Icon from '$lib/ui/Icon.svelte';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-	import { strikeStore } from '$lib/store/strikes.svelte';
-	import { strikeKeys } from '$lib/markdown/strikes';
-	import { isIsoDate } from '$lib/template/schema';
-	import { getLocale } from '$lib/paraglide/runtime.js';
+	import type { Doc } from '#lib/markdown/doc.ts';
+	import { renderMarkdown } from '#lib/markdown/render.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { m } from '#lib/paraglide/messages.js';
+	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import { strikeStore } from '#lib/store/strikes.svelte.ts';
+	import { strikeKeys } from '#lib/markdown/strikes.ts';
+	import { isIsoDate } from '#lib/template/schema.ts';
+	import { getLocale } from '#lib/paraglide/runtime.js';
 
 	interface Props {
 		doc: Doc;

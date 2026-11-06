@@ -1,4 +1,4 @@
-import { serializeFrontmatter } from '$lib/markdown/frontmatter';
+import { serializeFrontmatter } from '#lib/markdown/frontmatter.ts';
 import type { StructuredBlock, StructuredDoc, StructuredSection } from './parse';
 
 /**

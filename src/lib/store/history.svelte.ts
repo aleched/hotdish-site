@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { get, set } from 'idb-keyval';
-import type { RepoRef } from '$lib/forge/types';
+import type { RepoRef } from '#lib/forge/types.ts';
 
 export interface HistoryItem {
 	/** Path relative to the repository's base path, as used in document URLs. */
@@ -64,7 +64,7 @@ class HistoryStore {
 
 	async rename(ref: RepoRef, from: string, to: string): Promise<void> {
 		await this.load(ref);
-		await this.#save(this.items.map((item) => (item.path === from ? { ...item, path: to } : item)));
+		await this.#save(this.items.map((item) => item.path === from ? { ...item, path: to } : item));
 	}
 
 	async #save(next: HistoryItem[]): Promise<void> {

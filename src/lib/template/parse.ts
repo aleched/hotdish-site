@@ -1,4 +1,4 @@
-import { parseFrontmatter } from '$lib/markdown/frontmatter';
+import { parseFrontmatter } from '#lib/markdown/frontmatter.ts';
 import { findSectionByHeading, type DocTemplate, type SectionType } from './schema';
 
 export interface StructuredBlock {

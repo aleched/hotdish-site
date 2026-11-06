@@ -1,12 +1,12 @@
-import { readBlob, writeBlob } from '$lib/cache/blobCache';
-import { readSnapshot, relevantEntries, snapshotKey, writeSnapshot } from '$lib/cache/repoCache';
-import { ForgeError } from '$lib/forge/errors';
-import { createProvider } from '$lib/forge/factory';
-import type { RepoRef } from '$lib/forge/types';
-import { connectionStore } from '$lib/store/connection.svelte';
-import { profileStore, profileToRef } from '$lib/store/profiles.svelte';
-import { repoStore } from '$lib/store/repo.svelte';
-import { mapWithConcurrency } from '$lib/util/concurrency';
+import { readBlob, writeBlob } from '#lib/cache/blobCache.ts';
+import { readSnapshot, relevantEntries, snapshotKey, writeSnapshot } from '#lib/cache/repoCache.ts';
+import { ForgeError } from '#lib/forge/errors.ts';
+import { createProvider } from '#lib/forge/factory.ts';
+import type { RepoRef } from '#lib/forge/types.ts';
+import { connectionStore } from '#lib/store/connection.svelte.ts';
+import { profileStore, profileToRef } from '#lib/store/profiles.svelte.ts';
+import { repoStore } from '#lib/store/repo.svelte.ts';
+import { mapWithConcurrency } from '#lib/util/concurrency.ts';
 
 /** A saved repository is re-fetched in the background at most this often. */
 const STALE_MS = 60 * 60 * 1000;

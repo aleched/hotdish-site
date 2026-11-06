@@ -1,20 +1,20 @@
 <script lang="ts">
-	import type { StructuredDoc, StructuredSection } from '$lib/template/parse';
-	import { itemsToLines, linesToItems } from '$lib/template/serialize';
+	import type { StructuredDoc, StructuredSection } from '#lib/template/parse.ts';
+	import { itemsToLines, linesToItems } from '#lib/template/serialize.ts';
 	import type {
 		DocTemplate,
 		SectionType,
 		TemplateField,
 		TemplateSection
-	} from '$lib/template/schema';
-	import { validateFields } from '$lib/template/schema';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import type { IconName } from '$lib/ui/icon-names';
-	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
-	import ChipPicker from '$lib/ui/ChipPicker.svelte';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	} from '#lib/template/schema.ts';
+	import { validateFields } from '#lib/template/schema.ts';
+	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import type { IconName } from '#lib/ui/icon-names.ts';
+	import LineNumberedTextarea from '#lib/ui/LineNumberedTextarea.svelte';
+	import ChipPicker from '#lib/ui/ChipPicker.svelte';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface Props {
 		doc: StructuredDoc;

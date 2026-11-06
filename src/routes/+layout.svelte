@@ -2,18 +2,18 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { connectionStore } from '$lib/store/connection.svelte';
-	import { prefetchSaved, syncNow } from '$lib/cache/prefetch';
-	import { applyUpdate, initUpdates, shouldApplyUpdate } from '$lib/pwa/update';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { profileStore } from '$lib/store/profiles.svelte';
-	import { navStore } from '$lib/store/nav.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import RateLimitPrompt from '$lib/ui/RateLimitPrompt.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { localeDirection } from '$lib/i18n/locales';
+	import { page } from '$app/state';
+	import { connectionStore } from '#lib/store/connection.svelte.ts';
+	import { prefetchSaved, syncNow } from '#lib/cache/prefetch.ts';
+	import { applyUpdate, initUpdates, shouldApplyUpdate } from '#lib/pwa/update.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { profileStore } from '#lib/store/profiles.svelte.ts';
+	import { navStore } from '#lib/store/nav.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import RateLimitPrompt from '#lib/ui/RateLimitPrompt.svelte';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { localeDirection } from '#lib/i18n/locales.ts';
 
 	let { children } = $props();
 
@@ -22,24 +22,21 @@
 		document.documentElement.dir = localeDirection(getLocale());
 	});
 
-	let activeSrc = $derived($page.params.src ?? null);
-	let repoName = $derived(
-		repoStore.ref
-			? (profileStore.profileFor(repoStore.ref)?.name?.trim() || `${repoStore.ref.owner}/${repoStore.ref.repo}`)
-			: null
-	);
-	let connLabel = $derived(
-		connectionStore.state === 'syncing'
-			? m.conn_syncing()
-			: connectionStore.state === 'live'
-				? m.conn_live()
-				: m.conn_offline()
-	);
-	let connTitle = $derived(
-		connectionStore.lastSyncedAt
-			? `${connLabel}\n${m.conn_last_synced({ time: new Date(connectionStore.lastSyncedAt).toLocaleString(getLocale()) })}`
-			: connLabel
-	);
+	let activeSrc = $derived(page.params.src ?? null);
+
+	let repoName = $derived(repoStore.ref
+		? profileStore.profileFor(repoStore.ref)?.name?.trim() || `${repoStore.ref.owner}/${repoStore.ref.repo}`
+		: null);
+
+	let connLabel = $derived(connectionStore.state === 'syncing'
+		? m.conn_syncing()
+		: connectionStore.state === 'live' ? m.conn_live() : m.conn_offline());
+
+	let connTitle = $derived(connectionStore.lastSyncedAt
+		? `${connLabel}\n${m.conn_last_synced({
+			time: new Date(connectionStore.lastSyncedAt).toLocaleString(getLocale())
+		})}`
+		: connLabel);
 
 	onMount(() => {
 		initUpdates();
@@ -54,6 +51,8 @@
 	});
 
 	beforeNavigate((navigation) => {
+		if (navigation.shallow && navigation.type === 'goto') return;
+
 		const to = navigation.to?.url;
 		if (!to || navigation.willUnload || to.origin !== location.origin) return;
 		if (navigation.from?.url.searchParams.has('edit') || to.searchParams.has('edit')) return;
@@ -102,10 +101,19 @@
 					aria-controls="doc-nav"
 					onclick={() => navStore.toggle()}
 				>
-					<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-						<path class="bar-top" d="M3 5.5h14" />
-						<path class="bar-mid" d="M3 10h14" />
-						<path class="bar-bot" d="M3 14.5h14" />
+					<svg
+						viewBox="0 0 20 20"
+						width="20"
+						height="20"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+						aria-hidden="true"
+					>
+						<path class="bar-top" d="M3 5.5h14"></path>
+						<path class="bar-mid" d="M3 10h14"></path>
+						<path class="bar-bot" d="M3 14.5h14"></path>
 					</svg>
 				</button>
 			{/if}

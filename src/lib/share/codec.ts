@@ -1,6 +1,6 @@
-import { decodeBase64Url, encodeBase64Url } from '$lib/util/base64';
-import type { ForgeKind, RepoRef } from '$lib/forge/types';
-import { m } from '$lib/paraglide/messages.js';
+import { decodeBase64Url, encodeBase64Url } from '#lib/util/base64.ts';
+import type { ForgeKind, RepoRef } from '#lib/forge/types.ts';
+import { m } from '#lib/paraglide/messages.js';
 
 const KINDS: ForgeKind[] = ['github', 'gitlab', 'gitea'];
 

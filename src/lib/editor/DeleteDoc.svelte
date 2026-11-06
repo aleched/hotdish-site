@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { Doc } from '$lib/markdown/doc';
-	import { commitMessages, encodeDocPath, parentFolder, toRelative } from '$lib/paths';
-	import { historyStore } from '$lib/store/history.svelte';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import CommitDialog from '$lib/ui/CommitDialog.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import type { Doc } from '#lib/markdown/doc.ts';
+	import { commitMessages, encodeDocPath, parentFolder, toRelative } from '#lib/paths.ts';
+	import { historyStore } from '#lib/store/history.svelte.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import CommitDialog from '#lib/ui/CommitDialog.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface Props {
 		doc: Doc;

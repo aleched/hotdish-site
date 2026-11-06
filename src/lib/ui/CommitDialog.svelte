@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { ForgeError, describeForgeError } from '$lib/forge/errors';
-	import { createProvider, TOKEN_GUIDANCE } from '$lib/forge/factory';
-	import { profileStore } from '$lib/store/profiles.svelte';
-	import { repoStore } from '$lib/store/repo.svelte';
+	import { ForgeError, describeForgeError } from '#lib/forge/errors.ts';
+	import { createProvider, TOKEN_GUIDANCE } from '#lib/forge/factory.ts';
+	import { profileStore } from '#lib/store/profiles.svelte.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
 	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface Props {
 		title: string;

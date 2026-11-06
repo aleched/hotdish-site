@@ -1,4 +1,4 @@
-import type { DocSummary } from '$lib/markdown/doc';
+import type { DocSummary } from '#lib/markdown/doc.ts';
 
 export interface TreeFolder {
 	kind: 'folder';

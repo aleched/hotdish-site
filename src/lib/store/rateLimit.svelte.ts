@@ -1,4 +1,4 @@
-import type { ForgeKind } from '$lib/forge/types';
+import type { ForgeKind } from '#lib/forge/types.ts';
 
 export interface RateLimitNotice {
 	kind: ForgeKind;

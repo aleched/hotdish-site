@@ -1,4 +1,4 @@
-import type { BlobEntry } from '$lib/forge/types';
+import type { BlobEntry } from '#lib/forge/types.ts';
 import { parseFrontmatter, readStringList } from './frontmatter';
 
 export interface Doc {

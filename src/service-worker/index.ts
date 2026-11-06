@@ -1,21 +1,18 @@
-/// <reference types="@sveltejs/kit" />
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext" />
-/// <reference lib="webworker" />
-
-import { build, files, version } from '$service-worker';
-
-const sw = self as unknown as ServiceWorkerGlobalScope;
+import { self } from '$app/service-worker';
+import { version } from '$app/env';
+import { immutable, assets } from '$app/manifest';
+import { resolve } from '$app/paths';
 
 const APP_CACHE = `hotdish-${version}`;
 const IMAGE_CACHE = 'hotdish-images';
 const IMAGE_LIMIT = 40;
 const SHELL = '/';
 
-const ASSETS = [...build, ...files];
+// Manifest paths are relative to the base path; resolve them so they match `url.pathname`.
+const ASSETS = [...immutable, ...assets].map((file) => resolve(file.path));
 const ASSET_SET = new Set(ASSETS);
 
-sw.addEventListener('install', (event) => {
+self.addEventListener('install', (event) => {
 	// No skipWaiting here: the page decides when it is safe to switch (src/lib/pwa/update.ts).
 	event.waitUntil(
 		(async () => {
@@ -25,19 +22,19 @@ sw.addEventListener('install', (event) => {
 	);
 });
 
-sw.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) => {
 	event.waitUntil(
 		(async () => {
 			for (const key of await caches.keys()) {
 				if (key !== APP_CACHE && key !== IMAGE_CACHE) await caches.delete(key);
 			}
-			await sw.clients.claim();
+			await self.clients.claim();
 		})()
 	);
 });
 
-sw.addEventListener('message', (event) => {
-	if (event.data?.type === 'skip-waiting') void sw.skipWaiting();
+self.addEventListener('message', (event) => {
+	if (event.data?.type === 'skip-waiting') void self.skipWaiting();
 });
 
 function cacheable(response: Response): boolean {
@@ -96,11 +93,11 @@ async function image(event: FetchEvent): Promise<Response> {
 	return (await network) ?? Response.error();
 }
 
-sw.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event) => {
 	const { request } = event;
 	if (request.method !== 'GET') return;
 	const url = new URL(request.url);
-	const sameOrigin = url.origin === sw.location.origin;
+	const sameOrigin = url.origin === self.location.origin;
 
 	if (request.mode === 'navigate' && sameOrigin) {
 		event.respondWith(navigate(request));

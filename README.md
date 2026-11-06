@@ -6,7 +6,7 @@ reads the files directly from the forge's API in your browser, and renders them.
 
 - **Forges:** GitHub, GitLab and Gitea / Forgejo (including self-hosted).
 - **Storage:** plain markdown with YAML frontmatter, in whatever folder layout you like.
-- **Hosting:** Cloudflare Pages via `adapter-cloudflare` (a thin worker serves the client-rendered
+- **Hosting:** Cloudflare Workers via `adapter-cloudflare` (a thin worker serves the client-rendered
   app; no data passes through it).
 - **Editing:** a Milkdown/Crepe WYSIWYG, a markdown source view, and an optional template-driven
   form — all writing idiomatic markdown back to your repository.
@@ -14,6 +14,8 @@ reads the files directly from the forge's API in your browser, and renders them.
   created as needed). Every change is a commit with an editable message.
 
 ## Getting started
+
+Requires Node.js 22.17 or newer (24 LTS recommended) and pnpm.
 
 ```bash
 pnpm install
@@ -28,14 +30,19 @@ Other scripts:
 | `pnpm test` | Runs the Vitest unit tests |
 | `pnpm build` | Produces the deployable output |
 | `pnpm preview` | Serves the built output locally |
+| `pnpm wrangler dev` | Serves the built output in the local Workers runtime |
+| `pnpm wrangler deploy` | Deploys the built output to Cloudflare Workers |
 
-## Deploying to Cloudflare Pages
+## Deploying to Cloudflare Workers
 
-1. Push this repository to your git host and create a Pages project from it.
-2. Build command: `pnpm build`
-3. Build output directory: `.svelte-kit/cloudflare`
-4. Set the environment variable `NODE_VERSION` to `20` (or newer) if Pages defaults to an older
-   release.
+The Worker is configured in `wrangler.jsonc`.
+
+- **From the command line:** `pnpm build`, then `pnpm wrangler deploy` (run `pnpm wrangler login`
+  once first).
+- **From git:** in the Cloudflare dashboard, create a Worker and connect this repository
+  (Workers Builds). Set the build command to `pnpm build` and the deploy command to
+  `npx wrangler deploy`. If the build image defaults to an older Node.js, set the `NODE_VERSION`
+  environment variable to `24`.
 
 The project uses `@sveltejs/adapter-cloudflare`. Rendering is client-side only
 (`export const ssr = false` in `src/routes/+layout.ts`), so no requests are proxied through
@@ -109,7 +116,7 @@ can talk to it:
 ```ini
 [cors]
 ENABLED = true
-ALLOW_DOMAIN = https://your-hotdish-site.pages.dev
+ALLOW_DOMAIN = https://hotdish.<your-subdomain>.workers.dev
 METHODS = GET,POST,PUT,PATCH,DELETE,OPTIONS
 HEADERS = Content-Type,Authorization
 ```
@@ -195,7 +202,7 @@ they must appear in, so a document can place its own boxes.
 Hotdish is a progressive web app. Open it in the phone's browser and choose **Add to Home
 Screen** (Safari) or **Install app** (Chrome) to run it full screen like a native app.
 
-- The app itself is cached by a service worker (`src/service-worker.ts`), so it starts with no
+- The app itself is cached by a service worker (`src/service-worker/index.ts`), so it starts with no
   connection at all.
 - Each repository's file listing is saved on the device. A repository opens instantly from that
   copy while a fresh listing loads in the background; if the forge can't be reached, the saved

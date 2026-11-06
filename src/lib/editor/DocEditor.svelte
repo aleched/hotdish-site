@@ -1,30 +1,30 @@
 <script lang="ts">
-	import { dumpFrontmatter, parseFrontmatter, parseYamlMapping, serializeFrontmatter } from '$lib/markdown/frontmatter';
-	import type { Doc } from '$lib/markdown/doc';
-	import { renderMarkdown } from '$lib/markdown/render';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { structureDocument, type StructuredDoc } from '$lib/template/parse';
-	import { serializeDocument } from '$lib/template/serialize';
-	import StructuredForm from '$lib/ui/StructuredForm.svelte';
-	import { diffLines } from '$lib/util/diff';
-	import { ForgeError } from '$lib/forge/errors';
-	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '$lib/paths';
+	import { dumpFrontmatter, parseFrontmatter, parseYamlMapping, serializeFrontmatter } from '#lib/markdown/frontmatter.ts';
+	import type { Doc } from '#lib/markdown/doc.ts';
+	import { renderMarkdown } from '#lib/markdown/render.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { structureDocument, type StructuredDoc } from '#lib/template/parse.ts';
+	import { serializeDocument } from '#lib/template/serialize.ts';
+	import StructuredForm from '#lib/ui/StructuredForm.svelte';
+	import { diffLines } from '#lib/util/diff.ts';
+	import { ForgeError } from '#lib/forge/errors.ts';
+	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '#lib/paths.ts';
 	import { onMount, untrack } from 'svelte';
-	import { deleteDraft, draftKey, readDraft, writeDraft, type Draft } from '$lib/cache/drafts';
-	import { snapshotKey } from '$lib/cache/repoCache';
-	import { connectionStore } from '$lib/store/connection.svelte';
-	import { editorOpened } from '$lib/pwa/update';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { historyStore } from '$lib/store/history.svelte';
-	import CommitDialog from '$lib/ui/CommitDialog.svelte';
+	import { deleteDraft, draftKey, readDraft, writeDraft, type Draft } from '#lib/cache/drafts.ts';
+	import { snapshotKey } from '#lib/cache/repoCache.ts';
+	import { connectionStore } from '#lib/store/connection.svelte.ts';
+	import { editorOpened } from '#lib/pwa/update.ts';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { historyStore } from '#lib/store/history.svelte.ts';
+	import CommitDialog from '#lib/ui/CommitDialog.svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import Milkdown from './Milkdown.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import LineNumberedTextarea from '$lib/ui/LineNumberedTextarea.svelte';
+	import Icon from '#lib/ui/Icon.svelte';
+	import LineNumberedTextarea from '#lib/ui/LineNumberedTextarea.svelte';
 
-	import ModeToggle from '$lib/ui/ModeToggle.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { editorPrefs, EDITOR_MODES, type EditorMode } from '$lib/store/editorPrefs.svelte';
+	import ModeToggle from '#lib/ui/ModeToggle.svelte';
+	import { m } from '#lib/paraglide/messages.js';
+	import { editorPrefs, EDITOR_MODES, type EditorMode } from '#lib/store/editorPrefs.svelte.ts';
 
 	type Mode = EditorMode;
 
@@ -184,7 +184,7 @@
 		return serializeFrontmatter(fields, body);
 	});
 
-	let rawProblem = $derived(mode === 'raw' && !rawOnly ? (parseFrontmatter(rawText).error ?? null) : null);
+	let rawProblem = $derived(mode === 'raw' && !rawOnly ? parseFrontmatter(rawText).error ?? null : null);
 
 	let dirty = $derived(currentRaw.trim() !== doc.raw.trim());
 	let diff = $derived(diffLines(isNew ? '' : doc.raw, currentRaw));
@@ -262,7 +262,7 @@
 	$effect(() => {
 		if (!draftChecked || !draftId) return;
 		const raw = currentRaw;
-		const keep = dirty || (isNew && targetRelative !== initialTarget);
+		const keep = dirty || isNew && targetRelative !== initialTarget;
 		const target = targetRelative;
 		const timer = setTimeout(() => {
 			if (leaving) return;
@@ -396,13 +396,14 @@
 
 	// Guards in-app navigation (links, back button); beforeunload covers closing the tab.
 	beforeNavigate((navigation) => {
+		if (navigation.shallow && navigation.type === 'goto') return;
 		if (leaving || !(dirty || moved) || navigation.type === 'leave') return;
 		if (!window.confirm(m.confirm_discard())) navigation.cancel();
 		else forgetDraft();
 	});
 </script>
 
-<svelte:window onbeforeunload={beforeUnload} />
+<svelte:window onbeforeunload={beforeUnload}></svelte:window>
 
 <div class="editor stack">
 	<header class="bar">
@@ -442,7 +443,7 @@
 				type="button"
 				title={connectionStore.online ? m.common_save() : m.offline_unavailable()}
 				aria-label={m.common_save()}
-				disabled={!connectionStore.online || (!dirty && !isNew && !moved) || Boolean(moveProblem) || Boolean(fmError) || (!rawOnly && Boolean(rawProblem)) || (isNew && !String(fields.title ?? '').trim()) || saving}
+				disabled={!connectionStore.online || !dirty && !isNew && !moved || Boolean(moveProblem) || Boolean(fmError) || !rawOnly && Boolean(rawProblem) || isNew && !String(fields.title ?? '').trim() || saving}
 				onclick={startSave}
 			>
 				<Icon name="save" />
@@ -472,7 +473,9 @@
 
 	{#if repoStore.template && !repoStore.templateIsDefault && !rawOnly}
 		<p class="muted small">
-			{m.editor_using_template()}{#if repoStore.template.name}&nbsp;<strong>{repoStore.template.name}</strong>{/if}
+			{m.editor_using_template()}{#if repoStore.template.name}
+				<strong>{repoStore.template.name}</strong>
+			{/if}
 		</p>
 	{/if}
 
@@ -506,7 +509,11 @@
 	{:else if mode === 'rich'}
 		<StructuredForm doc={richHeader} template={repoStore.template} path={isNew ? null : doc.path} headerOnly />
 		{#key resetKey}
-			<Milkdown bind:this={richEditor} value={body} onchange={(markdown) => (body = markdown)} />
+			<Milkdown
+				bind:this={richEditor}
+				value={body}
+				onchange={(markdown) => body = markdown}
+			/>
 		{/key}
 	{:else if mode === 'raw'}
 		<LineNumberedTextarea
@@ -545,7 +552,7 @@
 			disabled={diff.identical && !isNew && !moved}
 			wide
 			onsubmit={commit}
-			oncancel={() => (confirming = false)}
+			oncancel={() => confirming = false}
 		>
 			{#if moved}
 				<p class="muted small">

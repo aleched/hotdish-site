@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { encodeDocPath } from '$lib/paths';
-	import Icon from '$lib/ui/Icon.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { encodeDocPath } from '#lib/paths.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	interface Crumb {
 		label: string;

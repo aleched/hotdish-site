@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
-	import Icon from '$lib/ui/Icon.svelte';
+	import Icon from '#lib/ui/Icon.svelte';
 
 	interface Props {
 		id?: string;

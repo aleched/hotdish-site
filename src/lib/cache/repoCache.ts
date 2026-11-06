@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { get, set } from 'idb-keyval';
-import type { BlobEntry, RepoRef } from '$lib/forge/types';
+import type { BlobEntry, RepoRef } from '#lib/forge/types.ts';
 import { snapshotKey } from './repoEntries';
 
 export { relevantEntries, sameEntries, snapshotKey, splitEntries } from './repoEntries';

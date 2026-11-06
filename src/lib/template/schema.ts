@@ -1,6 +1,6 @@
-import yaml from 'js-yaml';
-import { m } from '$lib/paraglide/messages.js';
-import { isIconName, type IconName } from '$lib/ui/icon-names';
+import { loadYaml } from '#lib/util/yaml.ts';
+import { m } from '#lib/paraglide/messages.js';
+import { isIconName, type IconName } from '#lib/ui/icon-names.ts';
 
 export const TEMPLATE_PATH = '.hotdish/template.yml';
 
@@ -55,7 +55,7 @@ const SECTION_TYPES: SectionType[] = ['list', 'ordered', 'text'];
 export function parseTemplate(raw: string): TemplateParseResult {
 	let loaded: unknown;
 	try {
-		loaded = yaml.load(raw);
+		loaded = loadYaml(raw);
 	} catch (error) {
 		return { template: null, error: error instanceof Error ? error.message : String(error) };
 	}

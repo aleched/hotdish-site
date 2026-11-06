@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 /**
  * A new service worker waits until every tab closes, which an installed phone app rarely

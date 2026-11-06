@@ -1,5 +1,6 @@
-import yaml from 'js-yaml';
-import { m } from '$lib/paraglide/messages.js';
+import { CORE_SCHEMA, dump } from 'js-yaml';
+import { loadYaml } from '#lib/util/yaml.ts';
+import { m } from '#lib/paraglide/messages.js';
 
 export interface Frontmatter {
 	/** Parsed YAML mapping. Unknown keys are preserved so they survive a round trip. */
@@ -28,7 +29,7 @@ export function parseFrontmatter(source: string): Frontmatter {
 	const body = source.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '');
 
 	try {
-		const parsed = yaml.load(match[1], { schema: yaml.CORE_SCHEMA });
+		const parsed = loadYaml(match[1], { schema: CORE_SCHEMA });
 		const data =
 			parsed && typeof parsed === 'object' && !Array.isArray(parsed)
 				? (parsed as Record<string, unknown>)
@@ -56,21 +57,18 @@ function orderFields(data: Record<string, unknown>): Record<string, unknown> {
 /** YAML text for a frontmatter mapping, without the `---` fences. Empty for an empty mapping. */
 export function dumpFrontmatter(data: Record<string, unknown>): string {
 	if (Object.keys(data).length === 0) return '';
-	return yaml
-		.dump(orderFields(data), {
-			lineWidth: -1,
-			noRefs: true,
-			quotingType: '"',
-			forceQuotes: false,
-			schema: yaml.CORE_SCHEMA
-		})
-		.trimEnd();
+	return dump(orderFields(data), {
+		lineWidth: -1,
+		noRefs: true,
+		quoteStyle: 'double',
+		schema: CORE_SCHEMA
+	}).trimEnd();
 }
 
 /** Parses standalone YAML text that must be a mapping (or empty). */
 export function parseYamlMapping(text: string): { data: Record<string, unknown> } | { error: string } {
 	try {
-		const parsed = yaml.load(text, { schema: yaml.CORE_SCHEMA });
+		const parsed = loadYaml(text, { schema: CORE_SCHEMA });
 		if (parsed === undefined || parsed === null) return { data: {} };
 		if (typeof parsed !== 'object' || Array.isArray(parsed)) {
 			return { error: m.frontmatter_error_pairs() };

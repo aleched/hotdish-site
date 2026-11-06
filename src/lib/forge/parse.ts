@@ -1,5 +1,5 @@
-import { trimSlashes } from '$lib/share/codec';
-import { m } from '$lib/paraglide/messages.js';
+import { trimSlashes } from '#lib/share/codec.ts';
+import { m } from '#lib/paraglide/messages.js';
 import type { ForgeKind, RepoRef } from './types';
 
 const KNOWN_HOSTS: Record<string, ForgeKind> = {

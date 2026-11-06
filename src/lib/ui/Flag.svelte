@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Locale } from '$lib/paraglide/runtime';
+	import type { Locale } from '#lib/paraglide/runtime.js';
 	import {
 		AD, BD, BG, CN, CZ, DE, DK, ES, FI, FR, GR, HR, HU, ID, IL, IN, IR, IS, IT, JP, KR, MY, NL,
 		NO, PH, PK, PL, PT, RO, RS, RU, SA, SE, SO, TH, TR, TZ, UA, US, VN, ZA

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { encodeDocPath, toRelative } from '$lib/paths';
-	import { repoStore } from '$lib/store/repo.svelte';
-	import { editorPrefs } from '$lib/store/editorPrefs.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { page } from '$app/state';
+	import { encodeDocPath, toRelative } from '#lib/paths.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	const MAX_COLLAPSED = 12;
 	const popoverId = 'filter-popover';
@@ -17,17 +17,16 @@
 	let tagQuery = $state('');
 	let root: HTMLDivElement | undefined = $state();
 
-	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean($page.params.src));
+	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean(page.params.src));
 
 	/** Opens a random document from the current (filtered) list, avoiding the one already open. */
 	function randomDoc() {
-		const current = ($page.params.path ?? '').replace(/^\/+|\/+$/g, '');
-		const pool = repoStore.filtered
-			.map((doc) => toRelative(doc.path, repoStore.basePath))
-			.filter((path) => path !== current);
+		const current = (page.params.path ?? '').replace(/^\/+|\/+$/g, '');
+		const pool = repoStore.filtered.map((doc) => toRelative(doc.path, repoStore.basePath)).filter((path) => path !== current);
+
 		if (pool.length === 0) return;
 		const pick = pool[Math.floor(Math.random() * pool.length)];
-		void goto(`/r/${$page.params.src}/${encodeDocPath(pick)}`);
+		void goto(`/r/${page.params.src}/${encodeDocPath(pick)}`);
 	}
 	let tags = $derived.by(() => {
 		const needle = tagQuery.trim().toLowerCase();
@@ -61,7 +60,7 @@
 	}
 </script>
 
-<svelte:window onclick={onwindowclick} />
+<svelte:window onclick={onwindowclick}></svelte:window>
 
 {#snippet toggle(expanded: boolean, onclick: () => void)}
 	<button
@@ -70,13 +69,16 @@
 		title={expanded ? m.filter_show_fewer() : m.filter_show_all()}
 		aria-label={expanded ? m.filter_show_fewer() : m.filter_show_all()}
 		aria-expanded={expanded}
-		{onclick}
-	>
-		<Icon name={expanded ? 'collapse' : 'expand'} size={14} />
-	</button>
+		onclick={onclick}
+	><Icon name={expanded ? 'collapse' : 'expand'} size={14} /></button>
 {/snippet}
 
-<div class="filters no-print" bind:this={root} {onkeydown} role="presentation">
+<div
+	class="filters no-print"
+	bind:this={root}
+	onkeydown={onkeydown}
+	role="presentation"
+>
 	<div class="row">
 		<label class="search">
 			<span class="visually-hidden">{m.filter_search()}</span>
@@ -97,7 +99,7 @@
 			title={m.filter_by()}
 			aria-expanded={open}
 			aria-controls={popoverId}
-			onclick={() => (open = !open)}
+			onclick={() => open = !open}
 		>
 			<Icon name="filter" />
 			{#if activeCount > 0}<span class="badge">{activeCount}</span>{/if}
@@ -152,7 +154,7 @@
 						{/each}
 					</div>
 					{#if folders.length > MAX_COLLAPSED}
-						{@render toggle(showAllFolders, () => (showAllFolders = !showAllFolders))}
+						{@render toggle(showAllFolders, () => showAllFolders = !showAllFolders)}
 					{/if}
 				{/if}
 			</section>
@@ -187,7 +189,7 @@
 						{/each}
 					</div>
 					{#if tags.length > MAX_COLLAPSED}
-						{@render toggle(showAllTags, () => (showAllTags = !showAllTags))}
+						{@render toggle(showAllTags, () => showAllTags = !showAllTags)}
 					{/if}
 				</section>
 			{/if}
@@ -204,9 +206,15 @@
 				onclick={() => repoStore.clearFilters()}
 			>
 				<span class="clear-x" aria-hidden="true">
-					<svg viewBox="0 0 10 10" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-						<path d="M1.5 1.5l7 7M8.5 1.5l-7 7" />
-					</svg>
+					<svg
+						viewBox="0 0 10 10"
+						width="11"
+						height="11"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+					><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"></path></svg>
 				</span>
 			</button>
 			{#each repoStore.selectedFolders as path (path)}

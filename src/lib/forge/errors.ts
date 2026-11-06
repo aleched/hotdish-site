@@ -1,5 +1,5 @@
 import { knownForgeKind } from './parse';
-import { m } from '$lib/paraglide/messages.js';
+import { m } from '#lib/paraglide/messages.js';
 import type { ForgeKind } from './types';
 
 export type ForgeErrorKind =

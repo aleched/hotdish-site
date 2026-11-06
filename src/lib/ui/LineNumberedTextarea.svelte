@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLTextareaAttributes } from 'svelte/elements';
-	import { fractionBefore } from '$lib/editor/fractions';
+	import { fractionBefore } from '#lib/editor/fractions.ts';
 
 	interface Props extends Omit<HTMLTextareaAttributes, 'value' | 'class'> {
 		value?: string;

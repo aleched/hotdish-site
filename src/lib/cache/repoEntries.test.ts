@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { RepoRef } from '$lib/forge/types';
-import { TEMPLATE_PATH } from '$lib/template/schema';
+import type { RepoRef } from '#lib/forge/types.ts';
+import { TEMPLATE_PATH } from '#lib/template/schema.ts';
 import { relevantEntries, sameEntries, snapshotKey, splitEntries } from './repoEntries';
 
 const ref: RepoRef = { kind: 'github', host: 'github.com', owner: 'alice', repo: 'recipes' };

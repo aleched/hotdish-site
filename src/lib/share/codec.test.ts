@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decodeSrc, encodeSrc } from './codec';
-import type { RepoRef } from '$lib/forge/types';
+import type { RepoRef } from '#lib/forge/types.ts';
 
 describe('share codec', () => {
 	const cases: RepoRef[] = [

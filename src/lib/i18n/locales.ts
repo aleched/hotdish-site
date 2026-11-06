@@ -1,4 +1,4 @@
-import { getLocale, locales, setLocale, type Locale } from '$lib/paraglide/runtime';
+import { getLocale, locales, setLocale, type Locale } from '#lib/paraglide/runtime.js';
 
 interface LocaleInfo {
 	english: string;

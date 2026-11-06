@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTree, findFolder, type TreeFolder } from './tree';
-import type { DocSummary } from '$lib/markdown/doc';
+import type { DocSummary } from '#lib/markdown/doc.ts';
 
 function summary(path: string, title = path): DocSummary {
 	return { path, sha: path, title, tags: [], haystack: title.toLowerCase() };
