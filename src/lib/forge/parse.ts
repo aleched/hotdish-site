@@ -21,11 +21,27 @@ export function knownForgeKind(host: string): ForgeKind | undefined {
 }
 
 /**
- * Accepts a browser URL copied from a forge, or a bare `owner/repo` slug, and extracts the
- * repository identity plus any branch and sub-folder embedded in the URL.
+ * Adds `https://` to input that starts with a host but no scheme, such as `github.com/alice/notes`.
+ * A host needs a dot (or `localhost`) and at least an owner and repo after it, so a bare
+ * `owner/repo` slug is left alone.
+ */
+export function withScheme(input: string): string {
+	const raw = input.trim();
+	if (/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) return raw;
+	const segments = raw.replace(/^\/+/, '').split('/').filter(Boolean);
+	if (segments.length >= 3 && /^(localhost|[^\s/]+\.[^\s/]+)(:\d+)?$/i.test(segments[0])) {
+		return `https://${raw.replace(/^\/+/, '')}`;
+	}
+	return raw;
+}
+
+/**
+ * Accepts a browser URL copied from a forge (the `https://` may be left off), or a bare
+ * `owner/repo` slug, and extracts the repository identity plus any branch and sub-folder
+ * embedded in the URL.
  */
 export function parseRepoInput(input: string, options: ParseOptions = {}): RepoRef {
-	const raw = input.trim();
+	const raw = withScheme(input);
 	if (!raw) throw new Error(m.error_repo_input_empty());
 
 	if (!/^[a-z]+:\/\//i.test(raw)) {

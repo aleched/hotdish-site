@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { encodeSrc } from '#lib/share/codec.ts';
 	import { connectionStore } from '#lib/store/connection.svelte.ts';
 	import { prefetchSaved, syncNow } from '#lib/cache/prefetch.ts';
 	import { applyUpdate, initUpdates, shouldApplyUpdate } from '#lib/pwa/update.ts';
 	import { repoStore } from '#lib/store/repo.svelte.ts';
-	import { profileStore } from '#lib/store/profiles.svelte.ts';
+	import { profileStore, profileToRef } from '#lib/store/profiles.svelte.ts';
 	import { navStore } from '#lib/store/nav.svelte.ts';
 	import Icon from '#lib/ui/Icon.svelte';
 	import RateLimitPrompt from '#lib/ui/RateLimitPrompt.svelte';
@@ -39,6 +40,11 @@
 		: connLabel);
 
 	onMount(() => {
+		// Reopening the app on the landing page resumes the last repository.
+		const last = profileStore.lastOpened;
+		if (page.url.pathname === '/' && last) {
+			void goto(`/r/${encodeSrc(profileToRef(last))}`, { replaceState: true });
+		}
 		initUpdates();
 		// Let the page itself load first, then fill the offline copy of the other saved repos.
 		const timer = setTimeout(() => void prefetchSaved().catch(() => {}), 3000);

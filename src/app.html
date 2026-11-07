@@ -7,7 +7,8 @@
 		<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />
 		<link rel="icon" type="image/png" href="%sveltekit.assets%/favicon.png" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
-		<meta name="theme-color" content="#7b3fa0" />
+		<meta name="theme-color" content="#fdfbf7" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#18191b" media="(prefers-color-scheme: dark)" />
 		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,6 +19,12 @@
 				var t = JSON.parse(localStorage.getItem('hotdish.theme.v1') || '{}');
 				if (t.mode === 'light' || t.mode === 'dark') document.documentElement.dataset.theme = t.mode;
 				if (t.accent && t.accent !== 'purple') document.documentElement.dataset.accent = t.accent;
+				// A forced mode overrides both media-specific tags; "system" leaves them to the browser.
+				if (t.mode === 'light' || t.mode === 'dark') {
+					document.querySelectorAll('meta[name="theme-color"]').forEach(function (el) {
+						el.setAttribute('content', t.mode === 'dark' ? '#18191b' : '#fdfbf7');
+					});
+				}
 			} catch (e) {}
 		</script>
 		<style>

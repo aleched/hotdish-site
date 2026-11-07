@@ -1,4 +1,5 @@
 import { loadYaml } from '#lib/util/yaml.ts';
+import { slugify } from '#lib/paths.ts';
 import { m } from '#lib/paraglide/messages.js';
 import { isIconName, type IconName } from '#lib/ui/icon-names.ts';
 
@@ -231,13 +232,6 @@ export function isIsoDate(value: string): boolean {
 	const [year, month, day] = match.slice(1).map(Number);
 	const date = new Date(Date.UTC(year, month - 1, day));
 	return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}
-
-export function slugify(value: string): string {
-	return value
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
 }
 
 function humanize(value: string): string {

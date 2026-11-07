@@ -2,9 +2,12 @@ import { m } from '#lib/paraglide/messages.js';
 
 /** Path and commit-message helpers shared by the create, move and delete flows. */
 
+/** Lowercase hyphenated slug; apostrophes are dropped (`Tsao's` -> `tsaos`) and `&` reads as `and`. */
 export function slugify(value: string): string {
 	return value
 		.toLowerCase()
+		.replace(/['\u2018\u2019]/g, '')
+		.replace(/&/g, ' and ')
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 }

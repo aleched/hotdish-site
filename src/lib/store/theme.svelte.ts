@@ -16,6 +16,9 @@ export const THEME_ACCENTS: { id: ThemeAccent; label: string; emoji: string; col
 
 const STORAGE_KEY = 'hotdish.theme.v1';
 
+// Matches `--bg` in app.css; the browser chrome around the page follows it.
+const CHROME_COLOR = { light: '#fdfbf7', dark: '#18191b' };
+
 class ThemeStore {
 	mode = $state<ThemeMode>('system');
 	accent = $state<ThemeAccent>('purple');
@@ -62,6 +65,18 @@ class ThemeStore {
 		else root.setAttribute('data-theme', this.mode);
 		if (this.accent === 'purple') root.removeAttribute('data-accent');
 		else root.setAttribute('data-accent', this.accent);
+		this.#applyChromeColor();
+	}
+
+	#applyChromeColor(): void {
+		const metas = document.querySelectorAll('meta[name="theme-color"]');
+		// Two tags carry the light/dark pair for "system"; a forced mode sets both to one colour.
+		const light = this.mode === 'dark' ? CHROME_COLOR.dark : CHROME_COLOR.light;
+		const dark = this.mode === 'light' ? CHROME_COLOR.light : CHROME_COLOR.dark;
+		metas.forEach((meta) => {
+			const isDarkTag = meta.getAttribute('media')?.includes('dark');
+			meta.setAttribute('content', isDarkTag ? dark : light);
+		});
 	}
 }
 

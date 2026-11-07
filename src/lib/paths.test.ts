@@ -18,6 +18,16 @@ describe('slugify', () => {
 	it('lowercases and dashes non-alphanumerics', () => {
 		expect(slugify('  Tater Tot Hotdish! ')).toBe('tater-tot-hotdish');
 	});
+
+	it('drops apostrophes instead of splitting the word', () => {
+		expect(slugify("General Tsao's Chicken")).toBe('general-tsaos-chicken');
+		expect(slugify('S’mores Cookie Bars')).toBe('smores-cookie-bars');
+	});
+
+	it('spells out ampersands', () => {
+		expect(slugify('Sweet Cream Base - Ben & Jerry')).toBe('sweet-cream-base-ben-and-jerry');
+		expect(slugify('Mac&Cheese')).toBe('mac-and-cheese');
+	});
 });
 
 describe('withMarkdownExtension', () => {

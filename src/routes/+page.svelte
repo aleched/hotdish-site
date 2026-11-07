@@ -3,7 +3,7 @@
 	import { onDestroy } from 'svelte';
 	import { FORGE_LABELS, TOKEN_GUIDANCE } from '#lib/forge/factory.ts';
 	import { detectForgeKind } from '#lib/forge/detect.ts';
-	import { knownForgeKind, parseRepoInput } from '#lib/forge/parse.ts';
+	import { knownForgeKind, parseRepoInput, withScheme } from '#lib/forge/parse.ts';
 	import type { ForgeKind, RepoRef } from '#lib/forge/types.ts';
 	import { encodeSrc } from '#lib/share/codec.ts';
 	import { profileStore, profileToRef, type Profile } from '#lib/store/profiles.svelte.ts';
@@ -46,7 +46,7 @@
 		if (kind) return kind;
 		if (!input.trim()) return 'github';
 		try {
-			return knownForgeKind(new URL(input.trim()).host) ?? '';
+			return knownForgeKind(new URL(withScheme(input)).host) ?? '';
 		} catch {
 			return '';
 		}
@@ -125,7 +125,7 @@
 	async function buildRef(): Promise<RepoRef | null> {
 		error = null;
 		try {
-			if (!/^https?:\/\//i.test(input.trim())) {
+			if (!/^https?:\/\//i.test(withScheme(input))) {
 				throw new Error(m.home_error_full_url());
 			}
 			const parsed = parseRepoInput(input);

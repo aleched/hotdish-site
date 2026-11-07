@@ -65,6 +65,7 @@
 		const ref = decoded.ref;
 		if (!ref) return;
 		void repoStore.load(ref, profileStore.tokenFor(ref));
+		profileStore.touch(ref);
 	});
 
 	let fullPath = $derived(

@@ -30,7 +30,7 @@ fields:
   - group:
       - key: servings
         label: Servings
-        type: number
+        type: text
         icon: person
 
       - key: prep_time

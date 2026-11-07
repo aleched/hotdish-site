@@ -64,6 +64,30 @@ describe('parseRepoInput', () => {
 		});
 	});
 
+	it('accepts a host without the scheme', () => {
+		expect(parseRepoInput('github.com/alice/recipes')).toMatchObject({
+			kind: 'github',
+			host: 'github.com',
+			owner: 'alice',
+			repo: 'recipes'
+		});
+		expect(parseRepoInput('gitlab.com/group/cookbook/-/tree/main/recipes')).toMatchObject({
+			kind: 'gitlab',
+			owner: 'group',
+			repo: 'cookbook',
+			ref: 'main',
+			basePath: 'recipes'
+		});
+		expect(parseRepoInput('git.example.org:8443/team/recipes')).toMatchObject({
+			host: 'git.example.org:8443',
+			owner: 'team'
+		});
+	});
+
+	it('still treats owner/repo as a bare slug', () => {
+		expect(parseRepoInput('alice/recipes')).toMatchObject({ host: 'github.com', owner: 'alice' });
+	});
+
 	it('rejects empty input', () => {
 		expect(() => parseRepoInput('   ')).toThrow();
 	});

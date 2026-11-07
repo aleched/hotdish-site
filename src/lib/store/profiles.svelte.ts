@@ -121,6 +121,19 @@ class ProfileStore {
 		this.#persist();
 	}
 
+	/** Remembers a saved repository as the last one opened, without changing the list order. */
+	touch(ref: RepoRef): void {
+		const profile = this.profileFor(ref);
+		if (!profile || this.activeId === profile.id) return;
+		this.activeId = profile.id;
+		this.#persist();
+	}
+
+	/** The saved repository opened most recently. */
+	get lastOpened(): Profile | undefined {
+		return this.active ?? this.profiles[0];
+	}
+
 	setActive(id: string | null): void {
 		this.activeId = id;
 		this.#persist();
