@@ -19,6 +19,9 @@
 		forceEdit?: boolean;
 		/** The edited path, relative to the repository base path. */
 		value?: string;
+		/** Shows a trash button after the pencil; the caller opens the confirmation. */
+		ondelete?: () => void;
+		deleteDisabled?: boolean;
 	}
 
 	let {
@@ -28,7 +31,9 @@
 		renamable = false,
 		renaming = $bindable(false),
 		forceEdit = false,
-		value = $bindable('')
+		value = $bindable(''),
+		ondelete,
+		deleteDisabled = false
 	}: Props = $props();
 
 	let showInput = $derived(renamable && (renaming || forceEdit));
@@ -95,6 +100,20 @@
 				</button>
 			</li>
 		{/if}
+		{#if ondelete}
+			<li>
+				<button
+					type="button"
+					class="icon-button pencil trash"
+					title={deleteDisabled ? m.offline_unavailable() : m.common_delete()}
+					aria-label={m.common_delete()}
+					disabled={deleteDisabled}
+					onclick={ondelete}
+				>
+					<Icon name="trash" size={14} />
+				</button>
+			</li>
+		{/if}
 	</ol>
 </nav>
 
@@ -154,6 +173,10 @@
 	.pencil:focus-visible,
 	.pencil.active {
 		opacity: 1;
+	}
+	.trash:hover:not(:disabled),
+	.trash:focus-visible {
+		color: var(--danger);
 	}
 	span[aria-current] {
 		color: var(--text);

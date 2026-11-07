@@ -261,6 +261,18 @@
 	let notFound = $derived(
 		repoStore.status === 'ready' && !repoStore.indexing && !entry && folder === null
 	);
+
+	// A link such as `[Pasta](pasta)` omits the extension; send it to `pasta.md` when that exists.
+	$effect(() => {
+		if (!notFound || !path || path.toLowerCase().endsWith('.md')) return;
+		const withExtension = `${path}.md`;
+		const target = repoStore.basePath
+			? `${repoStore.basePath.replace(/\/+$/, '')}/${withExtension}`
+			: withExtension;
+		if (repoStore.entryFor(target)) {
+			void goto(`/r/${src}/${encodeDocPath(withExtension)}`, { replaceState: true });
+		}
+	});
 </script>
 
 <svelte:head>
@@ -367,6 +379,8 @@
 					forceEdit={Boolean(draft)}
 					bind:renaming
 					bind:value={renameValue}
+					ondelete={entry && editing && doc && !draft ? () => (docDialog = 'delete') : undefined}
+					deleteDisabled={!connectionStore.online}
 				/>
 				<div class="head-actions">
 					{#if entry && !editing && doc && editorPrefs.strikeLists}
@@ -403,14 +417,6 @@
 									<Icon name="edit" />
 								</button>
 							{/if}
-							<button
-								type="button"
-								class="part danger-hover"
-								title={connectionStore.online ? m.common_delete() : m.offline_unavailable()}
-								aria-label={m.common_delete()}
-								disabled={!doc || !connectionStore.online}
-								onclick={() => docDialog = 'delete'}
-							><Icon name="trash" /></button>
 						</div>
 					{:else if folder}
 						<button
@@ -424,8 +430,9 @@
 							<Icon name="plus" />
 						</button>
 					{/if}
-					<ShareButton source={sourceLink} />
-				</div>
+					{#if !editing && !draft}
+						<ShareButton source={sourceLink} />
+					{/if}				</div>
 			</div>
 
 			{#if repoStore.templateError}
@@ -659,10 +666,6 @@
 		border-color: var(--accent);
 		position: relative;
 	}
-	.part.danger-hover:hover:not(:disabled) {
-		border-color: var(--danger);
-		color: var(--danger);
-	}
 	.part:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
@@ -673,8 +676,8 @@
 	.split > .part:last-child {
 		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 	}
-	.split > .part + .part {
-		margin-left: -1px;
+	.split > .part:only-child {
+		border-radius: var(--radius-sm);
 	}
 
 	.side-head {
