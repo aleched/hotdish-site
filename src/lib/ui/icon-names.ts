@@ -47,6 +47,8 @@ export const ICON_NAMES = [
 	'home',
 	'up',
 	'check',
+	'check-all',
+	'check-none',
 	'message',
 	'confirm',
 	'empty',

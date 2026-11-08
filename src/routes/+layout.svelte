@@ -68,8 +68,14 @@
 		applyUpdate(to.href);
 	});
 
-	function retry() {
-		if (connectionStore.state !== 'syncing') void syncNow({ force: true });
+	let pendingCount = $derived(activeSrc ? repoStore.pendingCount : 0);
+	let pendingLabel = $derived(pendingCount > 0 ? m.changes_pending({ count: pendingCount }) : '');
+
+	async function retry() {
+		const src = activeSrc;
+		if (connectionStore.state !== 'syncing') await syncNow({ force: true }).catch(() => {});
+		// Uncommitted changes turn the cloud into the way to the commit page, after a fresh sync.
+		if (src && repoStore.pendingCount > 0 && !page.route.id?.startsWith('/c/')) await goto(`/c/${src}`);
 	}
 
 	let isUnsaved = $derived(!!repoStore.ref && !profileStore.profileFor(repoStore.ref));
@@ -149,8 +155,8 @@
 			<button
 				type="button"
 				class="icon-button conn {connectionStore.state}"
-				title={connTitle}
-				aria-label={connTitle}
+				title={pendingLabel ? `${pendingLabel}\n${connTitle}` : connTitle}
+				aria-label={pendingLabel || connTitle}
 				aria-busy={connectionStore.state === 'syncing'}
 				onclick={retry}
 			>
@@ -158,6 +164,9 @@
 					name={connectionStore.state === 'syncing' ? 'cloud-sync' : connectionStore.state === 'live' ? 'cloud' : 'cloud-off'}
 					size={20}
 				/>
+				{#if pendingCount > 0}
+					<span class="badge" aria-hidden="true">{pendingCount}</span>
+				{/if}
 			</button>
 			<a class="nav settings" href="/settings" title={m.nav_settings()} aria-label={m.nav_settings()}>
 				<Icon name="settings" size={20} />
@@ -237,11 +246,28 @@
 	}
 
 	.conn {
+		position: relative;
 		flex-shrink: 0;
 		padding: 0.4rem;
 		border: none;
 		background: none;
 		color: var(--text-dim);
+	}
+	.conn .badge {
+		position: absolute;
+		top: 0;
+		right: -0.1rem;
+		min-width: 1rem;
+		height: 1rem;
+		padding: 0 0.25rem;
+		box-sizing: border-box;
+		border-radius: 999px;
+		background: var(--accent);
+		color: #fff;
+		font-size: 0.65rem;
+		font-weight: 600;
+		line-height: 1rem;
+		text-align: center;
 	}
 	.conn:hover {
 		color: var(--accent);

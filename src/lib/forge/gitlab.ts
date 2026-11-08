@@ -4,6 +4,7 @@ import { forgeFetch, forgeFetchJson } from './http';
 import { readRateLimit } from './rateLimitHeaders';
 import type {
 	BlobEntry,
+	CommitArgs,
 	DeleteArgs,
 	ForgeProvider,
 	MoveArgs,
@@ -257,5 +258,27 @@ export class GitLabProvider implements ForgeProvider {
 			this.#ctx
 		);
 		return {};
+	}
+
+	async commitChanges(args: CommitArgs): Promise<void> {
+		this.#requireToken();
+		if (args.ops.length === 0) return;
+		await forgeFetch(
+			`${this.#apiBase}/projects/${this.#projectId}/repository/commits`,
+			{
+				method: 'POST',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({
+					branch: args.branch,
+					commit_message: args.message,
+					actions: args.ops.map((op) =>
+						op.op === 'delete'
+							? { action: 'delete', file_path: op.path }
+							: { action: op.op, file_path: op.path, content: op.content ?? '' }
+					)
+				})
+			},
+			this.#ctx
+		);
 	}
 }

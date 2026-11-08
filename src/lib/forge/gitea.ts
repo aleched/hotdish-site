@@ -5,6 +5,7 @@ import { forgeFetch, forgeFetchJson } from './http';
 import { readRateLimit } from './rateLimitHeaders';
 import type {
 	BlobEntry,
+	CommitArgs,
 	DeleteArgs,
 	ForgeProvider,
 	MoveArgs,
@@ -246,6 +247,40 @@ export class GiteaProvider implements ForgeProvider {
 				this.#ctx
 			);
 			return { sha: result.files?.[0]?.content?.sha };
+		} catch (error) {
+			if (error instanceof ForgeError && (error.status === 404 || error.status === 405)) {
+				throw new ForgeError('unknown', m.error_move_failed(), {
+					status: error.status,
+					hint: m.error_move_failed_hint()
+				});
+			}
+			throw error;
+		}
+	}
+
+	/** Uses the multi-file ChangeFiles endpoint, available from Gitea 1.20 / Forgejo 1.20. */
+	async commitChanges(args: CommitArgs): Promise<void> {
+		this.#requireToken();
+		if (args.ops.length === 0) return;
+		try {
+			await forgeFetch(
+				`${this.#apiBase}/repos/${this.#slug}/contents`,
+				{
+					method: 'POST',
+					headers: this.#headers({ 'Content-Type': 'application/json' }),
+					body: JSON.stringify({
+						message: args.message,
+						branch: args.branch,
+						files: args.ops.map((op) => ({
+							operation: op.op,
+							path: op.path,
+							content: op.op === 'delete' ? undefined : utf8ToBase64(op.content ?? ''),
+							sha: op.sha
+						}))
+					})
+				},
+				this.#ctx
+			);
 		} catch (error) {
 			if (error instanceof ForgeError && (error.status === 404 || error.status === 405)) {
 				throw new ForgeError('unknown', m.error_move_failed(), {

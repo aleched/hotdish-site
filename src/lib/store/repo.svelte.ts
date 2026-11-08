@@ -1,5 +1,18 @@
 import { readBlob, writeBlob } from '#lib/cache/blobCache.ts';
-import { readSnapshot, relevantEntries, sameEntries, splitEntries, writeSnapshot } from '#lib/cache/repoCache.ts';
+import { readPending, writePending } from '#lib/cache/pending.ts';
+import { readSnapshot, relevantEntries, sameEntries, snapshotKey, splitEntries, writeSnapshot } from '#lib/cache/repoCache.ts';
+import {
+	discardChange,
+	isLocalSha,
+	localContents,
+	overlayEntries,
+	stageAdd,
+	stageDelete,
+	stageEdit,
+	stageMove,
+	withoutChanges,
+	type PendingChange
+} from '#lib/changes.ts';
 import { connectionStore } from '#lib/store/connection.svelte.ts';
 import { m } from '#lib/paraglide/messages.js';
 import { createProvider } from '#lib/forge/factory.ts';
@@ -44,6 +57,8 @@ class RepoStore {
 	indexTotal = $state(0);
 	skipped = $state<string[]>([]);
 
+	/** Changes saved on this device and not yet committed, for the current repository and branch. */
+	pending = $state<PendingChange[]>([]);
 	/** The repository's own template, if it has one. */
 	#customTemplate = $state<DocTemplate | null>(null);
 	/** True when the repository has no template file, so the built-in default applies. */
@@ -63,6 +78,10 @@ class RepoStore {
 	#key: string | null = null;
 	#token: string | undefined;
 	#docs = new Map<string, Doc>();
+	/** The listing as the repository has it, without pending changes. */
+	#baseEntries: BlobEntry[] = [];
+	/** Content of locally changed files by local sha. */
+	#localRaw = new Map<string, string>();
 	#loadToken = 0;
 	#templateEntry: BlobEntry | undefined;
 	/** When the listing was last fetched from the forge. */
@@ -198,6 +217,9 @@ class RepoStore {
 		this.error = null;
 		this.entries = [];
 		this.docs = [];
+		this.pending = [];
+		this.#baseEntries = [];
+		this.#localRaw.clear();
 		this.skipped = [];
 		this.truncated = false;
 		this.indexed = 0;
@@ -215,8 +237,10 @@ class RepoStore {
 		this.#provider = provider;
 
 		// Show the last known listing straight away, then bring it up to date.
-		const snapshot = await readSnapshot(ref);
+		const [snapshot, pending] = await Promise.all([readSnapshot(ref), readPending(snapshotKey(ref))]);
 		if (loadToken !== this.#loadToken) return;
+		this.pending = pending;
+		this.#localRaw = localContents(pending);
 		if (snapshot) {
 			connectionStore.noteSnapshot(snapshot.savedAt);
 			this.#savedAt = snapshot.savedAt;
@@ -252,7 +276,7 @@ class RepoStore {
 			if (loadToken !== this.#loadToken) return;
 
 			const relevant = relevantEntries(entries, ref.basePath);
-			const current = this.#templateEntry ? [...this.entries, this.#templateEntry] : this.entries;
+			const current = this.#templateEntry ? [...this.#baseEntries, this.#templateEntry] : this.#baseEntries;
 			const shown = this.status === 'ready';
 			if (!shown || gitRef !== this.resolvedRef || !sameEntries(relevant, current)) {
 				this.#apply(gitRef, relevant, truncated, loadToken, shown);
@@ -285,12 +309,14 @@ class RepoStore {
 		this.resolvedRef = gitRef;
 		this.truncated = truncated;
 		this.#templateEntry = template;
-		this.entries = markdown;
+		this.#baseEntries = markdown;
+		const shown = overlayEntries(markdown, this.pending);
+		this.entries = shown;
 		this.status = 'ready';
 		this.error = null;
 
 		void this.#loadTemplate(template, loadToken);
-		void this.#buildIndex(markdown, loadToken, quiet);
+		void this.#buildIndex(shown, loadToken, quiet);
 	}
 
 	/** Saves the listing as currently known, so local saves are reflected offline too. */
@@ -298,7 +324,7 @@ class RepoStore {
 		const ref = this.ref;
 		const gitRef = this.resolvedRef;
 		if (!ref || !gitRef || this.status !== 'ready') return;
-		const entries = $state.snapshot(this.entries) as BlobEntry[];
+		const entries = $state.snapshot(this.#baseEntries) as BlobEntry[];
 		if (this.#templateEntry) entries.push({ ...this.#templateEntry });
 		await writeSnapshot(ref, {
 			resolvedRef: gitRef,
@@ -342,56 +368,81 @@ class RepoStore {
 		return doc;
 	}
 
-	/** Replaces cached state after a successful save so the UI reflects the new content. */
-	applySavedDoc(path: string, raw: string, newSha?: string): void {
+	get pendingCount(): number {
+		return this.pending.length;
+	}
+
+	/** The pending change for a file at its current path, if any. */
+	pendingFor(path: string): PendingChange | undefined {
+		return this.pending.find((change) => change.path === path);
+	}
+
+	/** The file as the repository has it, which is what a change is measured against. */
+	async #baseOf(path: string): Promise<{ sha: string; raw: string }> {
 		const entry = this.entryFor(path);
-		if (!entry) return;
-		if (newSha) entry.sha = newSha;
-
-		const doc = parseDoc({ path, sha: entry.sha }, raw);
-		this.#docs.set(entry.sha, doc);
-		void writeBlob(entry.sha, raw);
-
-		const summary = toSummary(doc);
-		const index = this.docs.findIndex((item) => item.path === path);
-		if (index === -1) this.docs = [...this.docs, summary];
-		else this.docs[index] = summary;
-		void this.#persist();
+		if (!entry) throw new Error(m.error_doc_not_found({ path }));
+		const doc = await this.getDoc(path);
+		return { sha: entry.sha, raw: doc.raw };
 	}
 
-	registerNewFile(path: string, raw: string, sha: string): void {
-		const entry: BlobEntry = { path, sha };
-		this.entries = [...this.entries, entry];
-		const doc = parseDoc(entry, raw);
-		this.#docs.set(sha, doc);
-		this.docs = [...this.docs, toSummary(doc)];
-		void this.#persist();
+	/** Saves new content for an existing file. The change stays on this device until committed. */
+	async stageEdit(path: string, raw: string): Promise<void> {
+		const base = this.pendingFor(path) ? { sha: '', raw: '' } : await this.#baseOf(path);
+		await this.#setPending(stageEdit(this.pending, path, raw, base));
 	}
 
-	removeFile(path: string): void {
-		this.entries = this.entries.filter((entry) => entry.path !== path);
-		this.docs = this.docs.filter((doc) => doc.path !== path);
-		void this.#persist();
+	async stageAdd(path: string, raw: string): Promise<void> {
+		await this.#setPending(stageAdd(this.pending, path, raw));
 	}
 
-	/** Moves are content-preserving, so the blob sha (and cached raw text) carry over. */
-	renameFile(from: string, to: string): void {
-		const entry = this.entryFor(from);
-		if (!entry) return;
-		const sha = entry.sha;
-		this.entries = [...this.entries.filter((item) => item.path !== from), { ...entry, path: to }];
+	async stageDelete(path: string): Promise<void> {
+		const base = this.pendingFor(path) ? { sha: '', raw: '' } : await this.#baseOf(path);
+		await this.#setPending(stageDelete(this.pending, path, base));
+	}
 
-		const cached = this.#docs.get(sha);
-		if (cached) {
-			const doc = parseDoc({ path: to, sha }, cached.raw);
-			this.#docs.set(sha, doc);
-			this.docs = [...this.docs.filter((item) => item.path !== from), toSummary(doc)];
-		} else {
-			this.docs = this.docs.map((item) =>
-				item.path === from ? { ...item, path: to } : item
-			);
+	/** Moves a file, carrying `raw`, the content it should have at `to`. */
+	async stageMove(from: string, to: string, raw: string): Promise<void> {
+		const base = this.pendingFor(from) ? { sha: '', raw: '' } : await this.#baseOf(from);
+		await this.#setPending(stageMove(this.pending, from, to, raw, base));
+	}
+
+	async discardChange(path: string): Promise<void> {
+		await this.#setPending(discardChange(this.pending, path));
+	}
+
+	async discardAll(): Promise<void> {
+		await this.#setPending([]);
+	}
+
+	/** Called once `committed` is in a commit; any other changes stay pending. The listing is reloaded to pick up the new commit. */
+	async commitDone(committed: PendingChange[]): Promise<void> {
+		await this.#setPending(withoutChanges(this.pending, committed));
+		await this.reload();
+	}
+
+	/** Applies a new set of pending changes to the listing and the search index. */
+	async #setPending(next: PendingChange[]): Promise<void> {
+		const previous = this.pending;
+		this.pending = next;
+		this.#localRaw = localContents(next);
+		this.entries = overlayEntries(this.#baseEntries, next);
+		if (this.ref) await writePending(snapshotKey(this.ref), next);
+
+		const touched = new Set<string>();
+		for (const change of [...previous, ...next]) {
+			touched.add(change.path);
+			if (change.from) touched.add(change.from);
 		}
-		void this.#persist();
+		const docs = this.docs.filter((doc) => !touched.has(doc.path));
+		for (const path of touched) {
+			if (!this.entryFor(path)) continue;
+			try {
+				docs.push(toSummary(await this.getDoc(path)));
+			} catch {
+				// The index skips a file it cannot read, and so does this.
+			}
+		}
+		this.docs = docs;
 	}
 
 	/**
@@ -406,6 +457,11 @@ class RepoStore {
 	}
 
 	async #readEntry(entry: BlobEntry): Promise<string> {
+		if (isLocalSha(entry.sha)) {
+			const local = this.#localRaw.get(entry.sha);
+			if (local === undefined) throw new Error(m.error_doc_not_found({ path: entry.path }));
+			return local;
+		}
 		const cached = await readBlob(entry.sha);
 		if (cached !== undefined) return cached;
 

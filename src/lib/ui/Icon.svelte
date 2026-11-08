@@ -181,6 +181,11 @@
 		<path d="M3 2.5h10M8 14V5.5M4.8 8.5L8 5.3l3.2 3.2" />
 	{:else if name === 'check'}
 		<path d="M3 8.5l3.2 3.2L13 4.8" />
+	{:else if name === 'check-all'}
+		<rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
+		<path d="M5 8.2l2 2 4-4.4" />
+	{:else if name === 'check-none'}
+		<rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
 	{:else if name === 'message'}
 		<path d="M2.5 3h11a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H8L5 14v-2.5H2.5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
 	{:else if name === 'confirm'}

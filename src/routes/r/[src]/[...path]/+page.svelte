@@ -26,7 +26,6 @@
 	import Icon from '#lib/ui/Icon.svelte';
 	import EmptyState from '#lib/ui/EmptyState.svelte';
 	import Loading from '#lib/ui/Loading.svelte';
-	import DeleteDoc from '#lib/editor/DeleteDoc.svelte';
 	import { m } from '#lib/paraglide/messages.js';
 
 	let src = $derived(page.params.src ?? '');
@@ -98,7 +97,7 @@
 	let docLoading = $state(false);
 	/** An unsaved new document being filled in; it is only committed when the editor saves it. */
 	let draft = $state<{ doc: Doc } | null>(null);
-	let docDialog = $state<'delete' | null>(null);
+	let deleting = $state(false);
 	let renaming = $state(false);
 	let renameValue = $state('');
 	// Open state of every folder in the sidebar tree; a missing entry means closed.
@@ -180,7 +179,7 @@
 	$effect(() => {
 		void path;
 		void editing;
-		docDialog = null;
+		deleting = false;
 		draft = null;
 		renaming = false;
 		renameValue = path;
@@ -380,7 +379,7 @@
 					forceEdit={Boolean(draft)}
 					bind:renaming
 					bind:value={renameValue}
-					ondelete={entry && editing && doc && !draft ? () => (docDialog = 'delete') : undefined}
+					ondelete={entry && editing && doc && !draft ? () => (deleting = true) : undefined}
 					deleteDisabled={!connectionStore.online}
 				/>
 				<div class="head-actions">
@@ -469,7 +468,11 @@
 								<Editor
 									doc={doc}
 									targetRelative={renameValue}
-									onclose={(destination) => goto(`/r/${src}/${encodeDocPath(destination ?? path)}`)}
+									bind:deleting
+									onclose={(destination) => {
+										const target = destination ?? path;
+										void goto(target ? `/r/${src}/${encodeDocPath(target)}` : `/r/${src}`);
+									}}
 								/>
 							{/key}
 						{:catch error}
@@ -578,13 +581,6 @@
 		</section>
 	</div>
 
-	{#if doc && entry && docDialog === 'delete'}
-		<DeleteDoc
-			doc={doc}
-			src={src}
-			onclose={() => docDialog = null}
-		/>
-	{/if}
 {/if}
 
 <style>

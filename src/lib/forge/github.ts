@@ -6,6 +6,7 @@ import { readRateLimit } from './rateLimitHeaders';
 import { knownForgeKind } from './parse';
 import type {
 	BlobEntry,
+	CommitArgs,
 	DeleteArgs,
 	ForgeProvider,
 	MoveArgs,
@@ -155,7 +156,7 @@ export class GitHubProvider implements ForgeProvider {
 	async listTree(ref: string): Promise<TreeResult> {
 		const tree = await forgeFetchJson<GhTree>(
 			`${this.#apiBase}/repos/${this.#slug}/git/trees/${encodeURIComponent(ref)}?recursive=1`,
-			{ headers: this.#headers() },
+			{ headers: this.#headers(), cache: 'no-cache' },
 			this.#ctx
 		);
 
@@ -239,7 +240,7 @@ export class GitHubProvider implements ForgeProvider {
 
 		const ref = await forgeFetchJson<{ object: { sha: string } }>(
 			`${repoBase}/git/ref/heads/${encodePath(args.branch)}`,
-			{ headers: this.#headers() },
+			{ headers: this.#headers(), cache: 'no-cache' },
 			this.#ctx
 		);
 		const headSha = ref.object.sha;
@@ -313,6 +314,72 @@ export class GitHubProvider implements ForgeProvider {
 			throw error;
 		}
 		return { sha: blob.sha };
+	}
+	/**
+	 * Builds one commit for all operations: a tree on top of the branch tip with the contents
+	 * inline, then a fast-forward-only ref update. Five requests however many files change.
+	 */
+	async commitChanges(args: CommitArgs): Promise<void> {
+		this.#requireToken();
+		if (args.ops.length === 0) return;
+		const repoBase = `${this.#apiBase}/repos/${this.#slug}`;
+		const json = { headers: this.#headers({ 'Content-Type': 'application/json' }) };
+
+		const ref = await forgeFetchJson<{ object: { sha: string } }>(
+			`${repoBase}/git/ref/heads/${encodePath(args.branch)}`,
+			{ headers: this.#headers(), cache: 'no-cache' },
+			this.#ctx
+		);
+		const headSha = ref.object.sha;
+
+		const head = await forgeFetchJson<{ tree: { sha: string } }>(
+			`${repoBase}/git/commits/${headSha}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+
+		const tree = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/git/trees`,
+			{
+				...json,
+				method: 'POST',
+				body: JSON.stringify({
+					base_tree: head.tree.sha,
+					tree: args.ops.map((op) =>
+						op.op === 'delete'
+							? { path: op.path, mode: '100644', type: 'blob', sha: null }
+							: { path: op.path, mode: '100644', type: 'blob', content: op.content ?? '' }
+					)
+				})
+			},
+			this.#ctx
+		);
+
+		const created = await forgeFetchJson<{ sha: string }>(
+			`${repoBase}/git/commits`,
+			{
+				...json,
+				method: 'POST',
+				body: JSON.stringify({ message: args.message, tree: tree.sha, parents: [headSha] })
+			},
+			this.#ctx
+		);
+
+		try {
+			await forgeFetch(
+				`${repoBase}/git/refs/heads/${encodePath(args.branch)}`,
+				{ ...json, method: 'PATCH', body: JSON.stringify({ sha: created.sha, force: false }) },
+				this.#ctx
+			);
+		} catch (error) {
+			// A non-fast-forward update means someone else pushed in the meantime.
+			if (error instanceof ForgeError && error.kind === 'invalid') {
+				throw new ForgeError('conflict', m.error_branch_changed(), {
+					hint: m.error_branch_changed_hint()
+				});
+			}
+			throw error;
+		}
 	}
 }
 

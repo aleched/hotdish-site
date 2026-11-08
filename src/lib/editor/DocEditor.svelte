@@ -6,17 +6,13 @@
 	import { structureDocument, type StructuredDoc } from '#lib/template/parse.ts';
 	import { serializeDocument } from '#lib/template/serialize.ts';
 	import StructuredForm from '#lib/ui/StructuredForm.svelte';
-	import { diffLines } from '#lib/util/diff.ts';
-	import { ForgeError } from '#lib/forge/errors.ts';
-	import { commitMessages, fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '#lib/paths.ts';
+	import { fileNameError, folderError, baseName, joinPath, normalizeFolder, parentFolder, slugify, toFull, toRelative, withMarkdownExtension } from '#lib/paths.ts';
 	import { onMount, untrack } from 'svelte';
 	import { deleteDraft, draftKey, readDraft, writeDraft, type Draft } from '#lib/cache/drafts.ts';
 	import { snapshotKey } from '#lib/cache/repoCache.ts';
-	import { connectionStore } from '#lib/store/connection.svelte.ts';
 	import { editorOpened } from '#lib/pwa/update.ts';
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { historyStore } from '#lib/store/history.svelte.ts';
-	import CommitDialog from '#lib/ui/CommitDialog.svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import Milkdown from './Milkdown.svelte';
 	import Icon from '#lib/ui/Icon.svelte';
@@ -28,10 +24,6 @@
 
 	type Mode = EditorMode;
 
-	function escapeHtml(text: string): string {
-		return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-	}
-
 	interface Props {
 		doc: Doc;
 		/** An unsaved draft: saving creates the file, and nothing exists in the repository before. */
@@ -40,9 +32,11 @@
 		targetRelative?: string;
 		/** Receives the relative path to show afterwards (the new location when saved or moved). */
 		onclose?: (destination?: string) => void;
+		/** Marks the file for deletion; saving then stages the delete instead of an edit. */
+		deleting?: boolean;
 	}
 
-	let { doc, isNew = false, targetRelative = $bindable(), onclose }: Props = $props();
+	let { doc, isNew = false, targetRelative = $bindable(), onclose, deleting = $bindable(false) }: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	const fromRelative = toRelative(doc.path, repoStore.basePath);
@@ -109,9 +103,6 @@
 
 	let saving = $state(false);
 	let saveError = $state<unknown>(null);
-	let conflict = $state(false);
-	let message = $state('');
-	let confirming = $state(false);
 	let resetKey = $state(0);
 	let leaving = false;
 
@@ -187,7 +178,6 @@
 	let rawProblem = $derived(mode === 'raw' && !rawOnly ? parseFrontmatter(rawText).error ?? null : null);
 
 	let dirty = $derived(currentRaw.trim() !== doc.raw.trim());
-	let diff = $derived(diffLines(isNew ? '' : doc.raw, currentRaw));
 
 	let previewHtml = $derived.by(() => {
 		if (mode !== 'source') return '';
@@ -282,97 +272,65 @@
 	});
 
 	function beforeUnload(event: BeforeUnloadEvent) {
-		if (!dirty && !moved) return;
+		if (!dirty && !moved && !deleting) return;
 		event.preventDefault();
 		event.returnValue = '';
 	}
 
-	function startSave() {
+	async function save() {
+		if (deleting) return remove();
 		capture();
 		saveError = null;
-		conflict = false;
-		const rawTitle = mode === 'raw' ? parseFrontmatter(rawText).data.title : fields.title;
-		const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle.trim() : doc.title;
-		message = isNew
-			? commitMessages.create(title)
-			: moved
-				? `${commitMessages.move(title, fromRelative, destination)}${dirty ? ' and update' : ''}`
-				: commitMessages.update(title);
-		confirming = true;
-	}
-
-	async function commit() {
-		const provider = repoStore.provider;
-		const branch = repoStore.resolvedRef;
-		if (!provider || !branch) {
-			saveError = new Error(m.error_repo_not_loaded());
-			return;
-		}
-
 		saving = true;
-		saveError = null;
-		conflict = false;
-
 		try {
 			const content = currentRaw.endsWith('\n') ? currentRaw : `${currentRaw}\n`;
-			let baseSha: string | undefined;
-			if (!isNew) {
-				// Prefer the sha the store knows about: a previous save in this session may have moved it.
-				const knownSha = repoStore.entryFor(doc.path)?.sha ?? doc.sha;
-				baseSha = await provider.resolveWriteBase(doc.path, branch, knownSha);
-			}
-
-			if (moved) {
-				const target = toFull(destination, repoStore.basePath);
+			const target = toFull(destination, repoStore.basePath);
+			if (isNew) {
+				await repoStore.stageAdd(target, content);
+			} else if (moved) {
 				const ref = repoStore.ref;
-				const result = await provider.moveFile({
-					from: doc.path,
-					to: target,
-					content: dirty ? content : doc.raw,
-					baseSha,
-					message: message.trim(),
-					branch
-				});
-				repoStore.renameFile(doc.path, target);
-				if (dirty) repoStore.applySavedDoc(target, content, result.sha);
+				await repoStore.stageMove(doc.path, target, dirty ? content : doc.raw);
 				if (ref) void historyStore.rename($state.snapshot(ref), fromRelative, destination);
-				confirming = false;
-				leaving = true;
-				forgetDraft();
-				onclose?.(destination);
-				return;
+			} else {
+				await repoStore.stageEdit(doc.path, content);
 			}
-
-			const writePath = isNew ? toFull(destination, repoStore.basePath) : doc.path;
-			const result = await provider.writeFile({
-				path: writePath,
-				content,
-				baseSha,
-				message: message.trim(),
-				branch
-			});
-
-			if (isNew) repoStore.registerNewFile(writePath, content, result.sha ?? `new:${writePath}`);
-			else repoStore.applySavedDoc(doc.path, content, result.sha);
-			confirming = false;
 			leaving = true;
 			forgetDraft();
 			onclose?.(destination);
 		} catch (error) {
 			saveError = error;
-			conflict = error instanceof ForgeError && error.kind === 'conflict';
 		} finally {
 			saving = false;
 		}
 	}
 
-	async function reloadFromRepo() {
-		await repoStore.reload();
-		leaving = true;
-		onclose?.();
+	async function remove() {
+		saveError = null;
+		saving = true;
+		try {
+			const ref = repoStore.ref;
+			await repoStore.stageDelete(doc.path);
+			if (ref) void historyStore.forget($state.snapshot(ref), fromRelative);
+			leaving = true;
+			forgetDraft();
+			// Git has no empty folders, so walk up past any folder this delete emptied.
+			let folder = parentFolder(fromRelative);
+			while (folder && !repoStore.folders.some((item) => item.path === folder)) {
+				folder = parentFolder(folder);
+			}
+			onclose?.(folder);
+		} catch (error) {
+			saveError = error;
+		} finally {
+			saving = false;
+		}
 	}
 
 	function undo() {
+		if (deleting) {
+			deleting = false;
+			return;
+		}
 		if (!window.confirm(m.confirm_discard())) return;
 		fields = $state.snapshot(doc.fields);
 		body = doc.body;
@@ -388,7 +346,7 @@
 	}
 
 	function cancel() {
-		if ((dirty || moved) && !window.confirm(m.confirm_discard())) return;
+		if ((dirty || moved || deleting) && !window.confirm(m.confirm_discard())) return;
 		leaving = true;
 		forgetDraft();
 		onclose?.();
@@ -397,7 +355,7 @@
 	// Guards in-app navigation (links, back button); beforeunload covers closing the tab.
 	beforeNavigate((navigation) => {
 		if (navigation.shallow && navigation.type === 'goto') return;
-		if (leaving || !(dirty || moved) || navigation.type === 'leave') return;
+		if (leaving || !(dirty || moved || deleting) || navigation.type === 'leave') return;
 		if (!window.confirm(m.confirm_discard())) navigation.cancel();
 		else forgetDraft();
 	});
@@ -407,17 +365,24 @@
 
 <div class="editor stack">
 	<header class="bar">
-		<ModeToggle
-			items={modes}
-			value={mode}
-			label={m.editor_mode_label()}
-			onselect={setMode}
-			unavailable={(value) =>
-				rawOnly && value !== 'raw' ? m.editor_unparsable_reason() : null}
-		/>
+		{#if deleting}
+			<p class="deleted" title={m.editor_deleting()}>
+				<Icon name="trash" size={18} />
+				<code>{doc.path}</code>
+			</p>
+		{:else}
+			<ModeToggle
+				items={modes}
+				value={mode}
+				label={m.editor_mode_label()}
+				onselect={setMode}
+				unavailable={(value) =>
+					rawOnly && value !== 'raw' ? m.editor_unparsable_reason() : null}
+			/>
+		{/if}
 
 		<div class="split">
-			{#if dirty}
+			{#if dirty || deleting}
 				<button
 					type="button"
 					class="part"
@@ -441,150 +406,110 @@
 			<button
 				class="part save"
 				type="button"
-				title={connectionStore.online ? m.common_save() : m.offline_unavailable()}
+				title={m.common_save()}
 				aria-label={m.common_save()}
-				disabled={!connectionStore.online || !dirty && !isNew && !moved || Boolean(moveProblem) || Boolean(fmError) || !rawOnly && Boolean(rawProblem) || isNew && !String(fields.title ?? '').trim() || saving}
-				onclick={startSave}
+				disabled={saving || !deleting && (!dirty && !isNew && !moved || Boolean(moveProblem) || Boolean(fmError) || !rawOnly && Boolean(rawProblem) || isNew && !String(fields.title ?? '').trim())}
+				onclick={save}
 			>
 				<Icon name="save" />
 			</button>
 		</div>
 	</header>
 
-	{#if restored}
-		<p class="banner draft" class:warn={restored.changed}>
-			<span>
-				{m.draft_restored({ time: new Date(restored.savedAt).toLocaleString(getLocale()) })}
-				{#if restored.changed}{m.draft_changed()}{/if}
-			</span>
-			<button type="button" class="ghost" onclick={discardDraft}>{m.draft_discard()}</button>
-		</p>
-	{/if}
+	{#if !deleting}
+		{#if restored}
+			<p class="banner draft" class:warn={restored.changed}>
+				<span>
+					{m.draft_restored({ time: new Date(restored.savedAt).toLocaleString(getLocale()) })}
+					{#if restored.changed}{m.draft_changed()}{/if}
+				</span>
+				<button type="button" class="ghost" onclick={discardDraft}>{m.draft_discard()}</button>
+			</p>
+		{/if}
 
-	{#if moveProblem}
-		<p class="banner warn">{moveProblem}</p>
-	{/if}
+		{#if moveProblem}
+			<p class="banner warn">{moveProblem}</p>
+		{/if}
 
-	{#if rawOnly}
-		<p class="banner warn">
-			{m.editor_raw_only({ error: doc.frontmatterError ?? '' })}
-		</p>
-	{/if}
+		{#if rawOnly}
+			<p class="banner warn">
+				{m.editor_raw_only({ error: doc.frontmatterError ?? '' })}
+			</p>
+		{/if}
 
-	{#if repoStore.template && !repoStore.templateIsDefault && !rawOnly}
-		<p class="muted small">
-			{m.editor_using_template()}{#if repoStore.template.name}
-				<strong>{repoStore.template.name}</strong>
-			{/if}
-		</p>
-	{/if}
+		{#if repoStore.template && !repoStore.templateIsDefault && !rawOnly}
+			<p class="muted small">
+				{m.editor_using_template()}{#if repoStore.template.name}
+					<strong>{repoStore.template.name}</strong>
+				{/if}
+			</p>
+		{/if}
 
-	{#if modeError}
-		<p class="banner warn">{modeError}</p>
-	{/if}
+		{#if modeError}
+			<p class="banner warn">{modeError}</p>
+		{/if}
 
-	{#if mode === 'source'}
-		<div class="frontmatter">
+		{#if mode === 'source'}
+			<div class="frontmatter">
+				<LineNumberedTextarea
+					rows={1}
+					fit
+					fractions={false}
+					minDigits={sourceDigits}
+					spellcheck={false}
+					value={fmText}
+					oninput={(event) => onFrontmatterInput(event.currentTarget.value)}
+					placeholder={m.editor_frontmatter()}
+					title={m.editor_frontmatter()}
+					aria-label={m.editor_frontmatter()}
+					aria-invalid={Boolean(fmError)}
+				/>
+				{#if fmError}<p class="banner warn">{fmError}</p>{/if}
+			</div>
+		{/if}
+
+		{#if mode === 'form' && structured}
+			{#key resetKey}
+				<StructuredForm doc={structured} template={repoStore.template} path={isNew ? null : doc.path} />
+			{/key}
+		{:else if mode === 'rich'}
+			<StructuredForm doc={richHeader} template={repoStore.template} path={isNew ? null : doc.path} headerOnly />
+			{#key resetKey}
+				<Milkdown
+					bind:this={richEditor}
+					value={body}
+					onchange={(markdown) => body = markdown}
+				/>
+			{/key}
+		{:else if mode === 'raw'}
 			<LineNumberedTextarea
 				rows={1}
 				fit
 				fractions={false}
-				minDigits={sourceDigits}
 				spellcheck={false}
-				value={fmText}
-				oninput={(event) => onFrontmatterInput(event.currentTarget.value)}
-				placeholder={m.editor_frontmatter()}
-				title={m.editor_frontmatter()}
-				aria-label={m.editor_frontmatter()}
-				aria-invalid={Boolean(fmError)}
+				bind:value={rawText}
+				aria-label={m.editor_raw_file()}
 			/>
-			{#if fmError}<p class="banner warn">{fmError}</p>{/if}
-		</div>
-	{/if}
-
-	{#if mode === 'form' && structured}
-		{#key resetKey}
-			<StructuredForm doc={structured} template={repoStore.template} path={isNew ? null : doc.path} />
-		{/key}
-	{:else if mode === 'rich'}
-		<StructuredForm doc={richHeader} template={repoStore.template} path={isNew ? null : doc.path} headerOnly />
-		{#key resetKey}
-			<Milkdown
-				bind:this={richEditor}
-				value={body}
-				onchange={(markdown) => body = markdown}
-			/>
-		{/key}
-	{:else if mode === 'raw'}
-		<LineNumberedTextarea
-			rows={1}
-			fit
-			fractions={false}
-			spellcheck={false}
-			bind:value={rawText}
-			aria-label={m.editor_raw_file()}
-		/>
-		{#if rawProblem}<p class="banner warn">{rawProblem}</p>{/if}
-	{:else}
-		<div class="source">
-			<LineNumberedTextarea
-				rows={3}
-				fit
-				minDigits={sourceDigits}
-				spellcheck={editorPrefs.spellcheck}
-				bind:value={body}
-				aria-label={m.editor_markdown_source()}
-			/>
-			{#if previewHtml}
-				<div class="prose preview">{@html previewHtml}</div>
-			{/if}
-		</div>
-	{/if}
-
-	{#if confirming}
-		<CommitDialog
-			title={isNew ? m.editor_create_doc() : m.editor_save_changes()}
-			bind:message
-			busy={saving}
-			error={saveError}
-			submitLabel={m.common_save()}
-			submitIcon="save"
-			disabled={diff.identical && !isNew && !moved}
-			wide
-			onsubmit={commit}
-			oncancel={() => confirming = false}
-		>
-			{#if moved}
-				<p class="muted small">
-					{@html m.editor_moves({ from: `<code>${escapeHtml(doc.path)}</code>`, to: `<code>${escapeHtml(toFull(destination, repoStore.basePath))}</code>` })}
-				</p>
-			{/if}
-			{#if diff.identical}
-				{#if !moved}<p class="muted" title={m.editor_no_changes()} aria-label={m.editor_no_changes()}><Icon name="check" /></p>{/if}
-			{:else}
-				<p class="muted small">
-					{@html m.editor_diff_summary({ added: diff.added, removed: diff.removed, path: `<code>${escapeHtml(isNew ? toFull(destination, repoStore.basePath) : doc.path)}</code>` })}
-				</p>
-				<pre class="diff">{#each diff.lines as line, index (index)}<span class={line.kind}
-						>{line.kind === 'added' ? '+' : line.kind === 'removed' ? '-' : ' '}{line.text}</span
-					>{'\n'}{/each}</pre>
-			{/if}
-
-			{#snippet errorExtra()}
-				{#if conflict}
-					<p>{m.editor_conflict()}</p>
-					<button
-						type="button"
-						class="icon-button dialog-button"
-						title={m.editor_reload()}
-						aria-label={m.editor_reload()}
-						onclick={reloadFromRepo}
-					>
-						<Icon name="refresh" />
-					</button>
+			{#if rawProblem}<p class="banner warn">{rawProblem}</p>{/if}
+		{:else}
+			<div class="source">
+				<LineNumberedTextarea
+					rows={3}
+					fit
+					minDigits={sourceDigits}
+					spellcheck={editorPrefs.spellcheck}
+					bind:value={body}
+					aria-label={m.editor_markdown_source()}
+				/>
+				{#if previewHtml}
+					<div class="prose preview">{@html previewHtml}</div>
 				{/if}
-			{/snippet}
-		</CommitDialog>
+			</div>
+		{/if}
+	{/if}
+
+	{#if saveError}
+		<p class="banner warn" role="alert">{saveError instanceof Error ? saveError.message : String(saveError)}</p>
 	{/if}
 </div>
 
@@ -616,6 +541,22 @@
 
 	.split {
 		display: inline-flex;
+	}
+	.deleted {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: fit-content;
+		max-width: 100%;
+		margin: 0;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--danger);
+		border-radius: var(--radius-sm);
+		color: var(--danger);
+		overflow-wrap: anywhere;
+	}
+	.deleted code {
+		color: var(--text);
 	}
 	.part {
 		display: inline-flex;
@@ -667,29 +608,6 @@
 		border-left: 1px solid var(--border);
 		padding-left: 1rem;
 		overflow-x: auto;
-	}
-
-	.diff {
-		max-height: 320px;
-		overflow: auto;
-		background: var(--surface-2);
-		border-radius: var(--radius-sm);
-		padding: 0.6rem;
-		font-size: 0.8rem;
-		margin: 0;
-	}
-	.diff span {
-		display: block;
-		white-space: pre-wrap;
-	}
-	.diff .added {
-		color: var(--ok, #16a34a);
-	}
-	.diff .removed {
-		color: var(--danger);
-	}
-	.diff .context {
-		color: var(--text-dim);
 	}
 
 	@media (max-width: 900px) {

@@ -53,6 +53,14 @@ export interface DeleteArgs {
 	branch: string;
 }
 
+export interface FileOp {
+	op: 'create' | 'update' | 'delete';
+	path: string;
+	content?: string;
+	/** Current blob sha, required by some forges to update or delete. */
+	sha?: string;
+}
+
 export interface MoveArgs {
 	from: string;
 	to: string;
@@ -62,6 +70,12 @@ export interface MoveArgs {
 	baseSha?: string;
 	message: string;
 	branch: string;
+}
+
+export interface CommitArgs {
+	branch: string;
+	message: string;
+	ops: FileOp[];
 }
 
 export interface ForgeProvider {
@@ -83,6 +97,8 @@ export interface ForgeProvider {
 	deleteFile(args: DeleteArgs): Promise<void>;
 	/** Moves or renames a file in a single commit. The content is unchanged. */
 	moveFile(args: MoveArgs): Promise<WriteResult>;
+	/** Applies several file operations as one commit on `branch`. Requires a token with write access. */
+	commitChanges(args: CommitArgs): Promise<void>;
 
 	/**
 	 * Returns the value to send as the write precondition. GitHub and Gitea use the blob sha
