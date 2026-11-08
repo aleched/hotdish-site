@@ -11,6 +11,7 @@
 	import { profileStore, profileToRef } from '#lib/store/profiles.svelte.ts';
 	import { navStore } from '#lib/store/nav.svelte.ts';
 	import Icon from '#lib/ui/Icon.svelte';
+	import BranchPicker from '#lib/ui/BranchPicker.svelte';
 	import RateLimitPrompt from '#lib/ui/RateLimitPrompt.svelte';
 	import { m } from '#lib/paraglide/messages.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
@@ -141,6 +142,7 @@
 						<Icon name="plus" />
 					</button>
 				{/if}
+				<BranchPicker path={page.params.path ?? ''} disabled={page.url.searchParams.has('edit')} />
 			{/if}
 
 			<div class="spacer"></div>

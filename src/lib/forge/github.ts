@@ -109,6 +109,39 @@ export class GitHubProvider implements ForgeProvider {
 		return repo.default_branch;
 	}
 
+	async listBranches(): Promise<string[]> {
+		const names: string[] = [];
+		for (let page = 1; page <= 10; page++) {
+			const batch = await forgeFetchJson<{ name: string }[]>(
+				`${this.#apiBase}/repos/${this.#slug}/branches?per_page=100&page=${page}`,
+				{ headers: this.#headers() },
+				this.#ctx
+			);
+			names.push(...batch.map((branch) => branch.name));
+			if (batch.length < 100) break;
+		}
+		return names;
+	}
+
+	async createBranch(name: string, fromRef: string): Promise<void> {
+		if (!this.#token) throw new ForgeError('auth', m.error_token_required());
+		const repoBase = `${this.#apiBase}/repos/${this.#slug}`;
+		const base = await forgeFetchJson<{ object: { sha: string } }>(
+			`${repoBase}/git/ref/heads/${encodePath(fromRef)}`,
+			{ headers: this.#headers() },
+			this.#ctx
+		);
+		await forgeFetch(
+			`${repoBase}/git/refs`,
+			{
+				method: 'POST',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({ ref: `refs/heads/${name}`, sha: base.object.sha })
+			},
+			this.#ctx
+		);
+	}
+
 	async isPublic(): Promise<boolean> {
 		const repo = await forgeFetchJson<GhRepo>(
 			`${this.#apiBase}/repos/${this.#slug}`,

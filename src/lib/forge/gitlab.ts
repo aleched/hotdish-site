@@ -100,6 +100,30 @@ export class GitLabProvider implements ForgeProvider {
 		return project.default_branch;
 	}
 
+	async listBranches(): Promise<string[]> {
+		const names: string[] = [];
+		for (let page = 1; page <= 10; page++) {
+			const batch = await forgeFetchJson<{ name: string }[]>(
+				`${this.#apiBase}/projects/${this.#projectId}/repository/branches?per_page=100&page=${page}`,
+				{ headers: this.#headers() },
+				this.#ctx
+			);
+			names.push(...batch.map((branch) => branch.name));
+			if (batch.length < 100) break;
+		}
+		return names;
+	}
+
+	async createBranch(name: string, fromRef: string): Promise<void> {
+		this.#requireToken();
+		await forgeFetch(
+			`${this.#apiBase}/projects/${this.#projectId}/repository/branches` +
+				`?branch=${encodeURIComponent(name)}&ref=${encodeURIComponent(fromRef)}`,
+			{ method: 'POST', headers: this.#headers() },
+			this.#ctx
+		);
+	}
+
 	async isPublic(): Promise<boolean> {
 		const project = await forgeFetchJson<GlProject>(
 			`${this.#apiBase}/projects/${this.#projectId}`,

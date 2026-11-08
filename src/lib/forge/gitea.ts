@@ -103,6 +103,33 @@ export class GiteaProvider implements ForgeProvider {
 		return repo.default_branch;
 	}
 
+	async listBranches(): Promise<string[]> {
+		const names: string[] = [];
+		for (let page = 1; page <= 10; page++) {
+			const batch = await forgeFetchJson<{ name: string }[]>(
+				`${this.#apiBase}/repos/${this.#slug}/branches?limit=50&page=${page}`,
+				{ headers: this.#headers() },
+				this.#ctx
+			);
+			names.push(...batch.map((branch) => branch.name));
+			if (batch.length < 50) break;
+		}
+		return names;
+	}
+
+	async createBranch(name: string, fromRef: string): Promise<void> {
+		this.#requireToken();
+		await forgeFetch(
+			`${this.#apiBase}/repos/${this.#slug}/branches`,
+			{
+				method: 'POST',
+				headers: this.#headers({ 'Content-Type': 'application/json' }),
+				body: JSON.stringify({ new_branch_name: name, old_branch_name: fromRef })
+			},
+			this.#ctx
+		);
+	}
+
 	async isPublic(): Promise<boolean> {
 		const repo = await forgeFetchJson<GiteaRepo>(
 			`${this.#apiBase}/repos/${this.#slug}`,

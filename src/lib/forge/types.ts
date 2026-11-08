@@ -71,6 +71,10 @@ export interface ForgeProvider {
 	readonly authenticated: boolean;
 
 	resolveDefaultBranch(): Promise<string>;
+	/** Branch names, up to a sensible cap, in forge order. */
+	listBranches(): Promise<string[]>;
+	/** Creates `name` from the tip of `fromRef`. Requires a token with write access. */
+	createBranch(name: string, fromRef: string): Promise<void>;
 	/** True when anyone can read the repository without signing in. */
 	isPublic(): Promise<boolean>;
 	listTree(ref: string): Promise<TreeResult>;
