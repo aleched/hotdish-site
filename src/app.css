@@ -403,6 +403,14 @@ pre {
 	text-decoration: line-through;
 	opacity: 0.55;
 }
+::highlight(hotdish-find) {
+	background-color: #ffe27a;
+	color: #1a1a1a;
+}
+::highlight(hotdish-find-active) {
+	background-color: #ff9d3c;
+	color: #1a1a1a;
+}
 .prose img {
 	max-width: 100%;
 	height: auto;

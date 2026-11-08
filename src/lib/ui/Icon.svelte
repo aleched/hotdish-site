@@ -75,6 +75,22 @@
 	{:else if name === 'search'}
 		<circle cx="7" cy="7" r="4.5" />
 		<path d="M10.4 10.4L14 14" />
+	{:else if name === 'doc-search'}
+		<path d="M7.5 13.5h-4v-11h5l3 3v1" />
+		<path d="M8.5 2.5v3h3" />
+		<path d="M5.5 8h2M5.5 10.5h1" />
+		<circle cx="10.5" cy="10.5" r="2.3" />
+		<path d="M12.2 12.2l2 2" />
+	{:else if name === 'match-case'}
+		<path d="M1.5 12.5l3-9 3 9M2.6 9.5h3.8" />
+		<circle cx="11.5" cy="10.2" r="2.3" />
+		<path d="M13.8 7.7v4.8" />
+	{:else if name === 'whole-word'}
+		<circle cx="5" cy="7.5" r="2" />
+		<path d="M7 5.5v4" />
+		<path d="M9.5 3v6.5" />
+		<circle cx="11.5" cy="7.5" r="2" />
+		<path d="M1.5 10.5v2.5h13v-2.5" />
 	{:else if name === 'folder'}
 		<path d="M1.5 3.5h4.2l1.5 1.5h7.3v7.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" />
 	{:else if name === 'tag'}

@@ -3,7 +3,7 @@ import { buildTree, findFolder, type TreeFolder } from './tree';
 import type { DocSummary } from '#lib/markdown/doc.ts';
 
 function summary(path: string, title = path): DocSummary {
-	return { path, sha: path, title, tags: [], haystack: title.toLowerCase() };
+	return { path, sha: path, title, tags: [], haystack: title.toLowerCase(), text: '' };
 }
 
 describe('buildTree', () => {

@@ -13,6 +13,7 @@
 	import Breadcrumbs from '#lib/ui/Breadcrumbs.svelte';
 	import FolderTree from '#lib/ui/FolderTree.svelte';
 	import DocView from '#lib/ui/DocView.svelte';
+	import MatchNav from '#lib/ui/MatchNav.svelte';
 	import ShareButton from '#lib/ui/ShareButton.svelte';
 	import { strikeStore } from '#lib/store/strikes.svelte.ts';
 	import TagFilter from '#lib/ui/TagFilter.svelte';
@@ -477,6 +478,7 @@
 							</p>
 						{/await}
 					{:else}
+						<MatchNav />
 						<DocView doc={doc} />
 					{/if}
 				{/if}

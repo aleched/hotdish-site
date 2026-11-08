@@ -4,7 +4,9 @@
 	import { encodeDocPath, toRelative } from '#lib/paths.ts';
 	import { repoStore } from '#lib/store/repo.svelte.ts';
 	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
+	import { docSearch } from '#lib/store/docSearch.svelte.ts';
 	import Icon from '#lib/ui/Icon.svelte';
+	import type { IconName } from '#lib/ui/icon-names.ts';
 	import { m } from '#lib/paraglide/messages.js';
 
 	const MAX_COLLAPSED = 12;
@@ -44,6 +46,22 @@
 	let visibleFolders = $derived(showAllFolders ? folders : folders.slice(0, MAX_COLLAPSED));
 	let activeCount = $derived(repoStore.selectedTags.length + repoStore.selectedFolders.length);
 
+	// Closing the popover brings back the collapsed lists.
+	$effect(() => {
+		if (!open) {
+			showAllFolders = false;
+			showAllTags = false;
+		}
+	});
+
+	/** With a document open, Enter and Shift+Enter step through the matches in it. */
+	function onSearchKeydown(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || docSearch.total === 0) return;
+		event.preventDefault();
+		if (event.shiftKey) docSearch.prev();
+		else docSearch.next();
+	}
+
 	function isSelected(key: string): boolean {
 		return repoStore.selectedTags.some((tag) => tag.toLowerCase() === key);
 	}
@@ -62,15 +80,27 @@
 
 <svelte:window onclick={onwindowclick}></svelte:window>
 
-{#snippet toggle(expanded: boolean, onclick: () => void)}
+{#snippet toggle(onclick: () => void)}
 	<button
 		type="button"
 		class="icon-button expand-toggle"
-		title={expanded ? m.filter_show_fewer() : m.filter_show_all()}
-		aria-label={expanded ? m.filter_show_fewer() : m.filter_show_all()}
-		aria-expanded={expanded}
+		title={m.filter_show_all()}
+		aria-label={m.filter_show_all()}
 		onclick={onclick}
-	><Icon name={expanded ? 'collapse' : 'expand'} size={14} /></button>
+	><Icon name="expand" size={14} /></button>
+{/snippet}
+
+{#snippet option(icon: IconName, label: string, pressed: boolean, disabled: boolean, onclick: () => void)}
+	<button
+		type="button"
+		class="option"
+		class:on={pressed}
+		title={label}
+		aria-label={label}
+		aria-pressed={pressed}
+		{disabled}
+		{onclick}
+	><Icon name={icon} /></button>
 {/snippet}
 
 <div
@@ -88,6 +118,7 @@
 				aria-label={m.filter_search()}
 				title={m.filter_search()}
 				bind:value={repoStore.query}
+				onkeydown={onSearchKeydown}
 				autocomplete="off"
 			/>
 		</label>
@@ -120,6 +151,11 @@
 
 	{#if open}
 		<div class="popover" id={popoverId}>
+			<div class="options">
+				{@render option('doc-search', m.filter_fulltext(), repoStore.fullText, false, () => repoStore.fullText = !repoStore.fullText)}
+				{@render option('match-case', m.filter_match_case(), repoStore.matchCase, !repoStore.fullText, () => repoStore.matchCase = !repoStore.matchCase)}
+				{@render option('whole-word', m.filter_whole_word(), repoStore.wholeWord, !repoStore.fullText, () => repoStore.wholeWord = !repoStore.wholeWord)}
+			</div>
 			<section>
 				<div class="section-head">
 					<h3 title={m.filter_folders()}><Icon name="folder" /><span class="visually-hidden">{m.filter_folders()}</span></h3>
@@ -153,8 +189,8 @@
 							<p class="muted small" title={m.filter_no_matching_folders()} aria-label={m.filter_no_matching_folders()}><Icon name="search" size={18} /></p>
 						{/each}
 					</div>
-					{#if folders.length > MAX_COLLAPSED}
-						{@render toggle(showAllFolders, () => showAllFolders = !showAllFolders)}
+					{#if folders.length > MAX_COLLAPSED && !showAllFolders}
+						{@render toggle(() => showAllFolders = true)}
 					{/if}
 				{/if}
 			</section>
@@ -188,8 +224,8 @@
 							<p class="muted small" title={m.filter_no_matching_tags()} aria-label={m.filter_no_matching_tags()}><Icon name="search" size={18} /></p>
 						{/each}
 					</div>
-					{#if tags.length > MAX_COLLAPSED}
-						{@render toggle(showAllTags, () => showAllTags = !showAllTags)}
+					{#if tags.length > MAX_COLLAPSED && !showAllTags}
+						{@render toggle(() => showAllTags = true)}
 					{/if}
 				</section>
 			{/if}
@@ -246,7 +282,7 @@
 
 	{#if repoStore.isFiltering}
 		<p class="status muted">
-			{m.filter_status({ shown: repoStore.filtered.length, total: repoStore.docs.length })}
+			{repoStore.filtered.length} / {repoStore.docs.length}
 		</p>
 	{/if}
 </div>
@@ -336,6 +372,38 @@
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 		max-height: 70vh;
 		overflow-y: auto;
+	}
+	/* Full-text search toggles, right-aligned along the top of the popover. */
+	.options {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.3rem;
+		margin-bottom: -0.3rem;
+	}
+	.option {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text-dim);
+		cursor: pointer;
+	}
+	.option:hover:not(:disabled) {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	.option.on {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.option.on:hover:not(:disabled) {
+		color: #fff;
 	}
 	.section-head {
 		display: flex;

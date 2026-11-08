@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { Doc } from '#lib/markdown/doc.ts';
+	import { onDestroy, untrack } from 'svelte';
+	import { stripLeadingTitle, type Doc } from '#lib/markdown/doc.ts';
 	import { renderMarkdown } from '#lib/markdown/render.ts';
 	import Icon from '#lib/ui/Icon.svelte';
 	import { repoStore } from '#lib/store/repo.svelte.ts';
@@ -7,6 +8,8 @@
 	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
 	import { strikeStore } from '#lib/store/strikes.svelte.ts';
 	import { strikeKeys } from '#lib/markdown/strikes.ts';
+	import { docSearch } from '#lib/store/docSearch.svelte.ts';
+	import { findMatches, isSearchableQuery, type SearchOptions } from '#lib/search.ts';
 	import { isIsoDate } from '#lib/template/schema.ts';
 	import { getLocale } from '#lib/paraglide/runtime.js';
 
@@ -108,6 +111,68 @@
 		}
 	});
 
+	// Highlights the sidebar's full-text query in the body. Runs after the strike wrapping above, which moves text nodes.
+	$effect(() => {
+		void html;
+		void items;
+		const query = repoStore.query;
+		const options = repoStore.searchOptions;
+		if (!prose || !repoStore.fullText || !isSearchableQuery(query)) {
+			docSearch.clear();
+			return;
+		}
+		const ranges = findRanges(prose, query, options);
+		const path = doc.path;
+		const key = JSON.stringify([path, query.trim(), options]);
+		untrack(() => docSearch.set(ranges, path, key));
+		return () => docSearch.clear();
+	});
+
+	onDestroy(() => docSearch.reset());
+
+	const BLOCKS = 'p,li,h1,h2,h3,h4,h5,h6,pre,td,th,dt,dd,blockquote,figcaption,summary';
+
+	/**
+	 * Finds the query in the rendered text. Each block's text is searched as one string with runs of
+	 * whitespace collapsed, like the sidebar snippets, so a match may span formatting such as bold.
+	 */
+	function findRanges(root: HTMLElement, query: string, options: SearchOptions): Range[] {
+		const ranges: Range[] = [];
+		let text = '';
+		let nodes: Text[] = [];
+		let offsets: number[] = [];
+		let block: Element | null = null;
+		const flush = () => {
+			for (const { start, end } of findMatches(text, query, options)) {
+				const range = document.createRange();
+				range.setStart(nodes[start], offsets[start]);
+				range.setEnd(nodes[end - 1], offsets[end - 1] + 1);
+				ranges.push(range);
+			}
+			text = '';
+			nodes = [];
+			offsets = [];
+		};
+		const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+		for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
+			const owner = node.parentElement?.closest(BLOCKS) ?? null;
+			if (owner !== block) {
+				flush();
+				block = owner;
+			}
+			const data = node.data;
+			for (let i = 0; i < data.length; i++) {
+				const space = /\s/.test(data[i]);
+				if (space && (text === '' || text.endsWith(' '))) continue;
+				text += space ? ' ' : data[i];
+				nodes.push(node);
+				offsets.push(i);
+			}
+		}
+		flush();
+		return ranges;
+	}
+
 	function onProseClick(event: MouseEvent) {
 		if (!editorPrefs.strikeLists) return;
 		if ((event.target as HTMLElement).closest('a')) return;
@@ -124,14 +189,6 @@
 		if (!item) return;
 		event.preventDefault();
 		void strikeStore.toggle(item.key);
-	}
-
-	/** The heading is rendered from the title, so avoid showing it twice. */
-	function stripLeadingTitle(body: string, title: string): string {
-		const match = /^\s*#[ \t]+(.+?)[ \t]*#*[ \t]*(?:\r?\n|$)/.exec(body);
-		if (!match) return body;
-		if (match[1].trim() !== title) return body;
-		return body.slice(match[0].length);
 	}
 
 	function escapeHtml(value: string): string {

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Locale } from '#lib/paraglide/runtime.js';
 	import {
-		AD, BD, BG, CN, CZ, DE, DK, ES, FI, FR, GR, HR, HU, ID, IL, IN, IR, IS, IT, JP, KR, MY, NL,
-		NO, PH, PK, PL, PT, RO, RS, RU, SA, SE, SO, TH, TR, TZ, UA, US, VN, ZA
+		AD, BG, CN, CZ, DE, DK, ES, FI, FR, GR, HR, HU, ID, IL, IN, IR, IT, JP, KR, MY, NL,
+		NO, PH, PK, PL, PT, RO, RS, RU, SA, SE, SO, TH, TR, UA, US, VN, ZA
 	} from 'country-flag-icons/string/3x2';
 
 	let { locale, width = 22 }: { locale: Locale; width?: number } = $props();
@@ -16,7 +16,6 @@
 		af: ZA,
 		ar: SA,
 		bg: BG,
-		bn: BD,
 		ca: AD,
 		cs: CZ,
 		da: DK,
@@ -32,7 +31,6 @@
 		hr: HR,
 		hu: HU,
 		id: ID,
-		is: IS,
 		it: IT,
 		ja: JP,
 		ko: KR,
@@ -46,8 +44,6 @@
 		so: SO,
 		sr: RS,
 		sv: SE,
-		sw: TZ,
-		ta: IN,
 		th: TH,
 		tlh: KLINGON,
 		tr: TR,

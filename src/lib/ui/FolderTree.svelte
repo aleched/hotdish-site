@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { encodeDocPath } from '#lib/paths.ts';
+	import { findSnippets, isSearchableQuery } from '#lib/search.ts';
+	import { repoStore } from '#lib/store/repo.svelte.ts';
+	import { docSearch } from '#lib/store/docSearch.svelte.ts';
+	import { navStore } from '#lib/store/nav.svelte.ts';
 	import type { TreeFolder } from '#lib/tree.ts';
 	import FolderTree from './FolderTree.svelte';
 	import { m } from '#lib/paraglide/messages.js';
@@ -15,6 +19,18 @@
 	}
 
 	let { node, src, currentPath = '', open: openState, ontoggle, depth = 0 }: Props = $props();
+
+	/** Opens the document at the snippet's match; one that is already open just jumps to it. */
+	function openMatch(event: MouseEvent, path: string, docPath: string, index: number) {
+		if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+		if (currentPath === path) {
+			event.preventDefault();
+			docSearch.goTo(index);
+			navStore.open = false;
+		} else {
+			docSearch.target(docPath, index);
+		}
+	}
 </script>
 
 <ul class:root={depth === 0}>
@@ -61,6 +77,15 @@
 				>
 					{child.doc.title}
 				</a>
+				{#if repoStore.fullText && isSearchableQuery(repoStore.query)}
+					{#each findSnippets(child.doc.text, repoStore.query, repoStore.searchOptions) as snippet (snippet.index)}
+						<a
+							class="snippet"
+							href={`/r/${src}/${encodeDocPath(child.path)}`}
+							onclick={(event) => openMatch(event, child.path, child.doc.path, snippet.index)}
+						>{snippet.before}<mark>{snippet.match}</mark>{snippet.after}</a>
+					{/each}
+				{/if}
 			</li>
 		{/if}
 	{/each}
@@ -154,5 +179,25 @@
 	.file.active {
 		background: var(--accent);
 		color: #fff;
+	}
+	.snippet {
+		display: block;
+		margin: 0 0 0.2rem;
+		padding: 0.1rem 0.35rem 0.1rem 0.7rem;
+		border-radius: var(--radius-sm);
+		font-size: 0.78rem;
+		line-height: 1.35;
+		color: var(--text-dim);
+		overflow-wrap: anywhere;
+	}
+	.snippet:hover {
+		background: var(--surface-2);
+		color: var(--text);
+		text-decoration: none;
+	}
+	.snippet mark {
+		background: #ffe27a;
+		color: #1a1a1a;
+		border-radius: 2px;
 	}
 </style>

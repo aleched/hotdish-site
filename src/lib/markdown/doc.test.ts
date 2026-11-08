@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeTags, parseDoc, titleFromPath } from './doc';
+import { normalizeTags, parseDoc, titleFromPath, toSummary } from './doc';
 
 const entry = { path: 'dinner/pasta-bake.md', sha: 'abc123' };
 
@@ -38,6 +38,18 @@ describe('parseDoc', () => {
 		const doc = parseDoc(entry, '---\ntitle: "oops\n---\n\nBody');
 		expect(doc.frontmatterError).toBeTruthy();
 		expect(doc.body.trim()).toBe('Body');
+	});
+});
+
+describe('toSummary', () => {
+	it('leaves the repeated title heading out of the search text', () => {
+		const summary = toSummary(parseDoc(entry, '# Pasta Bake\n\nBake the **pasta**.'));
+		expect(summary.text).toBe('Bake the pasta.');
+	});
+
+	it('keeps a first heading that differs from the title', () => {
+		const summary = toSummary(parseDoc(entry, '---\ntitle: Dinner\n---\n# Pasta\nBake.'));
+		expect(summary.text).toBe('Pasta Bake.');
 	});
 });
 

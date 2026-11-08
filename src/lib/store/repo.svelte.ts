@@ -6,6 +6,7 @@ import { createProvider } from '#lib/forge/factory.ts';
 import { ForgeError, describeForgeError } from '#lib/forge/errors.ts';
 import type { BlobEntry, ForgeProvider, RepoRef } from '#lib/forge/types.ts';
 import { parseDoc, toSummary } from '#lib/markdown/doc.ts';
+import { matchesText, type SearchOptions } from '#lib/search.ts';
 import type { Doc, DocSummary } from '#lib/markdown/doc.ts';
 import { parseTemplate, type DocTemplate } from '#lib/template/schema.ts';
 import { getDefaultTemplate } from '#lib/template/default.ts';
@@ -50,6 +51,11 @@ class RepoStore {
 	templateError = $state<string | null>(null);
 
 	query = $state('');
+	/** When on, the search text is also matched against document bodies. */
+	fullText = $state(false);
+	/** Full-text options; they only affect matching inside document bodies. */
+	matchCase = $state(false);
+	wholeWord = $state(false);
 	selectedTags = $state<string[]>([]);
 	selectedFolders = $state<string[]>([]);
 
@@ -119,6 +125,8 @@ class RepoStore {
 
 	filtered = $derived.by(() => {
 		const needle = this.query.trim().toLowerCase();
+		const fullText = this.fullText;
+		const options = this.searchOptions;
 		const tags = this.selectedTags.map((tag) => tag.toLowerCase());
 		const wanted = this.selectedFolders.map((folder) => folder.toLowerCase());
 		const base = this.basePath.replace(/\/+$/, '');
@@ -131,13 +139,19 @@ class RepoStore {
 				// A selected folder includes its subfolders.
 				if (!wanted.some((name) => folder === name || folder.startsWith(`${name}/`))) return false;
 			}
-			if (needle && !doc.haystack.includes(needle)) return false;
+			if (needle && !doc.haystack.includes(needle) && !(fullText && matchesText(doc.text, this.query, options))) {
+				return false;
+			}
 			if (tags.length === 0) return true;
 			const docTags = doc.tags.map((tag) => tag.toLowerCase());
 			// All selected tags must be present, which makes stacking filters narrowing.
 			return tags.every((tag) => docTags.includes(tag));
 		});
 	});
+
+	get searchOptions(): SearchOptions {
+		return { matchCase: this.matchCase, wholeWord: this.wholeWord };
+	}
 
 	tree = $derived.by<TreeFolder>(() => buildTree(this.filtered, this.basePath));
 
@@ -174,6 +188,9 @@ class RepoStore {
 		this.ref = ref;
 		if (!options.force) {
 			this.query = '';
+			this.fullText = false;
+			this.matchCase = false;
+			this.wholeWord = false;
 			this.selectedTags = [];
 			this.selectedFolders = [];
 		}

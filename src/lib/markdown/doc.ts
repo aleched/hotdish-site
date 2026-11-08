@@ -1,4 +1,5 @@
 import type { BlobEntry } from '#lib/forge/types.ts';
+import { stripMarkdown } from '#lib/search.ts';
 import { parseFrontmatter, readStringList } from './frontmatter';
 
 export interface Doc {
@@ -21,6 +22,8 @@ export interface DocSummary {
 	tags: string[];
 	/** Lowercased title plus tags, precomputed for fast substring search. */
 	haystack: string;
+	/** Body as shown in the reader (no repeated title heading) with markdown syntax removed, for full-text search and snippets. */
+	text: string;
 }
 
 export function parseDoc(entry: BlobEntry, raw: string): Doc {
@@ -48,8 +51,17 @@ export function toSummary(doc: Doc): DocSummary {
 		sha: doc.sha,
 		title: doc.title,
 		tags: doc.tags,
-		haystack: `${doc.title} ${doc.tags.join(' ')} ${doc.path}`.toLowerCase()
+		haystack: `${doc.title} ${doc.tags.join(' ')} ${doc.path}`.toLowerCase(),
+		text: stripMarkdown(stripLeadingTitle(doc.body, doc.title))
 	};
+}
+
+/** The reader renders the heading from the title, so a leading `# Title` line that repeats it is dropped. */
+export function stripLeadingTitle(body: string, title: string): string {
+	const match = /^\s*#[ \t]+(.+?)[ \t]*#*[ \t]*(?:\r?\n|$)/.exec(body);
+	if (!match) return body;
+	if (match[1].trim() !== title) return body;
+	return body.slice(match[0].length);
 }
 
 export function titleFromPath(path: string): string {
