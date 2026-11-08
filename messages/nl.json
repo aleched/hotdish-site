@@ -142,6 +142,9 @@
 	"home_token_saved": "Toegangstoken opgeslagen",
 	"home_delete_confirm": "Deze repository verwijderen?",
 	"home_empty": "Nog geen opgeslagen repositories. Gebruik de +-knop om er een toe te voegen.",
+	"home_try_example": "Probeer het voorbeeld",
+	"home_start_own": "Fork de voorbeeldrepository om je eigen repository te starten.",
+	"token_create": "Token aanmaken",
 	"common_retry": "Opnieuw proberen",
 	"repo_editor_timeout": "Time-out bij het laden van de editor. Controleer de console van de browser.",
 	"repo_root_fallback": "Repository",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Dit document is nog niet opgeslagen voor offline gebruik.",
 	"draft_restored": "Niet-opgeslagen wijzigingen van {time} hersteld.",
 	"draft_changed": "Het bestand is gewijzigd sinds dit concept is opgeslagen — controleer het voordat je opslaat.",
-	"draft_discard": "Concept verwijderen"
+	"draft_discard": "Concept verwijderen",
+	"branch_picker_title": "Van branch wisselen",
+	"branch_picker_locked": "Voltooi het bewerken om van branch te wisselen",
+	"branch_picker_filter": "Branches filteren",
+	"branch_picker_default": "standaard",
+	"branch_picker_new": "Nieuwe branch…",
+	"branch_picker_new_name": "Naam van nieuwe branch",
+	"branch_picker_create_from": "Nieuwe branch vanaf {branch}",
+	"branch_picker_create": "Aanmaken",
+	"branch_picker_loading": "Branches laden…",
+	"branch_picker_none": "Geen overeenkomende branches",
+	"branch_picker_error": "Kan branches niet laden.",
+	"branch_picker_create_failed": "Kan de branch niet aanmaken."
 }

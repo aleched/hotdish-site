@@ -142,6 +142,9 @@
 	"home_token_saved": "Token de acceso guardado",
 	"home_delete_confirm": "¿Eliminar este repositorio?",
 	"home_empty": "Aún no hay repositorios guardados. Usa el botón + para añadir uno.",
+	"home_try_example": "Probar el ejemplo",
+	"home_start_own": "Haz un fork del repositorio de ejemplo para empezar el tuyo.",
+	"token_create": "Crear un token",
 	"common_retry": "Reintentar",
 	"repo_editor_timeout": "Se agotó el tiempo al cargar el editor. Revisa la consola del navegador.",
 	"repo_root_fallback": "Repositorio",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Este documento aún no está guardado para usarlo sin conexión.",
 	"draft_restored": "Se restauraron cambios sin guardar de {time}.",
 	"draft_changed": "El archivo cambió desde que se guardó este borrador — revísalo antes de guardar.",
-	"draft_discard": "Descartar borrador"
+	"draft_discard": "Descartar borrador",
+	"branch_picker_title": "Cambiar de rama",
+	"branch_picker_locked": "Termina la edición para cambiar de rama",
+	"branch_picker_filter": "Filtrar ramas",
+	"branch_picker_default": "predeterminada",
+	"branch_picker_new": "Nueva rama…",
+	"branch_picker_new_name": "Nombre de la nueva rama",
+	"branch_picker_create_from": "Nueva rama desde {branch}",
+	"branch_picker_create": "Crear",
+	"branch_picker_loading": "Cargando ramas…",
+	"branch_picker_none": "No hay ramas coincidentes",
+	"branch_picker_error": "No se pudieron cargar las ramas.",
+	"branch_picker_create_failed": "No se pudo crear la rama."
 }

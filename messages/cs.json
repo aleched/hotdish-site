@@ -142,6 +142,9 @@
 	"home_token_saved": "Přístupový token uložen",
 	"home_delete_confirm": "Smazat tento repozitář?",
 	"home_empty": "Zatím žádné uložené repozitáře. Přidáte je tlačítkem +.",
+	"home_try_example": "Vyzkoušet ukázku",
+	"home_start_own": "Forkněte ukázkový repozitář a začněte si vlastní.",
+	"token_create": "Vytvořit token",
 	"common_retry": "Zkusit znovu",
 	"repo_editor_timeout": "Načítání editoru vypršelo. Zkontrolujte konzoli prohlížeče.",
 	"repo_root_fallback": "Repozitář",
@@ -289,5 +292,17 @@
 	"offline_doc_missing": "Tento dokument zatím není uložen pro použití offline.",
 	"draft_restored": "Obnoveny neuložené změny z {time}.",
 	"draft_changed": "Soubor se od uložení tohoto konceptu změnil — před uložením jej zkontrolujte.",
-	"draft_discard": "Zahodit koncept"
+	"draft_discard": "Zahodit koncept",
+	"branch_picker_title": "Přepnout větev",
+	"branch_picker_locked": "Dokončete úpravy a pak přepněte větev",
+	"branch_picker_filter": "Filtrovat větve",
+	"branch_picker_default": "výchozí",
+	"branch_picker_new": "Nová větev…",
+	"branch_picker_new_name": "Název nové větve",
+	"branch_picker_create_from": "Nová větev z {branch}",
+	"branch_picker_create": "Vytvořit",
+	"branch_picker_loading": "Načítání větví…",
+	"branch_picker_none": "Žádné odpovídající větve",
+	"branch_picker_error": "Větve se nepodařilo načíst.",
+	"branch_picker_create_failed": "Větev se nepodařilo vytvořit."
 }

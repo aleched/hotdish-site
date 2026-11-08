@@ -142,6 +142,9 @@
 	"home_token_saved": "Jeton d'accès enregistré",
 	"home_delete_confirm": "Supprimer ce dépôt ?",
 	"home_empty": "Aucun dépôt enregistré pour l'instant. Utilisez le bouton + pour en ajouter un.",
+	"home_try_example": "Essayer l'exemple",
+	"home_start_own": "Forkez le dépôt d'exemple pour démarrer le vôtre.",
+	"token_create": "Créer un jeton",
 	"common_retry": "Réessayer",
 	"repo_editor_timeout": "Délai dépassé lors du chargement de l'éditeur. Consultez la console du navigateur.",
 	"repo_root_fallback": "Dépôt",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Ce document n'est pas encore enregistré pour une utilisation hors ligne.",
 	"draft_restored": "Modifications non enregistrées du {time} restaurées.",
 	"draft_changed": "Le fichier a changé depuis l'enregistrement de ce brouillon — vérifiez avant d'enregistrer.",
-	"draft_discard": "Abandonner le brouillon"
+	"draft_discard": "Abandonner le brouillon",
+	"branch_picker_title": "Changer de branche",
+	"branch_picker_locked": "Terminez la modification pour changer de branche",
+	"branch_picker_filter": "Filtrer les branches",
+	"branch_picker_default": "par défaut",
+	"branch_picker_new": "Nouvelle branche…",
+	"branch_picker_new_name": "Nom de la nouvelle branche",
+	"branch_picker_create_from": "Nouvelle branche depuis {branch}",
+	"branch_picker_create": "Créer",
+	"branch_picker_loading": "Chargement des branches…",
+	"branch_picker_none": "Aucune branche correspondante",
+	"branch_picker_error": "Impossible de charger les branches.",
+	"branch_picker_create_failed": "Impossible de créer la branche."
 }

@@ -142,6 +142,9 @@
 	"home_token_saved": "Токен доступа сохранён",
 	"home_delete_confirm": "Удалить этот репозиторий?",
 	"home_empty": "Сохранённых репозиториев пока нет. Нажмите кнопку +, чтобы добавить.",
+	"home_try_example": "Попробовать пример",
+	"home_start_own": "Сделайте форк примера репозитория, чтобы начать свой.",
+	"token_create": "Создать токен",
 	"common_retry": "Повторить",
 	"repo_editor_timeout": "Время загрузки редактора истекло. Проверьте консоль браузера.",
 	"repo_root_fallback": "Репозиторий",
@@ -289,5 +292,17 @@
 	"offline_doc_missing": "Этот документ ещё не сохранён для работы офлайн.",
 	"draft_restored": "Восстановлены несохранённые изменения от {time}.",
 	"draft_changed": "Файл изменился после сохранения этого черновика — проверьте перед сохранением.",
-	"draft_discard": "Удалить черновик"
+	"draft_discard": "Удалить черновик",
+	"branch_picker_title": "Сменить ветку",
+	"branch_picker_locked": "Завершите редактирование, чтобы сменить ветку",
+	"branch_picker_filter": "Фильтр веток",
+	"branch_picker_default": "по умолчанию",
+	"branch_picker_new": "Новая ветка…",
+	"branch_picker_new_name": "Имя новой ветки",
+	"branch_picker_create_from": "Новая ветка от {branch}",
+	"branch_picker_create": "Создать",
+	"branch_picker_loading": "Загрузка веток…",
+	"branch_picker_none": "Подходящих веток нет",
+	"branch_picker_error": "Не удалось загрузить ветки.",
+	"branch_picker_create_failed": "Не удалось создать ветку."
 }

@@ -142,6 +142,9 @@
 	"home_token_saved": "Token akses disimpan",
 	"home_delete_confirm": "Hapus repositori ini?",
 	"home_empty": "Belum ada repositori tersimpan. Gunakan tombol + untuk menambahkan.",
+	"home_try_example": "Coba contoh",
+	"home_start_own": "Fork repositori contoh untuk memulai repositori Anda sendiri.",
+	"token_create": "Buat token",
 	"common_retry": "Coba lagi",
 	"repo_editor_timeout": "Waktu memuat editor habis. Periksa konsol browser.",
 	"repo_root_fallback": "Repositori",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "Dokumen ini belum disimpan untuk penggunaan luring.",
 	"draft_restored": "Perubahan yang belum disimpan dari {time} dipulihkan.",
 	"draft_changed": "Berkas telah berubah sejak draf ini disimpan — tinjau sebelum menyimpan.",
-	"draft_discard": "Buang draf"
+	"draft_discard": "Buang draf",
+	"branch_picker_title": "Ganti cabang",
+	"branch_picker_locked": "Selesaikan pengeditan untuk berganti cabang",
+	"branch_picker_filter": "Saring cabang",
+	"branch_picker_default": "bawaan",
+	"branch_picker_new": "Cabang baru…",
+	"branch_picker_new_name": "Nama cabang baru",
+	"branch_picker_create_from": "Cabang baru dari {branch}",
+	"branch_picker_create": "Buat",
+	"branch_picker_loading": "Memuat cabang…",
+	"branch_picker_none": "Tidak ada cabang yang cocok",
+	"branch_picker_error": "Tidak dapat memuat cabang.",
+	"branch_picker_create_failed": "Tidak dapat membuat cabang."
 }

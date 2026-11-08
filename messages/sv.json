@@ -142,6 +142,9 @@
 	"home_token_saved": "Åtkomsttoken sparad",
 	"home_delete_confirm": "Ta bort det här förrådet?",
 	"home_empty": "Inga sparade förråd än. Använd +-knappen för att lägga till ett.",
+	"home_try_example": "Prova exemplet",
+	"home_start_own": "Forka exempelförrådet för att starta ditt eget.",
+	"token_create": "Skapa en token",
 	"common_retry": "Försök igen",
 	"repo_editor_timeout": "Tidsgränsen överskreds när redigeraren lästes in. Kontrollera webbläsarens konsol.",
 	"repo_root_fallback": "Förråd",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Det här dokumentet är ännu inte sparat för offlineanvändning.",
 	"draft_restored": "Återställde osparade ändringar från {time}.",
 	"draft_changed": "Filen har ändrats sedan utkastet sparades — granska innan du sparar.",
-	"draft_discard": "Släng utkast"
+	"draft_discard": "Släng utkast",
+	"branch_picker_title": "Byt gren",
+	"branch_picker_locked": "Avsluta redigeringen för att byta gren",
+	"branch_picker_filter": "Filtrera grenar",
+	"branch_picker_default": "standard",
+	"branch_picker_new": "Ny gren…",
+	"branch_picker_new_name": "Namn på ny gren",
+	"branch_picker_create_from": "Ny gren från {branch}",
+	"branch_picker_create": "Skapa",
+	"branch_picker_loading": "Läser in grenar…",
+	"branch_picker_none": "Inga matchande grenar",
+	"branch_picker_error": "Det gick inte att läsa in grenar.",
+	"branch_picker_create_failed": "Det gick inte att skapa grenen."
 }

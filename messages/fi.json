@@ -142,6 +142,9 @@
 	"home_token_saved": "Käyttöoikeustunniste tallennettu",
 	"home_delete_confirm": "Poistetaanko tämä repositorio?",
 	"home_empty": "Ei vielä tallennettuja repositorioita. Lisää yksi + -painikkeella.",
+	"home_try_example": "Kokeile esimerkkiä",
+	"home_start_own": "Haarauta (fork) esimerkkivarasto aloittaaksesi omasi.",
+	"token_create": "Luo tunniste",
 	"common_retry": "Yritä uudelleen",
 	"repo_editor_timeout": "Editorin lataus aikakatkaistiin. Tarkista selaimen konsoli.",
 	"repo_root_fallback": "Repositorio",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Tätä asiakirjaa ei ole vielä tallennettu offline-käyttöön.",
 	"draft_restored": "Palautettiin tallentamattomat muutokset ajalta {time}.",
 	"draft_changed": "Tiedosto on muuttunut tämän luonnoksen tallentamisen jälkeen — tarkista ennen tallentamista.",
-	"draft_discard": "Hylkää luonnos"
+	"draft_discard": "Hylkää luonnos",
+	"branch_picker_title": "Vaihda haaraa",
+	"branch_picker_locked": "Lopeta muokkaus vaihtaaksesi haaraa",
+	"branch_picker_filter": "Suodata haaroja",
+	"branch_picker_default": "oletus",
+	"branch_picker_new": "Uusi haara…",
+	"branch_picker_new_name": "Uuden haaran nimi",
+	"branch_picker_create_from": "Uusi haara haarasta {branch}",
+	"branch_picker_create": "Luo",
+	"branch_picker_loading": "Ladataan haaroja…",
+	"branch_picker_none": "Ei vastaavia haaroja",
+	"branch_picker_error": "Haarojen lataaminen epäonnistui.",
+	"branch_picker_create_failed": "Haaran luominen epäonnistui."
 }

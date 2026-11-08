@@ -142,6 +142,9 @@
 	"home_token_saved": "액세스 토큰이 저장되었습니다",
 	"home_delete_confirm": "이 저장소를 삭제할까요?",
 	"home_empty": "저장된 저장소가 아직 없습니다. + 버튼으로 추가하세요.",
+	"home_try_example": "예제 사용해 보기",
+	"home_start_own": "예제 저장소를 포크하여 나만의 저장소를 시작하세요.",
+	"token_create": "토큰 만들기",
 	"common_retry": "다시 시도",
 	"repo_editor_timeout": "편집기를 불러오는 중 시간이 초과되었습니다. 브라우저 콘솔을 확인하세요.",
 	"repo_root_fallback": "저장소",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "이 문서는 아직 오프라인용으로 저장되지 않았습니다.",
 	"draft_restored": "{time}의 저장되지 않은 변경 사항을 복원했습니다.",
 	"draft_changed": "이 초안을 저장한 후 파일이 변경되었습니다 — 저장하기 전에 검토하세요.",
-	"draft_discard": "초안 삭제"
+	"draft_discard": "초안 삭제",
+	"branch_picker_title": "브랜치 전환",
+	"branch_picker_locked": "브랜치를 전환하려면 편집을 마치세요",
+	"branch_picker_filter": "브랜치 필터",
+	"branch_picker_default": "기본",
+	"branch_picker_new": "새 브랜치…",
+	"branch_picker_new_name": "새 브랜치 이름",
+	"branch_picker_create_from": "{branch}에서 새 브랜치",
+	"branch_picker_create": "만들기",
+	"branch_picker_loading": "브랜치 불러오는 중…",
+	"branch_picker_none": "일치하는 브랜치가 없습니다",
+	"branch_picker_error": "브랜치를 불러올 수 없습니다.",
+	"branch_picker_create_failed": "브랜치를 만들 수 없습니다."
 }

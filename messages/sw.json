@@ -142,6 +142,9 @@
 	"home_token_saved": "Tokeni ya ufikiaji imehifadhiwa",
 	"home_delete_confirm": "Futa hazina hii?",
 	"home_empty": "Bado hakuna hazina zilizohifadhiwa. Tumia kitufe cha + kuongeza.",
+	"home_try_example": "Jaribu mfano",
+	"home_start_own": "Fork hazina ya mfano ili kuanza yako mwenyewe.",
+	"token_create": "Unda tokeni",
 	"common_retry": "Jaribu tena",
 	"repo_editor_timeout": "Muda wa kupakia kihariri umeisha. Angalia koni ya kivinjari.",
 	"repo_root_fallback": "Hazina",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Hati hii bado haijahifadhiwa kwa matumizi nje ya mtandao.",
 	"draft_restored": "Mabadiliko ambayo hayajahifadhiwa kutoka {time} yamerejeshwa.",
 	"draft_changed": "Faili imebadilika tangu rasimu hii ihifadhiwe — kagua kabla ya kuhifadhi.",
-	"draft_discard": "Tupa rasimu"
+	"draft_discard": "Tupa rasimu",
+	"branch_picker_title": "Badilisha tawi",
+	"branch_picker_locked": "Maliza kuhariri ili kubadilisha tawi",
+	"branch_picker_filter": "Chuja matawi",
+	"branch_picker_default": "chaguomsingi",
+	"branch_picker_new": "Tawi jipya…",
+	"branch_picker_new_name": "Jina la tawi jipya",
+	"branch_picker_create_from": "Tawi jipya kutoka {branch}",
+	"branch_picker_create": "Unda",
+	"branch_picker_loading": "Inapakia matawi…",
+	"branch_picker_none": "Hakuna matawi yanayolingana",
+	"branch_picker_error": "Imeshindwa kupakia matawi.",
+	"branch_picker_create_failed": "Imeshindwa kuunda tawi."
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { FORGE_LABELS } from '#lib/forge/factory.ts';
+	import { tokenCreateUrl } from '#lib/forge/example.ts';
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { rateLimitStore } from '#lib/store/rateLimit.svelte.ts';
 	import Modal from './Modal.svelte';
@@ -21,6 +22,7 @@
 					{m.rate_wait()}
 				{/if}
 				{m.rate_token_hint()}
+				<a href={tokenCreateUrl(notice.kind, notice.host)} target="_blank" rel="noopener">{m.token_create()}</a>
 			</p>
 			<div class="row actions">
 				<button

@@ -142,6 +142,9 @@
 	"home_token_saved": "บันทึกโทเค็นเข้าถึงแล้ว",
 	"home_delete_confirm": "ลบที่เก็บนี้หรือไม่?",
 	"home_empty": "ยังไม่มีที่เก็บที่บันทึกไว้ ใช้ปุ่ม + เพื่อเพิ่ม",
+	"home_try_example": "ลองใช้ตัวอย่าง",
+	"home_start_own": "ฟอร์กที่เก็บตัวอย่างเพื่อเริ่มที่เก็บของคุณเอง",
+	"token_create": "สร้างโทเคน",
 	"common_retry": "ลองอีกครั้ง",
 	"repo_editor_timeout": "หมดเวลาระหว่างโหลดตัวแก้ไข ตรวจสอบคอนโซลของเบราว์เซอร์",
 	"repo_root_fallback": "ที่เก็บ",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "เอกสารนี้ยังไม่ได้บันทึกไว้สำหรับใช้งานออฟไลน์",
 	"draft_restored": "กู้คืนการเปลี่ยนแปลงที่ยังไม่บันทึกจาก {time} แล้ว",
 	"draft_changed": "ไฟล์มีการเปลี่ยนแปลงหลังจากบันทึกฉบับร่างนี้ — ตรวจสอบก่อนบันทึก",
-	"draft_discard": "ทิ้งฉบับร่าง"
+	"draft_discard": "ทิ้งฉบับร่าง",
+	"branch_picker_title": "สลับสาขา",
+	"branch_picker_locked": "แก้ไขให้เสร็จก่อนจึงจะสลับสาขาได้",
+	"branch_picker_filter": "กรองสาขา",
+	"branch_picker_default": "ค่าเริ่มต้น",
+	"branch_picker_new": "สาขาใหม่…",
+	"branch_picker_new_name": "ชื่อสาขาใหม่",
+	"branch_picker_create_from": "สาขาใหม่จาก {branch}",
+	"branch_picker_create": "สร้าง",
+	"branch_picker_loading": "กำลังโหลดสาขา…",
+	"branch_picker_none": "ไม่พบสาขาที่ตรงกัน",
+	"branch_picker_error": "โหลดสาขาไม่สำเร็จ",
+	"branch_picker_create_failed": "สร้างสาขาไม่สำเร็จ"
 }

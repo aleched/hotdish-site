@@ -142,6 +142,9 @@
 	"home_token_saved": "Token dostępu zapisany",
 	"home_delete_confirm": "Usunąć to repozytorium?",
 	"home_empty": "Brak zapisanych repozytoriów. Użyj przycisku +, aby dodać.",
+	"home_try_example": "Wypróbuj przykład",
+	"home_start_own": "Zrób fork repozytorium przykładowego, aby zacząć własne.",
+	"token_create": "Utwórz token",
 	"common_retry": "Spróbuj ponownie",
 	"repo_editor_timeout": "Przekroczono czas wczytywania edytora. Sprawdź konsolę przeglądarki.",
 	"repo_root_fallback": "Repozytorium",
@@ -289,5 +292,17 @@
 	"offline_doc_missing": "Ten dokument nie został jeszcze zapisany do użytku offline.",
 	"draft_restored": "Przywrócono niezapisane zmiany z {time}.",
 	"draft_changed": "Plik zmienił się od zapisania tej wersji roboczej — sprawdź przed zapisaniem.",
-	"draft_discard": "Odrzuć wersję roboczą"
+	"draft_discard": "Odrzuć wersję roboczą",
+	"branch_picker_title": "Zmień gałąź",
+	"branch_picker_locked": "Zakończ edycję, aby zmienić gałąź",
+	"branch_picker_filter": "Filtruj gałęzie",
+	"branch_picker_default": "domyślna",
+	"branch_picker_new": "Nowa gałąź…",
+	"branch_picker_new_name": "Nazwa nowej gałęzi",
+	"branch_picker_create_from": "Nowa gałąź z {branch}",
+	"branch_picker_create": "Utwórz",
+	"branch_picker_loading": "Wczytywanie gałęzi…",
+	"branch_picker_none": "Brak pasujących gałęzi",
+	"branch_picker_error": "Nie udało się wczytać gałęzi.",
+	"branch_picker_create_failed": "Nie udało się utworzyć gałęzi."
 }

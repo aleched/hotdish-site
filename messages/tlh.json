@@ -142,6 +142,9 @@
 	"home_token_saved": "access token lanta'",
 	"home_delete_confirm": "Hol Qaw'?",
 	"home_empty": "pol Hol pagh. + Qap chel.",
+	"home_try_example": "Namtun nID",
+	"home_start_own": "Namtun pol Fork 'ej latlh ghaH choH.",
+	"token_create": "Token chenmoH",
 	"common_retry": "qaqIm",
 	"repo_editor_timeout": "choHwI' laD rep Dung. legh De'wI' console yIlegh.",
 	"repo_root_fallback": "Hol",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "SIrgh Hutlh lo'meH ghItlhvam pollu'pu'be'.",
 	"draft_restored": "{time} choHmeyvaD pollu'be'bogh lI'qa'lu'.",
 	"draft_changed": "ghItlh wa'DIch pollu'DI' De'wI' teywI' choHlu'pu' — pollu'pa' yIbej.",
-	"draft_discard": "ghItlh wa'DIch yIwoD"
+	"draft_discard": "ghItlh wa'DIch yIwoD",
+	"branch_picker_title": "Branch choH",
+	"branch_picker_locked": "Branch choH 'ay' ghItlh Dub",
+	"branch_picker_filter": "Branch ngaj",
+	"branch_picker_default": "chIch",
+	"branch_picker_new": "Branch chu'…",
+	"branch_picker_new_name": "Branch chu' pong",
+	"branch_picker_create_from": "{branch} vo' Branch chu'",
+	"branch_picker_create": "chenmoH",
+	"branch_picker_loading": "Branch laD…",
+	"branch_picker_none": "Branch ngaj pagh",
+	"branch_picker_error": "Branch laD luHoHbe'.",
+	"branch_picker_create_failed": "Branch chenmoH luHoHbe'."
 }

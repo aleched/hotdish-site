@@ -142,6 +142,9 @@
 	"home_token_saved": "Toegangsteken gestoor",
 	"home_delete_confirm": "Skrap hierdie bewaarplek?",
 	"home_empty": "Nog geen gestoorde bewaarplekke nie. Gebruik die +-knoppie om by te voeg.",
+	"home_try_example": "Probeer die voorbeeld",
+	"home_start_own": "Vurk die voorbeeldbergplek om jou eie te begin.",
+	"token_create": "Skep 'n teken",
 	"common_retry": "Probeer weer",
 	"repo_editor_timeout": "Die redigeerder se laai het uitgetel. Kyk die blaaierkonsole na.",
 	"repo_root_fallback": "Bewaarplek",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Hierdie dokument is nog nie vir vanlyn gebruik gestoor nie.",
 	"draft_restored": "Ongestoorde veranderinge van {time} herstel.",
 	"draft_changed": "Die lêer het verander sedert hierdie konsep gestoor is — hersien voor jy stoor.",
-	"draft_discard": "Gooi konsep weg"
+	"draft_discard": "Gooi konsep weg",
+	"branch_picker_title": "Wissel tak",
+	"branch_picker_locked": "Voltooi eers die wysiging om takke te wissel",
+	"branch_picker_filter": "Filtreer takke",
+	"branch_picker_default": "verstek",
+	"branch_picker_new": "Nuwe tak…",
+	"branch_picker_new_name": "Naam van nuwe tak",
+	"branch_picker_create_from": "Nuwe tak vanaf {branch}",
+	"branch_picker_create": "Skep",
+	"branch_picker_loading": "Laai takke…",
+	"branch_picker_none": "Geen ooreenstemmende takke nie",
+	"branch_picker_error": "Kon nie takke laai nie.",
+	"branch_picker_create_failed": "Kon nie die tak skep nie."
 }

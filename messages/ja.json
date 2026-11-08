@@ -142,6 +142,9 @@
 	"home_token_saved": "アクセストークンを保存しました",
 	"home_delete_confirm": "このリポジトリを削除しますか?",
 	"home_empty": "保存済みのリポジトリはまだありません。+ ボタンで追加してください。",
+	"home_try_example": "例を試す",
+	"home_start_own": "サンプルリポジトリをフォークして、自分用のリポジトリを始めましょう。",
+	"token_create": "トークンを作成",
 	"common_retry": "再試行",
 	"repo_editor_timeout": "エディターの読み込みがタイムアウトしました。ブラウザーのコンソールを確認してください。",
 	"repo_root_fallback": "リポジトリ",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "このドキュメントはまだオフライン用に保存されていません。",
 	"draft_restored": "{time} の未保存の変更を復元しました。",
 	"draft_changed": "この下書きの保存後にファイルが変更されました — 保存前に確認してください。",
-	"draft_discard": "下書きを破棄"
+	"draft_discard": "下書きを破棄",
+	"branch_picker_title": "ブランチを切り替え",
+	"branch_picker_locked": "ブランチを切り替えるには編集を終了してください",
+	"branch_picker_filter": "ブランチを絞り込み",
+	"branch_picker_default": "デフォルト",
+	"branch_picker_new": "新しいブランチ…",
+	"branch_picker_new_name": "新しいブランチ名",
+	"branch_picker_create_from": "{branch} から新しいブランチ",
+	"branch_picker_create": "作成",
+	"branch_picker_loading": "ブランチを読み込み中…",
+	"branch_picker_none": "一致するブランチがありません",
+	"branch_picker_error": "ブランチを読み込めませんでした。",
+	"branch_picker_create_failed": "ブランチを作成できませんでした。"
 }

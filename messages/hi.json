@@ -142,6 +142,9 @@
 	"home_token_saved": "एक्सेस टोकन सहेजा गया",
 	"home_delete_confirm": "यह रिपॉज़िटरी हटाएँ?",
 	"home_empty": "अभी तक कोई रिपॉज़िटरी सहेजी नहीं गई है। जोड़ने के लिए + बटन इस्तेमाल करें।",
+	"home_try_example": "उदाहरण आज़माएँ",
+	"home_start_own": "अपना रिपॉज़िटरी शुरू करने के लिए उदाहरण रिपॉज़िटरी को फ़ोर्क करें।",
+	"token_create": "टोकन बनाएँ",
 	"common_retry": "फिर कोशिश करें",
 	"repo_editor_timeout": "संपादक लोड करते समय समय समाप्त हो गया। ब्राउज़र कंसोल जाँचें।",
 	"repo_root_fallback": "रिपॉज़िटरी",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "यह दस्तावेज़ अभी ऑफ़लाइन उपयोग के लिए सहेजा नहीं गया है।",
 	"draft_restored": "{time} के बिना सहेजे बदलाव बहाल किए गए।",
 	"draft_changed": "यह ड्राफ़्ट सहेजे जाने के बाद फ़ाइल बदल गई है — सहेजने से पहले समीक्षा करें।",
-	"draft_discard": "ड्राफ़्ट हटाएँ"
+	"draft_discard": "ड्राफ़्ट हटाएँ",
+	"branch_picker_title": "ब्रांच बदलें",
+	"branch_picker_locked": "ब्रांच बदलने के लिए संपादन पूरा करें",
+	"branch_picker_filter": "ब्रांच फ़िल्टर करें",
+	"branch_picker_default": "डिफ़ॉल्ट",
+	"branch_picker_new": "नई ब्रांच…",
+	"branch_picker_new_name": "नई ब्रांच का नाम",
+	"branch_picker_create_from": "{branch} से नई ब्रांच",
+	"branch_picker_create": "बनाएँ",
+	"branch_picker_loading": "ब्रांच लोड हो रही हैं…",
+	"branch_picker_none": "कोई मिलती-जुलती ब्रांच नहीं",
+	"branch_picker_error": "ब्रांच लोड नहीं हो सकीं।",
+	"branch_picker_create_failed": "ब्रांच नहीं बनाई जा सकी।"
 }

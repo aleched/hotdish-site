@@ -142,6 +142,9 @@
 	"home_token_saved": "توکن دسترسی ذخیره شد",
 	"home_delete_confirm": "این مخزن حذف شود؟",
 	"home_empty": "هنوز مخزن ذخیره‌شده‌ای نیست. برای افزودن از دکمه + استفاده کنید.",
+	"home_try_example": "نمونه را امتحان کنید",
+	"home_start_own": "مخزن نمونه را فورک کنید تا مخزن خودتان را شروع کنید.",
+	"token_create": "ایجاد توکن",
 	"common_retry": "تلاش دوباره",
 	"repo_editor_timeout": "زمان بارگیری ویرایشگر به پایان رسید. کنسول مرورگر را بررسی کنید.",
 	"repo_root_fallback": "مخزن",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "این سند هنوز برای استفادهٔ آفلاین ذخیره نشده است.",
 	"draft_restored": "تغییرات ذخیره‌نشده از {time} بازیابی شد.",
 	"draft_changed": "این فایل پس از ذخیرهٔ این پیش‌نویس تغییر کرده است — پیش از ذخیره بازبینی کنید.",
-	"draft_discard": "دور انداختن پیش‌نویس"
+	"draft_discard": "دور انداختن پیش‌نویس",
+	"branch_picker_title": "تغییر شاخه",
+	"branch_picker_locked": "برای تغییر شاخه، ویرایش را تمام کنید",
+	"branch_picker_filter": "فیلتر شاخه‌ها",
+	"branch_picker_default": "پیش‌فرض",
+	"branch_picker_new": "شاخهٔ جدید…",
+	"branch_picker_new_name": "نام شاخهٔ جدید",
+	"branch_picker_create_from": "شاخهٔ جدید از {branch}",
+	"branch_picker_create": "ایجاد",
+	"branch_picker_loading": "در حال بارگیری شاخه‌ها…",
+	"branch_picker_none": "شاخهٔ منطبقی یافت نشد",
+	"branch_picker_error": "شاخه‌ها بارگیری نشدند.",
+	"branch_picker_create_failed": "شاخه ایجاد نشد."
 }

@@ -142,6 +142,9 @@
 	"home_token_saved": "Токен доступу збережено",
 	"home_delete_confirm": "Видалити цей репозиторій?",
 	"home_empty": "Збережених репозиторіїв ще немає. Натисніть кнопку +, щоб додати.",
+	"home_try_example": "Спробувати приклад",
+	"home_start_own": "Зробіть форк прикладу репозиторію, щоб почати свій.",
+	"token_create": "Створити токен",
 	"common_retry": "Повторити",
 	"repo_editor_timeout": "Час очікування завантаження редактора минув. Перевірте консоль браузера.",
 	"repo_root_fallback": "Репозиторій",
@@ -289,5 +292,17 @@
 	"offline_doc_missing": "Цей документ ще не збережено для роботи офлайн.",
 	"draft_restored": "Відновлено незбережені зміни від {time}.",
 	"draft_changed": "Файл змінився після збереження цієї чернетки — перевірте перед збереженням.",
-	"draft_discard": "Відкинути чернетку"
+	"draft_discard": "Відкинути чернетку",
+	"branch_picker_title": "Змінити гілку",
+	"branch_picker_locked": "Завершіть редагування, щоб змінити гілку",
+	"branch_picker_filter": "Фільтр гілок",
+	"branch_picker_default": "за замовчуванням",
+	"branch_picker_new": "Нова гілка…",
+	"branch_picker_new_name": "Назва нової гілки",
+	"branch_picker_create_from": "Нова гілка від {branch}",
+	"branch_picker_create": "Створити",
+	"branch_picker_loading": "Завантаження гілок…",
+	"branch_picker_none": "Відповідних гілок немає",
+	"branch_picker_error": "Не вдалося завантажити гілки.",
+	"branch_picker_create_failed": "Не вдалося створити гілку."
 }

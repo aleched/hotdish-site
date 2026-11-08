@@ -142,6 +142,9 @@
 	"home_token_saved": "Aðgangstóki vistaður",
 	"home_delete_confirm": "Eyða þessari geymslu?",
 	"home_empty": "Engar vistaðar geymslur ennþá. Notaðu + hnappinn til að bæta við.",
+	"home_try_example": "Prófaðu dæmið",
+	"home_start_own": "Forkaðu dæmasafnið til að byrja með þitt eigið.",
+	"token_create": "Búa til tóka",
 	"common_retry": "Reyna aftur",
 	"repo_editor_timeout": "Hleðsla ritilsins rann út á tíma. Athugaðu stjórnborð vafrans.",
 	"repo_root_fallback": "Geymsla",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Þetta skjal hefur ekki enn verið vistað til notkunar án tengingar.",
 	"draft_restored": "Óvistaðar breytingar frá {time} endurheimtar.",
 	"draft_changed": "Skráin hefur breyst síðan þessi drög voru vistuð — farðu yfir áður en þú vistar.",
-	"draft_discard": "Henda drögum"
+	"draft_discard": "Henda drögum",
+	"branch_picker_title": "Skipta um grein",
+	"branch_picker_locked": "Ljúktu við breytinguna til að skipta um grein",
+	"branch_picker_filter": "Sía greinar",
+	"branch_picker_default": "sjálfgefin",
+	"branch_picker_new": "Ný grein…",
+	"branch_picker_new_name": "Heiti nýrrar greinar",
+	"branch_picker_create_from": "Ný grein út frá {branch}",
+	"branch_picker_create": "Búa til",
+	"branch_picker_loading": "Hleð greinum…",
+	"branch_picker_none": "Engar samsvarandi greinar",
+	"branch_picker_error": "Ekki tókst að hlaða greinum.",
+	"branch_picker_create_failed": "Ekki tókst að búa til greinina."
 }

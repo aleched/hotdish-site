@@ -142,6 +142,9 @@
 	"home_token_saved": "Erişim belirteci kaydedildi",
 	"home_delete_confirm": "Bu depo silinsin mi?",
 	"home_empty": "Henüz kayıtlı depo yok. Eklemek için + düğmesini kullanın.",
+	"home_try_example": "Örneği dene",
+	"home_start_own": "Kendi deponuzu başlatmak için örnek depoyu çatallayın.",
+	"token_create": "Belirteç oluştur",
 	"common_retry": "Yeniden dene",
 	"repo_editor_timeout": "Düzenleyici yüklenirken zaman aşımı oldu. Tarayıcı konsoluna bakın.",
 	"repo_root_fallback": "Depo",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Bu belge henüz çevrimdışı kullanım için kaydedilmedi.",
 	"draft_restored": "{time} tarihli kaydedilmemiş değişiklikler geri yüklendi.",
 	"draft_changed": "Bu taslak kaydedildikten sonra dosya değişti — kaydetmeden önce gözden geçirin.",
-	"draft_discard": "Taslağı at"
+	"draft_discard": "Taslağı at",
+	"branch_picker_title": "Dal değiştir",
+	"branch_picker_locked": "Dal değiştirmek için düzenlemeyi bitirin",
+	"branch_picker_filter": "Dalları filtrele",
+	"branch_picker_default": "varsayılan",
+	"branch_picker_new": "Yeni dal…",
+	"branch_picker_new_name": "Yeni dal adı",
+	"branch_picker_create_from": "{branch} dalından yeni dal",
+	"branch_picker_create": "Oluştur",
+	"branch_picker_loading": "Dallar yükleniyor…",
+	"branch_picker_none": "Eşleşen dal yok",
+	"branch_picker_error": "Dallar yüklenemedi.",
+	"branch_picker_create_failed": "Dal oluşturulamadı."
 }

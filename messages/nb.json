@@ -142,6 +142,9 @@
 	"home_token_saved": "Tilgangstoken lagret",
 	"home_delete_confirm": "Slette dette depotet?",
 	"home_empty": "Ingen lagrede depoter ennå. Bruk +-knappen for å legge til et.",
+	"home_try_example": "Prøv eksempelet",
+	"home_start_own": "Fork eksempeldepotet for å starte ditt eget.",
+	"token_create": "Opprett et token",
 	"common_retry": "Prøv igjen",
 	"repo_editor_timeout": "Tidsavbrudd under innlasting av redigereren. Sjekk nettleserens konsoll.",
 	"repo_root_fallback": "Depot",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Dette dokumentet er ennå ikke lagret for frakoblet bruk.",
 	"draft_restored": "Gjenopprettet ulagrede endringer fra {time}.",
 	"draft_changed": "Filen er endret siden dette utkastet ble lagret — se gjennom før du lagrer.",
-	"draft_discard": "Forkast utkast"
+	"draft_discard": "Forkast utkast",
+	"branch_picker_title": "Bytt gren",
+	"branch_picker_locked": "Fullfør redigeringen for å bytte gren",
+	"branch_picker_filter": "Filtrer grener",
+	"branch_picker_default": "standard",
+	"branch_picker_new": "Ny gren…",
+	"branch_picker_new_name": "Navn på ny gren",
+	"branch_picker_create_from": "Ny gren fra {branch}",
+	"branch_picker_create": "Opprett",
+	"branch_picker_loading": "Laster grener…",
+	"branch_picker_none": "Ingen samsvarende grener",
+	"branch_picker_error": "Kunne ikke laste grener.",
+	"branch_picker_create_failed": "Kunne ikke opprette grenen."
 }

@@ -142,6 +142,9 @@
 	"home_token_saved": "访问令牌已保存",
 	"home_delete_confirm": "删除此仓库？",
 	"home_empty": "还没有已保存的仓库。点击 + 按钮添加。",
+	"home_try_example": "试用示例",
+	"home_start_own": "派生（Fork）示例仓库，开始你自己的仓库。",
+	"token_create": "创建令牌",
 	"common_retry": "重试",
 	"repo_editor_timeout": "加载编辑器超时。请查看浏览器控制台。",
 	"repo_root_fallback": "仓库",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "此文档尚未保存以供离线使用。",
 	"draft_restored": "已恢复 {time} 的未保存更改。",
 	"draft_changed": "保存此草稿后文件已更改 — 保存前请检查。",
-	"draft_discard": "放弃草稿"
+	"draft_discard": "放弃草稿",
+	"branch_picker_title": "切换分支",
+	"branch_picker_locked": "请先完成编辑再切换分支",
+	"branch_picker_filter": "筛选分支",
+	"branch_picker_default": "默认",
+	"branch_picker_new": "新建分支…",
+	"branch_picker_new_name": "新分支名称",
+	"branch_picker_create_from": "基于 {branch} 新建分支",
+	"branch_picker_create": "创建",
+	"branch_picker_loading": "正在加载分支…",
+	"branch_picker_none": "没有匹配的分支",
+	"branch_picker_error": "无法加载分支。",
+	"branch_picker_create_failed": "无法创建分支。"
 }

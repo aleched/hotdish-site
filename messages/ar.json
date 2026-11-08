@@ -142,6 +142,9 @@
 	"home_token_saved": "تم حفظ رمز الوصول",
 	"home_delete_confirm": "هل تريد حذف هذا المستودع؟",
 	"home_empty": "لا توجد مستودعات محفوظة بعد. استخدم زر + للإضافة.",
+	"home_try_example": "جرّب المثال",
+	"home_start_own": "انسخ (Fork) المستودع التجريبي لتبدأ مستودعك الخاص.",
+	"token_create": "إنشاء رمز وصول",
 	"common_retry": "إعادة المحاولة",
 	"repo_editor_timeout": "انتهت مهلة تحميل المحرر. تحقق من وحدة تحكم المتصفح.",
 	"repo_root_fallback": "المستودع",
@@ -291,5 +294,17 @@
 	"offline_doc_missing": "لم يُحفظ هذا المستند للاستخدام دون اتصال بعد.",
 	"draft_restored": "تمت استعادة التغييرات غير المحفوظة من {time}.",
 	"draft_changed": "تغيّر الملف منذ حفظ هذه المسودة — راجعه قبل الحفظ.",
-	"draft_discard": "تجاهل المسودة"
+	"draft_discard": "تجاهل المسودة",
+	"branch_picker_title": "تبديل الفرع",
+	"branch_picker_locked": "أنهِ التحرير لتبديل الفروع",
+	"branch_picker_filter": "تصفية الفروع",
+	"branch_picker_default": "افتراضي",
+	"branch_picker_new": "فرع جديد…",
+	"branch_picker_new_name": "اسم الفرع الجديد",
+	"branch_picker_create_from": "فرع جديد من {branch}",
+	"branch_picker_create": "إنشاء",
+	"branch_picker_loading": "جارٍ تحميل الفروع…",
+	"branch_picker_none": "لا توجد فروع مطابقة",
+	"branch_picker_error": "تعذّر تحميل الفروع.",
+	"branch_picker_create_failed": "تعذّر إنشاء الفرع."
 }

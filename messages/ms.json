@@ -142,6 +142,9 @@
 	"home_token_saved": "Token akses disimpan",
 	"home_delete_confirm": "Padam repositori ini?",
 	"home_empty": "Belum ada repositori tersimpan. Guna butang + untuk menambah.",
+	"home_try_example": "Cuba contoh",
+	"home_start_own": "Fork repositori contoh untuk memulakan repositori anda sendiri.",
+	"token_create": "Cipta token",
 	"common_retry": "Cuba lagi",
 	"repo_editor_timeout": "Pemuatan penyunting tamat masa. Semak konsol pelayar.",
 	"repo_root_fallback": "Repositori",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "Dokumen ini belum disimpan untuk kegunaan luar talian.",
 	"draft_restored": "Perubahan yang belum disimpan dari {time} dipulihkan.",
 	"draft_changed": "Fail telah berubah sejak draf ini disimpan — semak sebelum menyimpan.",
-	"draft_discard": "Buang draf"
+	"draft_discard": "Buang draf",
+	"branch_picker_title": "Tukar cabang",
+	"branch_picker_locked": "Selesaikan penyuntingan untuk menukar cabang",
+	"branch_picker_filter": "Tapis cabang",
+	"branch_picker_default": "lalai",
+	"branch_picker_new": "Cabang baharu…",
+	"branch_picker_new_name": "Nama cabang baharu",
+	"branch_picker_create_from": "Cabang baharu daripada {branch}",
+	"branch_picker_create": "Cipta",
+	"branch_picker_loading": "Memuatkan cabang…",
+	"branch_picker_none": "Tiada cabang yang sepadan",
+	"branch_picker_error": "Tidak dapat memuatkan cabang.",
+	"branch_picker_create_failed": "Tidak dapat mencipta cabang."
 }

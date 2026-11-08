@@ -142,6 +142,9 @@
 	"home_token_saved": "Pristupni token je sačuvan",
 	"home_delete_confirm": "Obrisati ovaj repozitorijum?",
 	"home_empty": "Još nema sačuvanih repozitorijuma. Koristite dugme + da dodate.",
+	"home_try_example": "Isprobaj primer",
+	"home_start_own": "Forkujte primer repozitorijuma da biste započeli svoj.",
+	"token_create": "Napravi token",
 	"common_retry": "Pokušaj ponovo",
 	"repo_editor_timeout": "Učitavanje uređivača je isteklo. Proverite konzolu pregledača.",
 	"repo_root_fallback": "Repozitorijum",
@@ -288,5 +291,17 @@
 	"offline_doc_missing": "Овај документ још није сачуван за коришћење ван мреже.",
 	"draft_restored": "Враћене су несачуване измене од {time}.",
 	"draft_changed": "Датотека се променила откад је овај нацрт сачуван — прегледајте пре чувања.",
-	"draft_discard": "Одбаци нацрт"
+	"draft_discard": "Одбаци нацрт",
+	"branch_picker_title": "Promeni granu",
+	"branch_picker_locked": "Završite uređivanje da biste promenili granu",
+	"branch_picker_filter": "Filtriraj grane",
+	"branch_picker_default": "podrazumevano",
+	"branch_picker_new": "Nova grana…",
+	"branch_picker_new_name": "Naziv nove grane",
+	"branch_picker_create_from": "Nova grana iz {branch}",
+	"branch_picker_create": "Napravi",
+	"branch_picker_loading": "Učitavanje grana…",
+	"branch_picker_none": "Nema odgovarajućih grana",
+	"branch_picker_error": "Nije moguće učitati grane.",
+	"branch_picker_create_failed": "Nije moguće napraviti granu."
 }

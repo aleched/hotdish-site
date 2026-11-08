@@ -9,6 +9,9 @@
 	import { profileStore, profileToRef, type Profile } from '#lib/store/profiles.svelte.ts';
 	import Icon from '#lib/ui/Icon.svelte';
 	import EmptyState from '#lib/ui/EmptyState.svelte';
+	import AboutBlurb from '#lib/ui/AboutBlurb.svelte';
+	import { firstRunStore } from '#lib/store/firstRun.svelte.ts';
+	import { EXAMPLE_REPO } from '#lib/forge/example.ts';
 	import { m } from '#lib/paraglide/messages.js';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
@@ -64,6 +67,10 @@
 		token = '';
 		error = null;
 		baseline = formSnapshot();
+	}
+
+	function addExample() {
+		profileStore.save({ name: '', ...EXAMPLE_REPO });
 	}
 
 	function startEdit(profile: Profile) {
@@ -337,6 +344,21 @@
 				</form>
 {/snippet}
 
+{#if !firstRunStore.welcomeDismissed}
+	<section class="card welcome stack">
+		<button
+			type="button"
+			class="icon-button welcome-dismiss"
+			title={m.common_dismiss()}
+			aria-label={m.common_dismiss()}
+			onclick={() => firstRunStore.dismissWelcome()}
+		>
+			<Icon name="cancel" />
+		</button>
+		<AboutBlurb />
+	</section>
+{/if}
+
 <section class="panel">
 	<div class="section-heading">
 		<h2 title={m.home_saved_repos()}>
@@ -442,10 +464,29 @@
 	</ul>
 	{#if !isCreating && !profileStore.profiles.length}
 		<EmptyState icon="empty" label={m.home_empty()} />
+		<div class="row example-row">
+			<button type="button" class="dialog-button" onclick={addExample}>
+				<Icon name="fork-knife" />{m.home_try_example()}
+			</button>
+		</div>
 	{/if}
 </section>
 
 <style>
+	.example-row {
+		justify-content: center;
+		margin-top: 0.5rem;
+	}
+	.welcome {
+		position: relative;
+		margin-bottom: 1rem;
+		padding-right: 2.75rem;
+	}
+	.welcome-dismiss {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.4rem;
+	}
 	.split {
 		display: inline-flex;
 	}

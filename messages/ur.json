@@ -142,6 +142,9 @@
 	"home_token_saved": "رسائی ٹوکن محفوظ ہو گیا",
 	"home_delete_confirm": "یہ ریپوزٹری حذف کریں؟",
 	"home_empty": "ابھی کوئی محفوظ ریپوزٹری نہیں۔ شامل کرنے کے لیے + بٹن استعمال کریں۔",
+	"home_try_example": "مثال آزمائیں",
+	"home_start_own": "اپنی ریپوزیٹری شروع کرنے کے لیے مثالی ریپوزیٹری کو فورک کریں۔",
+	"token_create": "ٹوکن بنائیں",
 	"common_retry": "دوبارہ کوشش کریں",
 	"repo_editor_timeout": "ایڈیٹر لوڈ کرنے کا وقت ختم ہو گیا۔ براؤزر کنسول چیک کریں۔",
 	"repo_root_fallback": "ریپوزٹری",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "یہ دستاویز ابھی آف لائن استعمال کے لیے محفوظ نہیں ہوئی۔",
 	"draft_restored": "{time} کی غیر محفوظ شدہ تبدیلیاں بحال کر دی گئیں۔",
 	"draft_changed": "یہ مسودہ محفوظ ہونے کے بعد فائل بدل گئی ہے — محفوظ کرنے سے پہلے جائزہ لیں۔",
-	"draft_discard": "مسودہ رد کریں"
+	"draft_discard": "مسودہ رد کریں",
+	"branch_picker_title": "برانچ تبدیل کریں",
+	"branch_picker_locked": "برانچ تبدیل کرنے کے لیے ترمیم مکمل کریں",
+	"branch_picker_filter": "برانچز فلٹر کریں",
+	"branch_picker_default": "ڈیفالٹ",
+	"branch_picker_new": "نئی برانچ…",
+	"branch_picker_new_name": "نئی برانچ کا نام",
+	"branch_picker_create_from": "{branch} سے نئی برانچ",
+	"branch_picker_create": "بنائیں",
+	"branch_picker_loading": "برانچز لوڈ ہو رہی ہیں…",
+	"branch_picker_none": "کوئی مماثل برانچ نہیں",
+	"branch_picker_error": "برانچز لوڈ نہیں ہو سکیں۔",
+	"branch_picker_create_failed": "برانچ نہیں بنائی جا سکی۔"
 }

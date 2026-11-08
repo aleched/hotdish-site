@@ -142,6 +142,9 @@
 	"home_token_saved": "Na-save ang access token",
 	"home_delete_confirm": "Burahin ang repository na ito?",
 	"home_empty": "Wala pang naka-save na repository. Gamitin ang + na button para magdagdag.",
+	"home_try_example": "Subukan ang halimbawa",
+	"home_start_own": "I-fork ang halimbawang repository para magsimula ng sarili mo.",
+	"token_create": "Gumawa ng token",
 	"common_retry": "Subukang muli",
 	"repo_editor_timeout": "Nag-time out ang pag-load ng editor. Suriin ang console ng browser.",
 	"repo_root_fallback": "Repository",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Hindi pa naka-save ang dokumentong ito para sa offline na paggamit.",
 	"draft_restored": "Naibalik ang mga hindi na-save na pagbabago mula {time}.",
 	"draft_changed": "Nagbago ang file mula nang ma-save ang draft na ito — suriin bago i-save.",
-	"draft_discard": "Itapon ang draft"
+	"draft_discard": "Itapon ang draft",
+	"branch_picker_title": "Magpalit ng branch",
+	"branch_picker_locked": "Tapusin muna ang pag-edit para magpalit ng branch",
+	"branch_picker_filter": "I-filter ang mga branch",
+	"branch_picker_default": "default",
+	"branch_picker_new": "Bagong branch…",
+	"branch_picker_new_name": "Pangalan ng bagong branch",
+	"branch_picker_create_from": "Bagong branch mula sa {branch}",
+	"branch_picker_create": "Gumawa",
+	"branch_picker_loading": "Nilo-load ang mga branch…",
+	"branch_picker_none": "Walang tumutugmang branch",
+	"branch_picker_error": "Hindi ma-load ang mga branch.",
+	"branch_picker_create_failed": "Hindi nagawa ang branch."
 }

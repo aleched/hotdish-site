@@ -142,6 +142,9 @@
 	"home_token_saved": "Токенът за достъп е запазен",
 	"home_delete_confirm": "Да се изтрие ли това хранилище?",
 	"home_empty": "Още няма запазени хранилища. Използвайте бутона +, за да добавите.",
+	"home_try_example": "Опитайте примера",
+	"home_start_own": "Създайте fork на примерното хранилище, за да започнете свое.",
+	"token_create": "Създаване на токен",
 	"common_retry": "Опитай отново",
 	"repo_editor_timeout": "Зареждането на редактора изтече. Проверете конзолата на браузъра.",
 	"repo_root_fallback": "Хранилище",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Този документ все още не е запазен за офлайн ползване.",
 	"draft_restored": "Възстановени незапазени промени от {time}.",
 	"draft_changed": "Файлът е променен след запазването на тази чернова — прегледайте преди запис.",
-	"draft_discard": "Отхвърли черновата"
+	"draft_discard": "Отхвърли черновата",
+	"branch_picker_title": "Смяна на клон",
+	"branch_picker_locked": "Завършете редакцията, за да смените клона",
+	"branch_picker_filter": "Филтриране на клонове",
+	"branch_picker_default": "по подразбиране",
+	"branch_picker_new": "Нов клон…",
+	"branch_picker_new_name": "Име на новия клон",
+	"branch_picker_create_from": "Нов клон от {branch}",
+	"branch_picker_create": "Създаване",
+	"branch_picker_loading": "Зареждане на клонове…",
+	"branch_picker_none": "Няма съвпадащи клонове",
+	"branch_picker_error": "Клоновете не можаха да се заредят.",
+	"branch_picker_create_failed": "Клонът не можа да се създаде."
 }

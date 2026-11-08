@@ -142,6 +142,9 @@
 	"home_token_saved": "Đã lưu token truy cập",
 	"home_delete_confirm": "Xóa kho này?",
 	"home_empty": "Chưa có kho nào được lưu. Dùng nút + để thêm.",
+	"home_try_example": "Dùng thử ví dụ",
+	"home_start_own": "Fork kho lưu trữ ví dụ để bắt đầu kho của riêng bạn.",
+	"token_create": "Tạo token",
 	"common_retry": "Thử lại",
 	"repo_editor_timeout": "Hết thời gian tải trình soạn thảo. Hãy kiểm tra bảng điều khiển trình duyệt.",
 	"repo_root_fallback": "Kho",
@@ -286,5 +289,17 @@
 	"offline_doc_missing": "Tài liệu này chưa được lưu để dùng ngoại tuyến.",
 	"draft_restored": "Đã khôi phục các thay đổi chưa lưu từ {time}.",
 	"draft_changed": "Tệp đã thay đổi kể từ khi bản nháp này được lưu — hãy xem lại trước khi lưu.",
-	"draft_discard": "Bỏ bản nháp"
+	"draft_discard": "Bỏ bản nháp",
+	"branch_picker_title": "Chuyển nhánh",
+	"branch_picker_locked": "Hoàn tất chỉnh sửa để chuyển nhánh",
+	"branch_picker_filter": "Lọc nhánh",
+	"branch_picker_default": "mặc định",
+	"branch_picker_new": "Nhánh mới…",
+	"branch_picker_new_name": "Tên nhánh mới",
+	"branch_picker_create_from": "Nhánh mới từ {branch}",
+	"branch_picker_create": "Tạo",
+	"branch_picker_loading": "Đang tải các nhánh…",
+	"branch_picker_none": "Không có nhánh phù hợp",
+	"branch_picker_error": "Không thể tải các nhánh.",
+	"branch_picker_create_failed": "Không thể tạo nhánh."
 }

@@ -142,6 +142,9 @@
 	"home_token_saved": "אסימון הגישה נשמר",
 	"home_delete_confirm": "למחוק את המאגר הזה?",
 	"home_empty": "אין עדיין מאגרים שמורים. השתמשו בכפתור + כדי להוסיף.",
+	"home_try_example": "נסו את הדוגמה",
+	"home_start_own": "צרו Fork של מאגר הדוגמה כדי להתחיל מאגר משלכם.",
+	"token_create": "יצירת אסימון",
 	"common_retry": "ניסיון חוזר",
 	"repo_editor_timeout": "טעינת העורך חרגה מהזמן. בדקו את מסוף הדפדפן.",
 	"repo_root_fallback": "מאגר",
@@ -288,5 +291,17 @@
 	"offline_doc_missing": "מסמך זה עדיין לא נשמר לשימוש לא מקוון.",
 	"draft_restored": "שוחזרו שינויים שלא נשמרו מ־{time}.",
 	"draft_changed": "הקובץ השתנה מאז שטיוטה זו נשמרה — יש לבדוק לפני השמירה.",
-	"draft_discard": "מחיקת הטיוטה"
+	"draft_discard": "מחיקת הטיוטה",
+	"branch_picker_title": "החלפת ענף",
+	"branch_picker_locked": "סיימו את העריכה כדי להחליף ענף",
+	"branch_picker_filter": "סינון ענפים",
+	"branch_picker_default": "ברירת מחדל",
+	"branch_picker_new": "ענף חדש…",
+	"branch_picker_new_name": "שם הענף החדש",
+	"branch_picker_create_from": "ענף חדש מתוך {branch}",
+	"branch_picker_create": "יצירה",
+	"branch_picker_loading": "טוען ענפים…",
+	"branch_picker_none": "אין ענפים תואמים",
+	"branch_picker_error": "לא ניתן לטעון את הענפים.",
+	"branch_picker_create_failed": "לא ניתן ליצור את הענף."
 }

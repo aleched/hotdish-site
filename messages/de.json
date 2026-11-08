@@ -142,6 +142,9 @@
 	"home_token_saved": "Zugriffstoken gespeichert",
 	"home_delete_confirm": "Dieses Repository löschen?",
 	"home_empty": "Noch keine gespeicherten Repositories. Mit der Schaltfläche + kannst du eines hinzufügen.",
+	"home_try_example": "Beispiel ausprobieren",
+	"home_start_own": "Forke das Beispiel-Repository, um dein eigenes zu starten.",
+	"token_create": "Token erstellen",
 	"common_retry": "Erneut versuchen",
 	"repo_editor_timeout": "Zeitüberschreitung beim Laden des Editors. Prüfe die Browserkonsole.",
 	"repo_root_fallback": "Repository",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Dieses Dokument ist noch nicht für die Offline-Nutzung gespeichert.",
 	"draft_restored": "Ungespeicherte Änderungen vom {time} wiederhergestellt.",
 	"draft_changed": "Die Datei hat sich seit dem Speichern dieses Entwurfs geändert — vor dem Speichern prüfen.",
-	"draft_discard": "Entwurf verwerfen"
+	"draft_discard": "Entwurf verwerfen",
+	"branch_picker_title": "Branch wechseln",
+	"branch_picker_locked": "Bearbeitung beenden, um den Branch zu wechseln",
+	"branch_picker_filter": "Branches filtern",
+	"branch_picker_default": "Standard",
+	"branch_picker_new": "Neuer Branch…",
+	"branch_picker_new_name": "Name des neuen Branches",
+	"branch_picker_create_from": "Neuer Branch von {branch}",
+	"branch_picker_create": "Erstellen",
+	"branch_picker_loading": "Branches werden geladen…",
+	"branch_picker_none": "Keine passenden Branches",
+	"branch_picker_error": "Branches konnten nicht geladen werden.",
+	"branch_picker_create_failed": "Der Branch konnte nicht erstellt werden."
 }

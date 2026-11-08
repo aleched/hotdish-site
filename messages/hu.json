@@ -142,6 +142,9 @@
 	"home_token_saved": "Hozzáférési token mentve",
 	"home_delete_confirm": "Törli ezt a tárolót?",
 	"home_empty": "Még nincs mentett tároló. A + gombbal adhat hozzá.",
+	"home_try_example": "Próbáld ki a példát",
+	"home_start_own": "Forkold a példatárat, hogy elindítsd a sajátodat.",
+	"token_create": "Token létrehozása",
 	"common_retry": "Újra",
 	"repo_editor_timeout": "A szerkesztő betöltése időtúllépéssel megszakadt. Ellenőrizze a böngésző konzolját.",
 	"repo_root_fallback": "Tároló",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Ez a dokumentum még nincs mentve offline használatra.",
 	"draft_restored": "Visszaállítva a nem mentett módosítások ({time}).",
 	"draft_changed": "A fájl megváltozott a piszkozat mentése óta — mentés előtt ellenőrizze.",
-	"draft_discard": "Piszkozat elvetése"
+	"draft_discard": "Piszkozat elvetése",
+	"branch_picker_title": "Ág váltása",
+	"branch_picker_locked": "Fejezd be a szerkesztést az ág váltásához",
+	"branch_picker_filter": "Ágak szűrése",
+	"branch_picker_default": "alapértelmezett",
+	"branch_picker_new": "Új ág…",
+	"branch_picker_new_name": "Az új ág neve",
+	"branch_picker_create_from": "Új ág innen: {branch}",
+	"branch_picker_create": "Létrehozás",
+	"branch_picker_loading": "Ágak betöltése…",
+	"branch_picker_none": "Nincs egyező ág",
+	"branch_picker_error": "Az ágakat nem sikerült betölteni.",
+	"branch_picker_create_failed": "Az ágat nem sikerült létrehozni."
 }

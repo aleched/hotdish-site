@@ -142,6 +142,9 @@
 	"home_token_saved": "Token de acces salvat",
 	"home_delete_confirm": "Ștergi acest depozit?",
 	"home_empty": "Niciun depozit salvat încă. Folosește butonul + pentru a adăuga unul.",
+	"home_try_example": "Încearcă exemplul",
+	"home_start_own": "Fă fork depozitului-exemplu pentru a-l începe pe al tău.",
+	"token_create": "Creează un token",
 	"common_retry": "Încearcă din nou",
 	"repo_editor_timeout": "Încărcarea editorului a expirat. Verifică consola browserului.",
 	"repo_root_fallback": "Depozit",
@@ -288,5 +291,17 @@
 	"offline_doc_missing": "Acest document nu este încă salvat pentru utilizare offline.",
 	"draft_restored": "Au fost restaurate modificările nesalvate din {time}.",
 	"draft_changed": "Fișierul s-a modificat de la salvarea acestei ciorne — verifică înainte de a salva.",
-	"draft_discard": "Renunță la ciornă"
+	"draft_discard": "Renunță la ciornă",
+	"branch_picker_title": "Schimbă ramura",
+	"branch_picker_locked": "Termină editarea pentru a schimba ramura",
+	"branch_picker_filter": "Filtrează ramurile",
+	"branch_picker_default": "implicită",
+	"branch_picker_new": "Ramură nouă…",
+	"branch_picker_new_name": "Numele noii ramuri",
+	"branch_picker_create_from": "Ramură nouă din {branch}",
+	"branch_picker_create": "Creează",
+	"branch_picker_loading": "Se încarcă ramurile…",
+	"branch_picker_none": "Nicio ramură potrivită",
+	"branch_picker_error": "Ramurile nu au putut fi încărcate.",
+	"branch_picker_create_failed": "Ramura nu a putut fi creată."
 }

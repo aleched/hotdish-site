@@ -142,6 +142,9 @@
 	"home_token_saved": "Token de acesso salvo",
 	"home_delete_confirm": "Excluir este repositório?",
 	"home_empty": "Nenhum repositório salvo ainda. Use o botão + para adicionar um.",
+	"home_try_example": "Experimentar o exemplo",
+	"home_start_own": "Faça um fork do repositório de exemplo para começar o seu.",
+	"token_create": "Criar um token",
 	"common_retry": "Tentar novamente",
 	"repo_editor_timeout": "Tempo esgotado ao carregar o editor. Verifique o console do navegador.",
 	"repo_root_fallback": "Repositório",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Este documento ainda não foi salvo para uso offline.",
 	"draft_restored": "Alterações não salvas de {time} restauradas.",
 	"draft_changed": "O arquivo mudou desde que este rascunho foi salvo — revise antes de salvar.",
-	"draft_discard": "Descartar rascunho"
+	"draft_discard": "Descartar rascunho",
+	"branch_picker_title": "Trocar de branch",
+	"branch_picker_locked": "Conclua a edição para trocar de branch",
+	"branch_picker_filter": "Filtrar branches",
+	"branch_picker_default": "padrão",
+	"branch_picker_new": "Novo branch…",
+	"branch_picker_new_name": "Nome do novo branch",
+	"branch_picker_create_from": "Novo branch a partir de {branch}",
+	"branch_picker_create": "Criar",
+	"branch_picker_loading": "Carregando branches…",
+	"branch_picker_none": "Nenhum branch correspondente",
+	"branch_picker_error": "Não foi possível carregar os branches.",
+	"branch_picker_create_failed": "Não foi possível criar o branch."
 }

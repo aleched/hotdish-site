@@ -142,6 +142,9 @@
 	"home_token_saved": "Testimoni d'accés desat",
 	"home_delete_confirm": "Suprimir aquest repositori?",
 	"home_empty": "Encara no hi ha repositoris desats. Utilitza el botó + per afegir-ne.",
+	"home_try_example": "Prova l'exemple",
+	"home_start_own": "Fes un fork del repositori d'exemple per començar el teu.",
+	"token_create": "Crea un testimoni",
 	"common_retry": "Torna-ho a provar",
 	"repo_editor_timeout": "S'ha esgotat el temps de càrrega de l'editor. Comprova la consola del navegador.",
 	"repo_root_fallback": "Repositori",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Aquest document encara no s'ha desat per a ús fora de línia.",
 	"draft_restored": "S'han restaurat els canvis no desats de {time}.",
 	"draft_changed": "El fitxer ha canviat des que es va desar aquest esborrany — revisa'l abans de desar.",
-	"draft_discard": "Descarta l'esborrany"
+	"draft_discard": "Descarta l'esborrany",
+	"branch_picker_title": "Canvia de branca",
+	"branch_picker_locked": "Acaba l'edició per canviar de branca",
+	"branch_picker_filter": "Filtra les branques",
+	"branch_picker_default": "per defecte",
+	"branch_picker_new": "Branca nova…",
+	"branch_picker_new_name": "Nom de la branca nova",
+	"branch_picker_create_from": "Branca nova des de {branch}",
+	"branch_picker_create": "Crea",
+	"branch_picker_loading": "S'estan carregant les branques…",
+	"branch_picker_none": "Cap branca coincident",
+	"branch_picker_error": "No s'han pogut carregar les branques.",
+	"branch_picker_create_failed": "No s'ha pogut crear la branca."
 }

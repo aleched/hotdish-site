@@ -142,6 +142,9 @@
 	"home_token_saved": "Adgangstoken gemt",
 	"home_delete_confirm": "Slet dette lager?",
 	"home_empty": "Ingen gemte lagre endnu. Brug +-knappen til at tilføje et.",
+	"home_try_example": "Prøv eksemplet",
+	"home_start_own": "Fork eksempel-repositoriet for at starte dit eget.",
+	"token_create": "Opret et token",
 	"common_retry": "Prøv igen",
 	"repo_editor_timeout": "Timeout under indlæsning af editoren. Tjek browserens konsol.",
 	"repo_root_fallback": "Lager",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Dette dokument er endnu ikke gemt til offlinebrug.",
 	"draft_restored": "Gendannede ikke-gemte ændringer fra {time}.",
 	"draft_changed": "Filen er ændret, siden denne kladde blev gemt — gennemgå den, før du gemmer.",
-	"draft_discard": "Kassér kladde"
+	"draft_discard": "Kassér kladde",
+	"branch_picker_title": "Skift gren",
+	"branch_picker_locked": "Afslut redigeringen for at skifte gren",
+	"branch_picker_filter": "Filtrer grene",
+	"branch_picker_default": "standard",
+	"branch_picker_new": "Ny gren…",
+	"branch_picker_new_name": "Navn på ny gren",
+	"branch_picker_create_from": "Ny gren fra {branch}",
+	"branch_picker_create": "Opret",
+	"branch_picker_loading": "Indlæser grene…",
+	"branch_picker_none": "Ingen matchende grene",
+	"branch_picker_error": "Kunne ikke indlæse grene.",
+	"branch_picker_create_failed": "Kunne ikke oprette grenen."
 }

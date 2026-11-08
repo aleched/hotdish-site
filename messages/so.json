@@ -142,6 +142,9 @@
 	"home_token_saved": "Token gelitaanka waa la keydiyay",
 	"home_delete_confirm": "Tirtir kaydkan?",
 	"home_empty": "Wali ma jiraan kayd la keydiyay. Isticmaal badhanka + si aad ugu darto.",
+	"home_try_example": "Tijaabi tusaalaha",
+	"home_start_own": "Fork-garee kaydka tusaalaha si aad u bilowdo kaaga.",
+	"token_create": "Samee token",
 	"common_retry": "Isku day mar kale",
 	"repo_editor_timeout": "Waqtigii ayaa dhammaaday markii tafatiraha la rarayay. Hubi console-ka biraawsarka.",
 	"repo_root_fallback": "Kayd",
@@ -287,5 +290,17 @@
 	"offline_doc_missing": "Dukumeentigan weli looma keydin isticmaalka khadka la'aan.",
 	"draft_restored": "Isbeddellada aan la keydin ee {time} waa la soo celiyay.",
 	"draft_changed": "Faylku wuu isbeddelay tan iyo markii qabyo-qoraalkan la keydiyay — dib u eeg ka hor intaadan keydin.",
-	"draft_discard": "Tuur qabyo-qoraalka"
+	"draft_discard": "Tuur qabyo-qoraalka",
+	"branch_picker_title": "Beddel laanta",
+	"branch_picker_locked": "Dhammaystir tafatirka si aad u beddesho laanta",
+	"branch_picker_filter": "Shaandhee laamaha",
+	"branch_picker_default": "caadi ah",
+	"branch_picker_new": "Laan cusub…",
+	"branch_picker_new_name": "Magaca laanta cusub",
+	"branch_picker_create_from": "Laan cusub oo ka timaadda {branch}",
+	"branch_picker_create": "Samee",
+	"branch_picker_loading": "Laamaha ayaa la soo rarayaa…",
+	"branch_picker_none": "Ma jiraan laamo is waafaqaya",
+	"branch_picker_error": "Laamaha lama soo rari karin.",
+	"branch_picker_create_failed": "Laanta lama samayn karin."
 }
