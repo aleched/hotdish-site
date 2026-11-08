@@ -1,5 +1,7 @@
 import type { ForgeKind } from '#lib/forge/types.ts';
 
+export const EXAMPLE_NAME = 'Example recipes';
+
 export const EXAMPLE_REPO = { kind: 'github', host: 'github.com', owner: 'aleched', repo: 'recipes' } as const;
 
 export const EXAMPLE_FORK_URL = `https://${EXAMPLE_REPO.host}/${EXAMPLE_REPO.owner}/${EXAMPLE_REPO.repo}/fork`;

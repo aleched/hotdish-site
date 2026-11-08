@@ -1,9 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { encodeDocPath, toRelative } from '#lib/paths.ts';
 	import { repoStore } from '#lib/store/repo.svelte.ts';
-	import { editorPrefs } from '#lib/store/editorPrefs.svelte.ts';
 	import { docSearch } from '#lib/store/docSearch.svelte.ts';
 	import Icon from '#lib/ui/Icon.svelte';
 	import type { IconName } from '#lib/ui/icon-names.ts';
@@ -19,17 +15,6 @@
 	let tagQuery = $state('');
 	let root: HTMLDivElement | undefined = $state();
 
-	let canRandom = $derived(repoStore.filtered.length > 0 && Boolean(page.params.src));
-
-	/** Opens a random document from the current (filtered) list, avoiding the one already open. */
-	function randomDoc() {
-		const current = (page.params.path ?? '').replace(/^\/+|\/+$/g, '');
-		const pool = repoStore.filtered.map((doc) => toRelative(doc.path, repoStore.basePath)).filter((path) => path !== current);
-
-		if (pool.length === 0) return;
-		const pick = pool[Math.floor(Math.random() * pool.length)];
-		void goto(`/r/${page.params.src}/${encodeDocPath(pick)}`);
-	}
 	let tags = $derived.by(() => {
 		const needle = tagQuery.trim().toLowerCase();
 		return needle
@@ -67,7 +52,8 @@
 	}
 
 	function onwindowclick(event: MouseEvent) {
-		if (open && root && !root.contains(event.target as Node)) open = false;
+		// The path is read from the event because a clicked button may already be gone from the DOM.
+		if (open && root && !event.composedPath().includes(root)) open = false;
 	}
 
 	function onkeydown(event: KeyboardEvent) {
@@ -121,6 +107,12 @@
 				onkeydown={onSearchKeydown}
 				autocomplete="off"
 			/>
+			<span class="options">
+				{@render option('match-case', m.filter_match_case(), repoStore.matchCase, false, () => repoStore.matchCase = !repoStore.matchCase)}
+				{@render option('whole-word', m.filter_whole_word(), repoStore.wholeWord, false, () => repoStore.wholeWord = !repoStore.wholeWord)}
+				<span class="divider" aria-hidden="true"></span>
+				{@render option('doc-search', m.filter_fulltext(), repoStore.fullText, false, () => repoStore.fullText = !repoStore.fullText)}
+			</span>
 		</label>
 		<button
 			type="button"
@@ -135,27 +127,10 @@
 			<Icon name="filter" />
 			{#if activeCount > 0}<span class="badge">{activeCount}</span>{/if}
 		</button>
-		{#if editorPrefs.randomButton}
-			<button
-				type="button"
-				class="filter-button"
-				aria-label={m.filter_random()}
-				title={m.filter_random()}
-				disabled={!canRandom}
-				onclick={randomDoc}
-			>
-				<Icon name="dice" />
-			</button>
-		{/if}
 	</div>
 
 	{#if open}
 		<div class="popover" id={popoverId}>
-			<div class="options">
-				{@render option('doc-search', m.filter_fulltext(), repoStore.fullText, false, () => repoStore.fullText = !repoStore.fullText)}
-				{@render option('match-case', m.filter_match_case(), repoStore.matchCase, !repoStore.fullText, () => repoStore.matchCase = !repoStore.matchCase)}
-				{@render option('whole-word', m.filter_whole_word(), repoStore.wholeWord, !repoStore.fullText, () => repoStore.wholeWord = !repoStore.wholeWord)}
-			</div>
 			<section>
 				<div class="section-head">
 					<h3 title={m.filter_folders()}><Icon name="folder" /><span class="visually-hidden">{m.filter_folders()}</span></h3>
@@ -312,7 +287,7 @@
 		position: relative;
 		display: block;
 	}
-	.search :global(svg) {
+	.search > :global(svg) {
 		position: absolute;
 		left: 0.6rem;
 		top: 50%;
@@ -323,6 +298,7 @@
 	.search input {
 		width: 100%;
 		padding-left: 2rem;
+		padding-right: 5.6rem;
 	}
 
 	.filter-button {
@@ -373,25 +349,41 @@
 		max-height: 70vh;
 		overflow-y: auto;
 	}
-	/* Full-text search toggles, right-aligned along the top of the popover. */
+	/* Full-text search toggles, inside the right edge of the search box. */
 	.options {
+		position: absolute;
+		right: 0.25rem;
+		top: 50%;
+		transform: translateY(-50%);
 		display: flex;
-		justify-content: flex-end;
-		gap: 0.3rem;
-		margin-bottom: -0.3rem;
+		gap: 0.1rem;
+	}
+	.divider {
+		align-self: center;
+		width: 1px;
+		height: 1rem;
+		margin: 0 0.15rem;
+		background: var(--border, currentColor);
+		opacity: 0.5;
 	}
 	.option {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		width: 1.6rem;
+		height: 1.6rem;
 		padding: 0;
-		background: var(--surface);
-		border: 1px solid var(--border);
+		background: transparent;
+		border: 1px solid transparent;
 		border-radius: var(--radius-sm);
 		color: var(--text-dim);
 		cursor: pointer;
+	}
+	.option :global(svg) {
+		position: static;
+		transform: none;
+		width: 1rem;
+		height: 1rem;
 	}
 	.option:hover:not(:disabled) {
 		border-color: var(--accent);

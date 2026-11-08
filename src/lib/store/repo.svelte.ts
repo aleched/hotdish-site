@@ -146,6 +146,7 @@ class RepoStore {
 		const needle = this.query.trim().toLowerCase();
 		const fullText = this.fullText;
 		const options = this.searchOptions;
+		const strict = this.matchCase || this.wholeWord;
 		const tags = this.selectedTags.map((tag) => tag.toLowerCase());
 		const wanted = this.selectedFolders.map((folder) => folder.toLowerCase());
 		const base = this.basePath.replace(/\/+$/, '');
@@ -158,7 +159,10 @@ class RepoStore {
 				// A selected folder includes its subfolders.
 				if (!wanted.some((name) => folder === name || folder.startsWith(`${name}/`))) return false;
 			}
-			if (needle && !doc.haystack.includes(needle) && !(fullText && matchesText(doc.text, this.query, options))) {
+			const nameHit = strict
+				? matchesText(doc.label, this.query, options)
+				: doc.haystack.includes(needle);
+			if (needle && !nameHit && !(fullText && matchesText(doc.text, this.query, options))) {
 				return false;
 			}
 			if (tags.length === 0) return true;

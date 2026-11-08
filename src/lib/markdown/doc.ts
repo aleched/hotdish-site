@@ -22,6 +22,7 @@ export interface DocSummary {
 	tags: string[];
 	/** Lowercased title plus tags, precomputed for fast substring search. */
 	haystack: string;
+	label: string;
 	/** Body as shown in the reader (no repeated title heading) with markdown syntax removed, for full-text search and snippets. */
 	text: string;
 }
@@ -52,6 +53,7 @@ export function toSummary(doc: Doc): DocSummary {
 		title: doc.title,
 		tags: doc.tags,
 		haystack: `${doc.title} ${doc.tags.join(' ')} ${doc.path}`.toLowerCase(),
+		label: `${doc.title} ${doc.tags.join(' ')} ${doc.path}`,
 		text: stripMarkdown(stripLeadingTitle(doc.body, doc.title))
 	};
 }

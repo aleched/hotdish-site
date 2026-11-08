@@ -20,7 +20,7 @@
 	import { findFolder, type TreeFolder } from '#lib/tree.ts';
 	import { FORGE_LABELS } from '#lib/forge/factory.ts';
 	import { untrack } from 'svelte';
-	import { encodeDocPath, joinPath, parentFolder, toFull } from '#lib/paths.ts';
+	import { encodeDocPath, joinPath, parentFolder, toFull, toRelative } from '#lib/paths.ts';
 	import { parseDoc } from '#lib/markdown/doc.ts';
 	import { scaffoldDoc } from '#lib/editor/scaffold.ts';
 	import Icon from '#lib/ui/Icon.svelte';
@@ -159,6 +159,16 @@
 	}
 
 	// A mix of open and closed folders expands everything; only a fully open tree collapses.
+	/** Opens a random document from the current (filtered) list, avoiding the one already open. */
+	function randomDoc() {
+		const pool = repoStore.filtered
+			.map((doc) => toRelative(doc.path, repoStore.basePath))
+			.filter((candidate) => candidate !== path);
+		if (pool.length === 0) return;
+		const pick = pool[Math.floor(Math.random() * pool.length)];
+		void goto(`/r/${src}/${encodeDocPath(pick)}`);
+	}
+
 	function toggleFolders() {
 		const next = !foldersAreExpanded;
 		open = Object.fromEntries(folderPaths.map((item) => [item, next]));
@@ -334,6 +344,18 @@
 						</button>
 						<a class="side-label" href={`/r/${src}`} title={m.repo_home()}>{rootLabel}</a>
 					</div>
+					{#if editorPrefs.randomButton}
+						<button
+							type="button"
+							class="icon-button"
+							title={m.filter_random()}
+							aria-label={m.filter_random()}
+							disabled={repoStore.filtered.length === 0}
+							onclick={randomDoc}
+						>
+							<Icon name="dice" size={14} />
+						</button>
+					{/if}
 				</div>
 			{/if}
 
@@ -371,10 +393,14 @@
 
 		<section class="content">
 			<div class="head no-print">
+				{#if folder && showRecent && recentItems.length > 0}
+					<span class="recent-title" title={m.repo_recent()}>
+						<Icon name="clock" size={20} /><span class="visually-hidden">{m.repo_recent()}</span>
+					</span>
+				{/if}
 				<Breadcrumbs
 					src={src}
 					path={path}
-					rootLabel={rootLabel}
 					renamable={Boolean(draft || entry && editing && doc)}
 					forceEdit={Boolean(draft)}
 					bind:renaming
@@ -487,9 +513,6 @@
 				{/if}
 			{:else if folder}
 				{#if showRecent && recentItems.length > 0}
-					<h2 class="recent-title" title={m.repo_recent()}>
-						<Icon name="clock" size={20} /><span class="visually-hidden">{m.repo_recent()}</span>
-					</h2>
 					<ul class="cards">
 						{#each recentItems.slice(0, recentLimit) as item (item.path)}
 							<li>
@@ -586,7 +609,7 @@
 <style>
 	.layout {
 		display: grid;
-		grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+		grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
 		gap: 1.5rem;
 		align-items: start;
 	}
@@ -616,8 +639,10 @@
 		gap: 0.5rem;
 	}
 	.recent-title {
-		font-size: 1rem;
-		margin: 0 0 0.6rem;
+		display: inline-flex;
+		align-items: center;
+		margin-right: 0;
+		padding: 0.4rem 0;
 		color: var(--text-dim);
 	}
 	.divider {

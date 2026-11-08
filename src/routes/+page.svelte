@@ -11,7 +11,7 @@
 	import EmptyState from '#lib/ui/EmptyState.svelte';
 	import AboutBlurb from '#lib/ui/AboutBlurb.svelte';
 	import { firstRunStore } from '#lib/store/firstRun.svelte.ts';
-	import { EXAMPLE_REPO } from '#lib/forge/example.ts';
+	import { EXAMPLE_NAME, EXAMPLE_REPO } from '#lib/forge/example.ts';
 	import { m } from '#lib/paraglide/messages.js';
 
 	const kinds: ForgeKind[] = ['github', 'gitlab', 'gitea'];
@@ -70,7 +70,7 @@
 	}
 
 	function addExample() {
-		profileStore.save({ name: '', ...EXAMPLE_REPO });
+		profileStore.save({ name: EXAMPLE_NAME, ...EXAMPLE_REPO });
 	}
 
 	function startEdit(profile: Profile) {

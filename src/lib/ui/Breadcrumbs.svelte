@@ -11,7 +11,6 @@
 	interface Props {
 		src: string;
 		path: string;
-		rootLabel: string;
 		/** Shows a pencil that turns the part after the repository name into a text box. */
 		renamable?: boolean;
 		renaming?: boolean;
@@ -27,7 +26,6 @@
 	let {
 		src,
 		path,
-		rootLabel,
 		renamable = false,
 		renaming = $bindable(false),
 		forceEdit = false,
@@ -42,7 +40,7 @@
 
 	let crumbs = $derived.by<Crumb[]>(() => {
 		const segments = path.split('/').filter(Boolean);
-		const result: Crumb[] = [{ label: rootLabel, href: `/r/${src}` }];
+		const result: Crumb[] = [];
 		let accumulated = '';
 		for (const segment of segments) {
 			accumulated = accumulated ? `${accumulated}/${segment}` : segment;
@@ -58,7 +56,7 @@
 
 <nav aria-label={m.crumbs_label()}>
 	<ol>
-		{#each showInput || pending ? crumbs.slice(0, 1) : crumbs as crumb, index (crumb.href)}
+		{#each showInput || pending ? [] : crumbs as crumb, index (crumb.href)}
 			<li>
 				{#if index === crumbs.length - 1 && !showInput && !pending}
 					<span aria-current="page">{crumb.label}</span>
