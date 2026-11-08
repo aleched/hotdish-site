@@ -118,6 +118,10 @@
 </nav>
 
 <style>
+	nav {
+		flex: 1 1 0;
+		min-width: 0;
+	}
 	ol {
 		list-style: none;
 		display: flex;

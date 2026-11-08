@@ -383,13 +383,12 @@
 					deleteDisabled={!connectionStore.online}
 				/>
 				<div class="head-actions">
-					{#if entry && !editing && doc && editorPrefs.strikeLists}
+					{#if entry && !editing && doc && editorPrefs.strikeLists && strikeStore.keys.length > 0}
 						<button
 							type="button"
 							class="icon-button"
 							title={m.doc_clear_strikes()}
 							aria-label={m.doc_clear_strikes()}
-							disabled={strikeStore.keys.length === 0}
 							onclick={() => strikeStore.clear()}
 						>
 							<Icon name="unstrike" />
@@ -642,6 +641,7 @@
 	}
 	.head-actions {
 		display: flex;
+		flex: none;
 		align-items: flex-start;
 		gap: 0.5rem;
 	}
@@ -801,9 +801,6 @@
 		}
 		.menu-open .content {
 			display: none;
-		}
-		.head {
-			flex-wrap: wrap;
 		}
 	}
 </style>
