@@ -12,6 +12,7 @@
 	import Icon from '#lib/ui/Icon.svelte';
 	import type { IconName } from '#lib/ui/icon-names.ts';
 	import LineNumberedTextarea from '#lib/ui/LineNumberedTextarea.svelte';
+	import ListTextarea from '#lib/ui/ListTextarea.svelte';
 	import ChipPicker from '#lib/ui/ChipPicker.svelte';
 	import { repoStore } from '#lib/store/repo.svelte.ts';
 	import { m } from '#lib/paraglide/messages.js';
@@ -496,13 +497,10 @@
 							/>
 						{/if}
 
-						<LineNumberedTextarea
-							rows={3}
-							fit
+						<ListTextarea
 							gutter={section.type === 'list' ? 'bullet' : 'number'}
 							placeholder={placeholderFor(section.type)}
-							value={itemsToLines(block.items)}
-							oninput={(event) => (block.items = linesToItems(event.currentTarget.value))}
+							bind:items={block.items}
 						/>
 
 						{#if block.trailingText.trim()}
